@@ -3231,6 +3231,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     stopCloud(true);
     cloudSync('log', function(){ renderLog() });
     cloudSync('tlog', function(){ renderTLog() });
+    ensureSettingsDoc();
   }
   function stopCloud(keepLocal){
     unsubs.forEach(function(u){ try{u()}catch(e){} }); unsubs = [];
@@ -3247,10 +3248,48 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     {role:"MMIBDO", name:"T.Badalov"},
     {role:"Maktab maslahatchisi", name:"I.Normurodov"}
   ];
-  var settings = jparse(lget('m28_settings'), null) || {};
-  if(!settings.school) settings.school = "28-maktab";
-  if(!settings.schoolFull) settings.schoolFull = "28-sonli umumiy o'rta ta'lim maktabi";
-  if(!Array.isArray(settings.admins)) settings.admins = JSON.parse(JSON.stringify(DEF_ADMINS));
+  function normSettings(o){
+    o = (o && typeof o === 'object') ? o : {};
+    if(!o.school) o.school = "28-maktab";
+    if(!o.schoolFull) o.schoolFull = "28-sonli umumiy o'rta ta'lim maktabi";
+    if(!Array.isArray(o.admins)) o.admins = JSON.parse(JSON.stringify(DEF_ADMINS));
+    return o;
+  }
+  var settings = normSettings(jparse(lget('m28_settings'), null));
+
+  /* ---------- sozlamalarni bulut orqali ulashish (Maktab ma'muriyati, nomi, havola) ----------
+     Firestore: publicinfo/settings. Hamma o'qiy oladi (QR orqali ochilgan ochiq sahifada ham ko'rinadi), faqat adminlar yozadi. */
+  function settingsRef(){ return db.collection('publicinfo').doc('settings'); }
+  function cloudSaveSettings(){
+    if(!db || !curUser) return Promise.reject(new Error('no-auth'));
+    return settingsRef().set({data: JSON.parse(JSON.stringify(settings)), updatedAt: Date.now(), updatedBy: curUser.email});
+  }
+  function ensureSettingsDoc(){
+    /* bulutda hali yo'q bo'lsa va bu qurilmada saqlangan sozlama bo'lsa, uni bulutga ko'chiramiz */
+    if(!db || !curUser || lget('m28_settings') === null) return;
+    settingsRef().get().then(function(s){ if(!s.exists) return cloudSaveSettings(); })
+      .catch(function(e){ console.warn('Sozlamalarni bulutga ko\'chirib bo\'lmadi:', e); });
+  }
+  function refreshSettingsUI(){
+    if(!$('#infoView').classList.contains('hidden')) showInfo();
+    if(!$('#appView').classList.contains('hidden')){
+      $('#brandName').textContent = settings.school+' platformasi';
+      fillSettings(); renderSheet(); renderTSheet(); fillSigner();
+    }
+    if(!$('#authView').classList.contains('hidden')) $('#authSub').textContent = settings.school+' platformasi';
+  }
+  function watchSettings(){
+    if(!db) return;
+    settingsRef().onSnapshot(function(snap){
+      if(!snap.exists || snap.metadata.hasPendingWrites) return;
+      var d = snap.data(); if(!d || !d.data) return;
+      /* foydalanuvchi Sozlamalarda yozayotgan bo'lsa, uning yozganini buzmaymiz */
+      var ae = document.activeElement;
+      if(ae && ae.closest && ae.closest('#tab-settings') && !$('#appView').classList.contains('hidden')) return;
+      settings = normSettings(d.data); lset('m28_settings', JSON.stringify(settings));
+      refreshSettingsUI();
+    }, function(e){ console.warn('Sozlamalarni bulutdan olib bo\'lmadi:', e); });
+  }
 
   function platformUrl(){
     return (settings.url && settings.url.trim()) || DEFAULT_URL || (function(){try{return location.href}catch(e){return ''}})();
@@ -3463,7 +3502,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   $('#s_full').addEventListener('input',function(){settings.schoolFull=this.value;renderTSheet()});
   $('#s_school').addEventListener('input',function(){settings.school=this.value;$('#brandName').textContent=(this.value||'Maktab')+' platformasi';renderSheet()});
   $('#s_url').addEventListener('input',function(){settings.url=this.value.trim();renderQrPrev();renderSheet()});
-  $('#saveSet').addEventListener('click',function(){lset('m28_settings',JSON.stringify(settings));setMsg('#setMsg','Saqlandi','ok')});
+  $('#saveSet').addEventListener('click',function(){
+    lset('m28_settings',JSON.stringify(settings));
+    if(!db || !curUser) return setMsg('#setMsg','Saqlandi (faqat shu qurilmada)','ok');
+    cloudSaveSettings().then(function(){ setMsg('#setMsg',"Saqlandi. Barcha qurilmalarda yangilanadi",'ok') },
+      function(){ setMsg('#setMsg',"Shu qurilmada saqlandi, lekin bulutga yozib bo'lmadi",'err') });
+  });
   $('#urlCopy').addEventListener('click',function(){copyText(platformUrl(),'Havola nusxalandi')});
 
   /* ---------- QR ---------- */
@@ -3915,7 +3959,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   window.addEventListener('beforeprint',function(){renderSheet();renderTSheet()});
 
   /* ---------- start ---------- */
-  window.__syncChips=syncChips; renderTpl();
+  window.__syncChips=syncChips; renderTpl(); watchSettings();
   var infoMode=false; try{infoMode=(location.hash==='#malumot'||location.hash.indexOf('#x=')===0||location.hash.indexOf('#t=')===0)}catch(e){}
   if(infoMode){ infoActive = true; showInfo(); }
   else { showAuth(); $('#googleBtn').disabled = true; authMsg('Yuklanmoqda...',''); }
