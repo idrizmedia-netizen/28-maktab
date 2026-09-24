@@ -159,6 +159,18 @@ table.log input[type=checkbox]{width:18px;height:18px}
 .info-card .adm span{display:block;font-size:13px;color:var(--muted)}
 .info-card .adm b{font-size:16px}
 
+
+details.tpl{border:1px solid var(--line);border-radius:10px;background:var(--input);margin-bottom:8px}
+details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:700;color:var(--brand)}
+#tplBox{padding:0 10px 10px;max-height:300px;overflow-y:auto}
+.tg{font-size:12px;font-weight:700;color:var(--muted);margin:10px 0 6px}
+.chips{display:flex;flex-direction:column;gap:6px}
+.chip{position:relative;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:7px 10px;font-size:13px;line-height:1.3;cursor:pointer}
+.chip:hover{border-color:var(--brand)}
+.chip.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);font-weight:600}
+.chip .x{margin-left:8px;color:var(--danger);font-weight:700}
+.reason-meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin-top:4px}
+.l-lines .tx.s9{font-size:9pt}.l-lines .tx.s8{font-size:8pt}
 @page{size:A4;margin:0}
 @media print{
   :root{padding:0!important}
@@ -243,7 +255,9 @@ table.log input[type=checkbox]{width:18px;height:18px}
           <label class="fl" for="f_parent">Ota-onasi (F.I.Sh)</label>
           <input class="inp" id="f_parent">
           <label class="fl" for="f_reason">Sababi</label>
-          <textarea class="inp" id="f_reason" maxlength="220"></textarea>
+          <details class="tpl" open><summary>Tayyor sabablar (bosib tanlang)</summary><div id="tplBox"></div></details>
+          <textarea class="inp" id="f_reason" maxlength="220" placeholder="Shablon tanlang yoki o'zingiz yozing"></textarea>
+          <div class="reason-meta"><span id="reasonCnt">0 / 220</span><button class="mini" id="saveTpl" type="button">Shablon sifatida saqlash</button></div>
           <div class="actions" style="margin-top:12px">
             <button class="btn ghost sm" id="copyAll" type="button">Shu xatni hammasiga nusxalash</button>
             <button class="btn line sm" id="clearOne" type="button">Shu xatni tozalash</button>
@@ -3190,7 +3204,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function readPayload(){
     var h=''; try{h=location.hash}catch(e){}
     if(h.indexOf('#x=')!==0) return null;
-    try{var a=unb64u(h.slice(3)).split('\n'); return {name:a[0]||'',cls:a[1]||'',parent:a[2]||'',reason:a[3]||'',date:a[4]||''}}catch(e){return null}
+    try{var a=unb64u(h.slice(3)).split('\n'); return {name:a[0]||'',cls:a[1]||'',parent:a[2]||'',reason:unpackReason(a[3]||''),date:a[4]||''}}catch(e){return null}
   }
   function showInfo(){
     hideAll(); $('#infoView').classList.remove('hidden');
@@ -3360,7 +3374,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       '<div class="l-row"><span class="lb">O\'quvchi:</span><span class="fill">'+esc(f.name)+'</span><span class="lb">Sinf:</span><span class="fill w-sm">'+esc(f.cls)+'</span></div>'+
       '<div class="l-row"><span class="lb">Ota-onasi (F.I.Sh):</span><span class="fill">'+esc(f.parent)+'</span></div>'+
       '<div class="l-row" style="margin-bottom:0"><span class="lb">Sababi:</span></div>'+
-      '<div class="l-lines"><i></i><i></i><i></i><div class="tx">'+esc(f.reason)+'</div></div>'+
+      '<div class="l-lines"><i></i><i></i><i></i><div class="tx'+(f.reason.length>165?' s8':(f.reason.length>130?' s9':''))+'">'+esc(f.reason)+'</div></div>'+
       '<div class="l-row">'+dateHTML(f.date)+'</div>'+
       '<div class="l-sign"><span class="lb">Sinf rahbari imzosi:</span><span class="fill"></span></div>'+
       '<div class="l-foot">'+
@@ -3368,10 +3382,24 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         '<div class="l-qr">'+qr+'<div class="c">Xat ma\'lumoti va platforma.<br>QR kodni skanerlang</div></div>'+
       '</div></div>';
   }
+  /* Tayyor shablonlar QR ga qisqa belgi (~guruh.raqam) bilan yoziladi, shunda to'liq sabab kichik QR ga sig'adi. TPL tartibini o'zgartirmang, faqat oxiriga qo'shing. */
+  function packReason(r){
+    return r.split(/\s*;\s*/).filter(Boolean).map(function(p){
+      for(var g=0;g<TPL.length;g++){var i=TPL[g].items.indexOf(p); if(i>=0) return '~'+g+'.'+i}
+      return p;
+    }).join(';');
+  }
+  function unpackReason(r){
+    return r.split(';').map(function(p){
+      var m=/^~(\d)\.(\d+)$/.exec(p);
+      return (m && TPL[+m[1]] && TPL[+m[1]].items[+m[2]]) || p;
+    }).join('; ');
+  }
   function letterQrUrl(f){
     var base=platformUrl().split('#')[0];
     if(!(f.name||f.cls||f.parent||f.reason)) return platformUrl();
-    var reason=f.reason.length>90 ? f.reason.slice(0,88)+'…' : f.reason;
+    var reason=packReason(f.reason);
+    if(reason.length>110) reason=reason.slice(0,108)+'…';
     return base+'#x='+b64u([f.name,f.cls,f.parent,reason,f.date].join('\n'));
   }
   function sheetInner(){return slots.map(function(s){return letterHTML(s,qrSvg(letterQrUrl(s)))}).join('')}
@@ -3386,7 +3414,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     $$('#slots .slot').forEach(function(b){b.addEventListener('click',function(){selectSlot(+b.dataset.slot)})});
   }
   var FIELDS={f_name:'name',f_class:'cls',f_parent:'parent',f_reason:'reason',f_date:'date'};
-  function loadSlotToForm(){Object.keys(FIELDS).forEach(function(id){document.getElementById(id).value=slots[cur][FIELDS[id]]||''})}
+  function loadSlotToForm(){Object.keys(FIELDS).forEach(function(id){document.getElementById(id).value=slots[cur][FIELDS[id]]||''}); if(window.__syncChips) window.__syncChips()}
   function selectSlot(i){cur=i;loadSlotToForm();renderSlots();renderSheet()}
   Object.keys(FIELDS).forEach(function(id){
     document.getElementById(id).addEventListener('input',function(){
@@ -3403,6 +3431,65 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   });
   $('#clearOne').addEventListener('click',function(){slots[cur]=emptySlot();saveSlots();loadSlotToForm();renderSlots();renderSheet()});
   $('#clearBtn').addEventListener('click',function(){slots=[emptySlot(),emptySlot(),emptySlot(),emptySlot()];saveSlots();loadSlotToForm();renderSlots();renderSheet()});
+
+/* ---------- sabab shablonlari ---------- */
+  var TPL=[
+    {g:"1. O'qish va dars jarayoni",items:[
+      "Sababsiz dars qoldirgani",
+      "Darsga muntazam kechikib kelgani",
+      "Darsga kech kelgani",
+      "Maktabga kech kelgani",
+      "O'zlashtirishi keskin pasayib, o'qishga e'tiborsizligi",
+      "Darslik, daftar va o'quv qurollarisiz kelgani"]},
+    {g:"2. Intizom va tartib-qoida",items:[
+      "Maktab forma qoidalariga rioya qilmagani",
+      "Dars vaqtida shovqin qilgani, sinfdoshlariga halal bergani",
+      "O'qituvchining topshiriqlarini bajarmagani",
+      "Telefondan foydalanish talablarini buzgani",
+      "Dars vaqtida telefondan foydalangani",
+      "Taqiqlangan va chalg'ituvchi buyumlarni maktabga olib kelib, dars vaqtida ishlatgani"]},
+    {g:"3. Axloq va xavfsizlik",items:[
+      "Odob-axloq qoidalarini buzib, o'qituvchi yoki tengdoshlari bilan qo'pol muomala qilgani",
+      "Janjallashgani",
+      "Maktab mulkiga (parta, stul, jihozlar) qasddan zarar yetkazgani",
+      "Xavfsizlik qoidalariga zid harakat qilgani, xavfli o'yinlar o'ynagani",
+      "Maktab hududida yoki tashqarisida jamoat tartibini buzgani"]}
+  ];
+  var custom=jparse(lget('m28_tpl'),[]); if(!Array.isArray(custom)) custom=[];
+  function reasonParts(){return $('#f_reason').value.split(/\s*;\s*/).filter(Boolean)}
+  function renderTpl(){
+    var h=TPL.map(function(g){
+      return '<div class="tg">'+esc(g.g)+'</div><div class="chips">'+g.items.map(function(t){return '<button type="button" class="chip" data-t="'+esc(t)+'">'+esc(t)+'</button>'}).join('')+'</div>';
+    }).join('');
+    if(custom.length) h+='<div class="tg">Mening shablonlarim</div><div class="chips">'+custom.map(function(t,i){
+      return '<button type="button" class="chip" data-t="'+esc(t)+'">'+esc(t)+'<span class="x" data-del="'+i+'" title="O\'chirish">×</span></button>';
+    }).join('')+'</div>';
+    $('#tplBox').innerHTML=h; syncChips();
+  }
+  function syncChips(){
+    var parts=reasonParts();
+    $$('#tplBox .chip').forEach(function(c){c.classList.toggle('on',parts.indexOf(c.dataset.t)>=0)});
+    var n=$('#f_reason').value.length, el=$('#reasonCnt'); el.textContent=n+' / 220';
+    el.style.color = n>165 ? 'var(--danger)' : '';
+  }
+  $('#tplBox').addEventListener('click',function(e){
+    var x=e.target.closest('.x');
+    if(x){e.stopPropagation();custom.splice(+x.dataset.del,1);lset('m28_tpl',JSON.stringify(custom));renderTpl();return}
+    var c=e.target.closest('.chip'); if(!c) return;
+    var t=c.dataset.t, parts=reasonParts(), i=parts.indexOf(t);
+    if(i>=0) parts.splice(i,1); else parts.push(t);
+    var v=parts.join('; ');
+    if(v.length>220) return toast("Sabab 220 belgidan oshmasin. Bittasini olib tashlang.");
+    var ta=$('#f_reason'); ta.value=v; ta.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  $('#saveTpl').addEventListener('click',function(){
+    var v=$('#f_reason').value.replace(/\s+/g,' ').trim();
+    if(!v) return toast("Avval sababni yozing");
+    var all=[]; TPL.forEach(function(g){all=all.concat(g.items)});
+    if(all.indexOf(v)>=0||custom.indexOf(v)>=0) return toast("Bu shablon allaqachon bor");
+    custom.push(v); lset('m28_tpl',JSON.stringify(custom)); renderTpl(); toast("Shablon saqlandi");
+  });
+  $('#f_reason').addEventListener('input',syncChips);
 
   /* ---------- registry ---------- */
   function loadLog(){var l=jparse(lget('m28_log'),[]);return Array.isArray(l)?l:[]}
@@ -3545,6 +3632,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   window.addEventListener('beforeprint',function(){renderSheet()});
 
   /* ---------- start ---------- */
+  window.__syncChips=syncChips; renderTpl();
   var infoMode=false; try{infoMode=(location.hash==='#malumot'||location.hash.indexOf('#x=')===0)}catch(e){}
   if(infoMode) showInfo();
   else if(mode==='setup') showAuth();
