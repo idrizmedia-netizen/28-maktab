@@ -119,8 +119,8 @@ main{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
 .l-adm .a{line-height:1.15;margin-top:1mm}
 .l-adm .a .r{display:block;font-size:6.8pt;color:#222}
 .l-adm .a .n{display:block;font-size:8.6pt;font-weight:700}
-.l-qr{flex:none;width:25mm;text-align:center}
-.l-qr svg{width:24mm;height:24mm;display:block;margin:0 auto}
+.l-qr{flex:none;width:29mm;text-align:center}
+.l-qr svg{width:28mm;height:28mm;display:block;margin:0 auto}
 .l-qr .c{font-size:6.3pt;line-height:1.15;margin-top:.8mm}
 
 
@@ -142,6 +142,11 @@ table.log th{background:var(--brand-soft);color:var(--brand);font-size:12px;text
 table.log tr:last-child td{border-bottom:0}
 .badge{display:inline-block;background:var(--brand-soft);color:var(--brand);border-radius:999px;padding:2px 9px;font-weight:700;font-size:12px;white-space:nowrap}
 .badge.warn{background:rgba(180,35,24,.14);color:var(--danger)}
+table.log tr.rowlink{cursor:pointer}
+table.log tr.rowlink:hover td{background:var(--brand-soft)}
+table.log .lnk{color:var(--brand)}
+table.log input[type=checkbox]{width:18px;height:18px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
 .empty{padding:30px;text-align:center;color:var(--muted)}
 .stat{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;color:var(--muted);font-size:14px;align-items:center}
 .steps{margin:8px 0 0;padding-left:20px;color:var(--muted);font-size:14px}
@@ -191,6 +196,7 @@ table.log tr:last-child td{border-bottom:0}
       <button class="btn block" id="authBtn" type="submit">Kirish</button>
       <div class="msg" id="authMsg"></div>
     </form>
+    <div id="authCfg"></div>
   </div>
 </section>
 
@@ -199,7 +205,8 @@ table.log tr:last-child td{border-bottom:0}
   <div class="info-card">
     <div class="logo">28</div>
     <h1 id="infoTitle">28-maktab</h1>
-    <p class="sub">Maktab ma'muriyati</p>
+    <p class="sub" id="infoSub">Maktab ma'muriyati</p>
+    <div id="infoData"></div>
     <div id="infoAdm"></div>
     <button class="btn line block" id="infoStaff" type="button">Xodimlar uchun kirish</button>
   </div>
@@ -264,14 +271,15 @@ table.log tr:last-child td{border-bottom:0}
     <section id="tab-log" class="hidden">
       <div class="card">
         <h2>Xatlar ro'yxati</h2>
-        <p class="hint">Berilgan ogohlantirish xatlari shu yerda yig'iladi (shu qurilmada saqlanadi). Bir o'quvchiga necha marta berilgani ko'rsatiladi.</p>
+        <p class="hint">Berilgan xatlar shu yerda yig'iladi (shu qurilmada saqlanadi). <b>O'quvchi qatorini bosing</b>: xati "Ogohlantirish xati" oynasida qayta ochiladi. Bir nechtasini belgilab (eng ko'pi 4 ta), bitta A4 varaqqa joylash ham mumkin.</p>
         <div class="filters">
           <input class="inp" id="q" placeholder="Qidirish: ism, sinf, sabab...">
           <select class="inp" id="qClass"><option value="">Barcha sinflar</option></select>
         </div>
         <div class="stat"><span id="logCount"></span></div>
-        <div class="tbl-wrap"><table class="log"><thead><tr><th>Sana</th><th>O'quvchi</th><th>Sinf</th><th>Ota-onasi</th><th>Sababi</th><th>Marta</th><th></th></tr></thead><tbody id="logBody"></tbody></table></div>
+        <div class="tbl-wrap"><table class="log"><thead><tr><th></th><th>Sana</th><th>O'quvchi</th><th>Sinf</th><th>Ota-onasi</th><th>Sababi</th><th>Marta</th><th></th></tr></thead><tbody id="logBody"></tbody></table></div>
         <div class="actions">
+          <button class="btn ghost" id="selLoad" type="button" disabled>Tanlanganlarni xatga joylash (0)</button>
           <button class="btn" id="csvBtn" type="button">CSV yuklab olish</button>
           <button class="btn line" id="wipeBtn" type="button">Hammasini o'chirish</button>
         </div>
@@ -283,7 +291,7 @@ table.log tr:last-child td{border-bottom:0}
     <section id="tab-settings" class="hidden">
       <div class="settings-grid">
         <div>
-          <div class="card">
+          <div class="card" id="localCred">
             <h2>Login va parol</h2>
             <p class="hint">Hozirgi kirish ma'lumotlari shu yerda ko'rinadi. O'zgartirish uchun yangisini yozib "Saqlash" ni bosing.</p>
             <div class="cred-now">
@@ -297,6 +305,19 @@ table.log tr:last-child td{border-bottom:0}
             <div class="actions"><button class="btn" id="saveCred">Saqlash</button></div>
             <div class="msg" id="credMsg"></div>
             <div class="note">Login va parol shu qurilmadagi brauzerda saqlanadi. Boshqa qurilmada birinchi kirishda qayta o'rnatiladi.</div>
+          </div>
+          <div class="card hidden" id="lockedCred">
+            <h2>Login va parol</h2>
+            <p class="hint">Parol xavfsizlik uchun shifrlangan holda GitHub'dagi <b>config.js</b> faylida saqlanadi. Shu sababli uni ko'rsatib bo'lmaydi va boshqa qurilmada qayta o'rnatib bo'lmaydi. Almashtirish uchun yangisini yozib, yangi config.js yarating.</p>
+            <label class="fl" for="n_login">Yangi login</label>
+            <input class="inp" id="n_login" autocapitalize="off" spellcheck="false">
+            <label class="fl" for="n_pass">Yangi parol</label>
+            <div class="pw"><input class="inp" id="n_pass" type="password"><button type="button" data-toggle="n_pass">Ko'rsatish</button></div>
+            <label class="fl" for="n_pass2">Parolni takrorlang</label>
+            <input class="inp" id="n_pass2" type="password">
+            <div class="actions"><button class="btn" id="chgBtn" type="button">config.js yaratish</button></div>
+            <div class="msg" id="chgMsg"></div>
+            <div id="setCfg"></div>
           </div>
         </div>
         <div>
@@ -320,7 +341,7 @@ table.log tr:last-child td{border-bottom:0}
               <ol class="steps">
                 <li>Platforma joylashgan sahifadagi ulashish (Share) sozlamasidan "havolasi bor har kim ko'ra oladi" turini yoqing.</li>
                 <li>Yoki bu faylni maktabning o'z saytiga (hosting) qo'yib, uning manzilini yuqoriga yozing.</li>
-                <li>Havola oxiridagi <code>#malumot</code> qismi ota-onalarga login so'ramaydigan ma'lumot sahifasini ochadi.</li>
+                <li>Har bir xatdagi QR kodga o'quvchi ma'lumoti (ismi, sinfi, ota-onasi, sababi qisqacha, sanasi) ham joylanadi. Skanerlaganda login so'ramaydigan sahifada shu ma'lumot va ma'muriyat ko'rinadi.</li>
               </ol></div>
             <div class="actions"><button class="btn" id="saveSet">Saqlash</button></div>
             <div class="msg" id="setMsg"></div>
@@ -332,6 +353,8 @@ table.log tr:last-child td{border-bottom:0}
 </div>
 <div class="toast" id="toast"></div>
 
+<script>window.M28_CONFIG = null;</script>
+<script src="config.js"></script>
 <script>
 //---------------------------------------------------------------------
 //
@@ -3084,8 +3107,25 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   if(!Array.isArray(settings.admins)) settings.admins = JSON.parse(JSON.stringify(DEF_ADMINS));
   var cred = jparse(lget('m28_cred'), null);
 
+  /* mode: 'local' (config.js yo'q, har qurilmada alohida), 'locked' (config.js da parol xeshi bor), 'setup' (parol hali yaratilmagan) */
+  var CFG = window.M28_CONFIG;
+  var mode = (CFG===undefined) ? 'local' : ((CFG && CFG.hash) ? 'locked' : 'setup');
+  function hex(buf){return Array.prototype.map.call(new Uint8Array(buf),function(b){return ('0'+b.toString(16)).slice(-2)}).join('')}
+  function unhex(h){var a=new Uint8Array(h.length/2);for(var i=0;i<a.length;i++)a[i]=parseInt(h.substr(i*2,2),16);return a}
+  function derive(login,pw,salt,iter){
+    var subtle=window.crypto&&window.crypto.subtle; if(!subtle) return Promise.reject(new Error('nocrypto'));
+    var enc=new TextEncoder();
+    return subtle.importKey('raw',enc.encode(login.trim().toLowerCase()+'\n'+pw),'PBKDF2',false,['deriveBits'])
+      .then(function(k){return subtle.deriveBits({name:'PBKDF2',salt:salt,iterations:iter,hash:'SHA-256'},k,256)}).then(hex);
+  }
+  function makeConfig(login,pw){
+    var salt=window.crypto.getRandomValues(new Uint8Array(16)), iter=200000;
+    return derive(login,pw,salt,iter).then(function(h){return 'window.M28_CONFIG = '+JSON.stringify({v:1,salt:hex(salt),iter:iter,hash:h})+';\n'});
+  }
+  function verifyLogin(login,pw){return derive(login,pw,unhex(CFG.salt),CFG.iter).then(function(h){return h===CFG.hash})}
+
   function platformUrl(){
-    return (settings.url && settings.url.trim()) || DEFAULT_URL || (function(){try{return location.href.split('#')[0]+'#malumot'}catch(e){return ''}})();
+    return (settings.url && settings.url.trim()) || DEFAULT_URL || (function(){try{return location.href}catch(e){return ''}})();
   }
   function toast(t){var el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(function(){el.classList.remove('show')},2400)}
   function setMsg(sel,t,c){var m=$(sel);m.textContent=t;m.className='msg '+(c||'');clearTimeout(m._t);if(t&&c==='ok')m._t=setTimeout(function(){m.textContent=''},3500)}
@@ -3121,43 +3161,89 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function hideAll(){['#authView','#appView','#infoView'].forEach(function(s){$(s).classList.add('hidden')})}
   function showAuth(){
     hideAll(); $('#authView').classList.remove('hidden');
-    setupMode = !cred;
-    $('#authTitle').textContent = setupMode ? "Login va parol o'rnating" : 'Kirish';
-    $('#authSub').textContent = setupMode ? "Birinchi kirish: o'zingiz uchun login va parol yarating" : (settings.school+' platformasi');
-    $('#authBtn').textContent = setupMode ? "O'rnatish va kirish" : 'Kirish';
-    $('#aPass2Wrap').classList.toggle('hidden', !setupMode);
-    $('#aPass').autocomplete = setupMode ? 'new-password' : 'current-password';
-    $('#aLogin').value=''; $('#aPass').value=''; $('#aPass2').value=''; $('#authMsg').textContent='';
+    setupMode = (mode==='local' && !cred);
+    var title='Kirish', sub=settings.school+' platformasi', btn='Kirish', two=false;
+    if(setupMode){title="Login va parol o'rnating";sub="Birinchi kirish: o'zingiz uchun login va parol yarating";btn="O'rnatish va kirish";two=true}
+    if(mode==='setup'){title="Parolni birinchi marta yarating";sub="Parol GitHub'dagi config.js faylida saqlanadi. Shundan keyin boshqalar uni qayta o'rnata olmaydi.";btn="config.js yaratish";two=true}
+    $('#authTitle').textContent=title; $('#authSub').textContent=sub; $('#authBtn').textContent=btn;
+    $('#aPass2Wrap').classList.toggle('hidden', !two);
+    $('#aPass').autocomplete = two ? 'new-password' : 'current-password';
+    $('#aLogin').value=''; $('#aPass').value=''; $('#aPass2').value=''; $('#authMsg').textContent=''; $('#authCfg').innerHTML='';
   }
   function showApp(){
     hideAll(); $('#appView').classList.remove('hidden');
     $('#brandName').textContent = settings.school+' platformasi';
-    renderCred(); fillSettings(); loadSlotToForm(); renderSlots(); renderSheet(); renderLog(); fit();
+    $('#localCred').classList.toggle('hidden', mode!=='local');
+    $('#lockedCred').classList.toggle('hidden', mode==='local');
+    if(mode==='local') renderCred();
+    fillSettings(); loadSlotToForm(); renderSlots(); renderSheet(); renderLog(); fit();
+  }
+  function unb64u(s){
+    s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='=';
+    var bin=atob(s), arr=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+    return new TextDecoder().decode(arr);
+  }
+  function b64u(str){
+    var bytes=new TextEncoder().encode(str), s=''; for(var i=0;i<bytes.length;i++) s+=String.fromCharCode(bytes[i]);
+    return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  function readPayload(){
+    var h=''; try{h=location.hash}catch(e){}
+    if(h.indexOf('#x=')!==0) return null;
+    try{var a=unb64u(h.slice(3)).split('\n'); return {name:a[0]||'',cls:a[1]||'',parent:a[2]||'',reason:a[3]||'',date:a[4]||''}}catch(e){return null}
   }
   function showInfo(){
     hideAll(); $('#infoView').classList.remove('hidden');
-    $('#infoTitle').textContent=settings.school;
-    $('#infoAdm').innerHTML=settings.admins.filter(function(a){return a.name&&a.name.trim()}).map(function(a){
+    var pl=readPayload();
+    $('#infoTitle').textContent = pl ? 'Ogohlantirish xati' : settings.school;
+    $('#infoSub').textContent = pl ? settings.school : "Maktab ma'muriyati";
+    function row(k,v){return v?'<div class="adm"><span>'+k+'</span><b>'+esc(String(v).slice(0,300))+'</b></div>':''}
+    $('#infoData').innerHTML = pl ? (row("O'quvchi",pl.name)+row('Sinf',pl.cls)+row('Ota-onasi',pl.parent)+row('Sababi',pl.reason)+row('Sana',fmtDate(pl.date))) : '';
+    var adm=settings.admins.filter(function(a){return a.name&&a.name.trim()}).map(function(a){
       return '<div class="adm">'+(a.role?'<span>'+esc(a.role)+'</span>':'')+'<b>'+esc(a.name)+'</b></div>';
     }).join('');
+    $('#infoAdm').innerHTML = (pl?'<p class="sub" style="margin:18px 0 4px">Maktab ma\'muriyati</p>':'')+adm;
   }
   function authMsg(t,cls){var m=$('#authMsg');m.textContent=t;m.className='msg '+(cls||'')}
 
   $('#authForm').addEventListener('submit',function(e){
     e.preventDefault();
     var l=$('#aLogin').value.trim(), p=$('#aPass').value;
-    if(setupMode){
-      if(l.length<3) return authMsg("Login kamida 3 ta belgi bo'lsin",'err');
-      if(p.length<4) return authMsg("Parol kamida 4 ta belgi bo'lsin",'err');
-      if(p!==$('#aPass2').value) return authMsg("Parollar mos kelmadi",'err');
-      cred={login:l,password:p}; lset('m28_cred',JSON.stringify(cred)); sset('m28_auth','1'); showApp();
-    } else {
-      if(l===cred.login && p===cred.password){ sset('m28_auth','1'); showApp(); }
+    if(mode==='local'){
+      if(setupMode){
+        if(l.length<3) return authMsg("Login kamida 3 ta belgi bo'lsin",'err');
+        if(p.length<4) return authMsg("Parol kamida 4 ta belgi bo'lsin",'err');
+        if(p!==$('#aPass2').value) return authMsg("Parollar mos kelmadi",'err');
+        cred={login:l,password:p}; lset('m28_cred',JSON.stringify(cred)); sset('m28_auth','1'); showApp();
+      } else if(l===cred.login && p===cred.password){ sset('m28_auth','1'); showApp(); }
       else authMsg("Login yoki parol noto'g'ri",'err');
+    } else if(mode==='locked'){
+      authMsg('Tekshirilmoqda...','');
+      verifyLogin(l,p).then(function(ok){
+        if(ok){sset('m28_auth','1');showApp()} else authMsg("Login yoki parol noto'g'ri",'err');
+      },function(){authMsg("Bu brauzerda tekshirib bo'lmadi (https manzil kerak)",'err')});
+    } else {
+      if(l.length<3) return authMsg("Login kamida 3 ta belgi bo'lsin",'err');
+      if(p.length<6) return authMsg("Parol kamida 6 ta belgi bo'lsin",'err');
+      if(p!==$('#aPass2').value) return authMsg("Parollar mos kelmadi",'err');
+      makeConfig(l,p).then(function(t){authMsg('Tayyor. Quyidagi qadamlarni bajaring.','ok');showCfgOut('#authCfg',t)},
+        function(){authMsg("Bu brauzerda shifrlash ishlamaydi (https manzil kerak)",'err')});
     }
   });
+  function showCfgOut(sel,text){
+    var box=$(sel);
+    box.innerHTML='<label class="fl">Tayyor config.js mazmuni</label>'+
+      '<textarea class="inp" readonly rows="4" style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px"></textarea>'+
+      '<div class="actions"><button class="btn sm" type="button" data-a="copy">Nusxa olish</button><button class="btn ghost sm" type="button" data-a="dl">config.js yuklab olish</button></div>'+
+      '<ol class="steps"><li>GitHub\'da repozitoriyingizni oching. <b>config.js</b> fayli bo\'lsa, uni oching va qalam (Edit) belgisini bosing. Bo\'lmasa <b>Add file → Create new file</b> orqali shu nom bilan yarating.</li>'+
+      '<li>Ichidagi hamma matnni yuqoridagi matn bilan almashtirib, <b>Commit changes</b> ni bosing.</li>'+
+      '<li>Vercel 20–30 soniyada saytni yangilaydi. Sahifani yangilang. Endi faqat shu login va parol ishlaydi.</li></ol>';
+    box.querySelector('textarea').value=text;
+    box.querySelector('[data-a=copy]').onclick=function(){copyText(text,'Nusxa olindi')};
+    box.querySelector('[data-a=dl]').onclick=function(){saveFile('config.js',text).then(function(){toast('config.js saqlandi')},function(e){toast(saveErr(e))})};
+  }
   $('#logoutBtn').addEventListener('click',function(){sdel('m28_auth');showAuth()});
-  $('#infoStaff').addEventListener('click',function(){ if(!cred||sget('m28_auth')!=='1') showAuth(); else showApp(); });
+  $('#infoStaff').addEventListener('click',function(){ try{history.replaceState(null,'',location.pathname+location.search)}catch(e){} if(sget('m28_auth')==='1') showApp(); else showAuth(); });
 
   /* ---------- tabs ---------- */
   function goTab(t){
@@ -3167,6 +3253,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     window.scrollTo(0,0);
   }
   $$('nav.tabs [data-tab]').forEach(function(b){b.addEventListener('click',function(){goTab(b.getAttribute('data-tab'))})});
+
+  $('#chgBtn').addEventListener('click',function(){
+    var l=$('#n_login').value.trim(), p=$('#n_pass').value;
+    if(l.length<3) return setMsg('#chgMsg',"Login kamida 3 ta belgi bo'lsin",'err');
+    if(p.length<6) return setMsg('#chgMsg',"Parol kamida 6 ta belgi bo'lsin",'err');
+    if(p!==$('#n_pass2').value) return setMsg('#chgMsg',"Parollar mos kelmadi",'err');
+    makeConfig(l,p).then(function(t){showCfgOut('#setCfg',t);setMsg('#chgMsg','Tayyor. Quyidagi qadamlarni bajaring.','ok')},
+      function(){setMsg('#chgMsg',"Bu brauzerda shifrlash ishlamaydi (https manzil kerak)",'err')});
+  });
 
   /* ---------- credentials in settings ---------- */
   var pwShown=false;
@@ -3270,10 +3365,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       '<div class="l-sign"><span class="lb">Sinf rahbari imzosi:</span><span class="fill"></span></div>'+
       '<div class="l-foot">'+
         '<div class="l-adm"><div class="t">Maktab ma\'muriyati</div>'+admins+'</div>'+
-        '<div class="l-qr">'+qr+'<div class="c">Platformamiz.<br>QR kodni skanerlang</div></div>'+
+        '<div class="l-qr">'+qr+'<div class="c">Xat ma\'lumoti va platforma.<br>QR kodni skanerlang</div></div>'+
       '</div></div>';
   }
-  function sheetInner(){var qr=qrSvg(platformUrl());return slots.map(function(s){return letterHTML(s,qr)}).join('')}
+  function letterQrUrl(f){
+    var base=platformUrl().split('#')[0];
+    if(!(f.name||f.cls||f.parent||f.reason)) return platformUrl();
+    var reason=f.reason.length>90 ? f.reason.slice(0,88)+'…' : f.reason;
+    return base+'#x='+b64u([f.name,f.cls,f.parent,reason,f.date].join('\n'));
+  }
+  function sheetInner(){return slots.map(function(s){return letterHTML(s,qrSvg(letterQrUrl(s)))}).join('')}
   function renderSheet(){
     $('#sheet').innerHTML=sheetInner();
     $$('#sheet .letter').forEach(function(el,i){ if(i===cur) el.classList.add('sel'); });
@@ -3338,19 +3439,47 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     $('#logCount').textContent = all.length? ("Jami: "+all.length+" ta xat"+(rows.length!==all.length?" · ko'rsatilgan: "+rows.length:"")) : '';
     $('#logBody').innerHTML = rows.length ? rows.map(function(e){
       var n=counts[personKey(e)];
-      return '<tr><td>'+esc(fmtDate(e.date))+'</td><td><b>'+esc(e.name)+'</b></td><td>'+esc(e.cls)+'</td><td>'+esc(e.parent)+'</td><td>'+esc(e.reason)+'</td>'+
+      return '<tr class="rowlink" data-open="'+esc(e.id)+'"><td><input type="checkbox" data-sel="'+esc(e.id)+'"'+(selected[e.id]?' checked':'')+'></td>'+
+             '<td>'+esc(fmtDate(e.date))+'</td><td><b class="lnk">'+esc(e.name)+'</b></td><td>'+esc(e.cls)+'</td><td>'+esc(e.parent)+'</td><td>'+esc(e.reason)+'</td>'+
              '<td><span class="badge'+(n>=3?' warn':'')+'">'+n+' marta</span></td>'+
-             '<td style="white-space:nowrap"><button class="mini" data-load="'+esc(e.id)+'">Xatga yuklash</button><button class="mini" style="color:var(--danger)" data-rm="'+esc(e.id)+'">O\'chirish</button></td></tr>';
-    }).join('') : '<tr><td colspan="7"><div class="empty">'+(all.length?"Hech narsa topilmadi.":"Hozircha xat yo'q. Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.")+'</div></td></tr>';
-    $$('#logBody [data-load]').forEach(function(b){b.addEventListener('click',function(){
-      var e=loadLog().filter(function(x){return x.id===b.dataset.load})[0]; if(!e) return;
-      slots[cur]={name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date}; saveSlots();
-      goTab('letter'); loadSlotToForm(); renderSlots(); renderSheet(); setMsg('#letMsg',(cur+1)+"-xatga yuklandi",'ok');
+             '<td><button class="mini" style="color:var(--danger)" data-rm="'+esc(e.id)+'">O\'chirish</button></td></tr>';
+    }).join('') : '<tr><td colspan="8"><div class="empty">'+(all.length?"Hech narsa topilmadi.":"Hozircha xat yo'q. Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.")+'</div></td></tr>';
+    $$('#logBody tr[data-open]').forEach(function(tr){tr.addEventListener('click',function(e){
+      if(e.target.closest('input,button')) return; openEntries([tr.dataset.open]);
+    })});
+    $$('#logBody [data-sel]').forEach(function(cb){cb.addEventListener('change',function(){
+      if(cb.checked){
+        if(selCount()>=4){cb.checked=false;return toast("Bir varaqda 4 tadan ortiq xat bo'lmaydi")}
+        selected[cb.dataset.sel]=true;
+      } else delete selected[cb.dataset.sel];
+      updSel();
     })});
     $$('#logBody [data-rm]').forEach(function(b){b.addEventListener('click',function(){
-      saveLog(loadLog().filter(function(x){return x.id!==b.dataset.rm})); renderLog();
+      delete selected[b.dataset.rm]; saveLog(loadLog().filter(function(x){return x.id!==b.dataset.rm})); renderLog();
     })});
+    updSel();
   }
+  var selected={};
+  function selCount(){return Object.keys(selected).length}
+  function updSel(){var n=selCount(),b=$('#selLoad');b.disabled=!n;b.textContent="Tanlanganlarni xatga joylash ("+n+")"}
+  function toSlot(e){return {name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date}}
+  function openEntries(ids){
+    var log=loadLog(), es=ids.map(function(id){return log.filter(function(x){return x.id===id})[0]}).filter(Boolean);
+    if(!es.length) return;
+    if(es.length===1){
+      var t0=toSlot(es[0]), i=-1;
+      for(var k=0;k<4;k++){ if(JSON.stringify(slots[k])===JSON.stringify(t0)){i=k;break} }
+      if(i<0){ for(var k2=0;k2<4;k2++){ if(!slots[k2].name){i=k2;break} } }
+      if(i<0) i=cur;
+      slots[i]=t0; cur=i;
+    } else {
+      slots=[emptySlot(),emptySlot(),emptySlot(),emptySlot()];
+      es.slice(0,4).forEach(function(e,k){slots[k]=toSlot(e)}); cur=0;
+    }
+    saveSlots(); goTab('letter'); loadSlotToForm(); renderSlots(); renderSheet();
+    setMsg('#letMsg', es.length===1 ? ((cur+1)+"-xatda ochildi") : (es.length+" ta xat A4 varaqqa joylandi"), 'ok');
+  }
+  $('#selLoad').addEventListener('click',function(){var ids=Object.keys(selected);selected={};openEntries(ids)});
   $('#q').addEventListener('input',renderLog); $('#qClass').addEventListener('change',renderLog);
   var wipeArmed=false;
   $('#wipeBtn').addEventListener('click',function(){
@@ -3416,9 +3545,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   window.addEventListener('beforeprint',function(){renderSheet()});
 
   /* ---------- start ---------- */
-  var infoMode=false; try{infoMode=(location.hash==='#malumot')}catch(e){}
+  var infoMode=false; try{infoMode=(location.hash==='#malumot'||location.hash.indexOf('#x=')===0)}catch(e){}
   if(infoMode) showInfo();
-  else if(!cred) showAuth();
+  else if(mode==='setup') showAuth();
+  else if(mode==='local' && !cred) showAuth();
   else if(sget('m28_auth')==='1') showApp();
   else showAuth();
 })();
