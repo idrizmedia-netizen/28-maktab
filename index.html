@@ -422,7 +422,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
               <ol class="steps">
                 <li>Platforma joylashgan sahifadagi ulashish (Share) sozlamasidan "havolasi bor har kim ko'ra oladi" turini yoqing.</li>
                 <li>Yoki bu faylni maktabning o'z saytiga (hosting) qo'yib, uning manzilini yuqoriga yozing.</li>
-                <li>Har bir xatdagi QR kodga o'quvchi ma'lumoti (ismi, sinfi, ota-onasi, sababi qisqacha, sanasi) ham joylanadi. Skanerlaganda login so'ramaydigan sahifada shu ma'lumot va ma'muriyat ko'rinadi.</li>
+                <li>Har bir xatdagi QR kodga faqat o'quvchi yoki o'qituvchining ismi va sanasi joylanadi (sinf, ota-ona va sabab kabi maxfiy ma'lumotlar QR ichida bo'lmaydi). Skanerlaganda login so'ramaydigan sahifada shu ism, sana va maktab ma'muriyati ko'rinadi.</li>
               </ol></div>
             <div class="actions"><button class="btn" id="saveSet">Saqlash</button></div>
             <div class="msg" id="setMsg"></div>
@@ -3564,7 +3564,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       '<div class="l-sign"><span class="lb">Sinf rahbari imzosi:</span><span class="fill"></span></div>'+
       '<div class="l-foot">'+
         '<div class="l-adm"><div class="t">Maktab ma\'muriyati</div>'+admins+'</div>'+
-        '<div class="l-qr">'+qr+'<div class="c">Xat ma\'lumoti va platforma.<br>QR kodni skanerlang</div></div>'+
+        '<div class="l-qr">'+qr+'<div class="c">Xat va maktab ma\'muriyati.<br>QR kodni skanerlang</div></div>'+
       '</div></div>';
   }
   /* Tayyor shablonlar QR ga qisqa belgi (~guruh.raqam) bilan yoziladi, shunda to'liq sabab kichik QR ga sig'adi. TPL tartibini o'zgartirmang, faqat oxiriga qo'shing. */
@@ -3582,10 +3582,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   function letterQrUrl(f){
     var base=platformUrl().split('#')[0];
-    if(!(f.name||f.cls||f.parent||f.reason)) return platformUrl();
-    var reason=packReason(f.reason);
-    if(reason.length>110) reason=reason.slice(0,108)+'…';
-    return base+'#x='+b64u([f.name,f.cls,f.parent,reason,f.date].join('\n'));
+    /* maxfiylik: QR ga faqat o'quvchi ismi va sana joylanadi (sinf, ota-ona va sabab yo'q) */
+    if(!f.name) return platformUrl();
+    return base+'#x='+b64u([f.name,'','','',f.date].join('\n'));
   }
   function sheetInner(){return slots.map(function(s){return letterHTML(s,qrSvg(letterQrUrl(s)))}).join('')}
   function renderSheet(){
@@ -3825,9 +3824,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function tCount(){var n=$('#t_issue').value.length,el=$('#tIssueCnt');el.textContent=n+' / 280';el.style.color=n>240?'var(--danger)':''}
   function tLetterQrUrl(f){
     var base=platformUrl().split('#')[0];
-    if(!(f.name||f.subject||f.issue)) return platformUrl();
-    var issue=f.issue.replace(/\s+/g,' ').trim(); if(issue.length>200) issue=issue.slice(0,198)+'…';
-    return base+'#t='+b64u([f.name,f.subject,issue,f.date,f.signer].join('\n'));
+    /* maxfiylik: QR ga faqat o'qituvchi ismi va sana joylanadi (fan, holat va imzolovchi yo'q) */
+    if(!f.name) return platformUrl();
+    return base+'#t='+b64u([f.name,'','',f.date,''].join('\n'));
   }
   function tf(txt,cls){return '<span class="tf '+(cls||'')+'">'+(txt?esc(txt):'&nbsp;')+'</span>'}
   function tLetterHTML(f,qr){
@@ -3853,7 +3852,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         '<div class="tl-p" style="margin-top:6mm"><b>Ogohlantirish xati bilan tanishdim:</b></div>'+
         '<div class="tl-row"><span>O\'qituvchi F.I.Sh.</span>'+tf(f.name,'grow')+'<span>Imzo:</span>'+tf('','w32')+'</div>'+
         '<div class="tl-row"><span>Sana: "</span>'+bl('')+'<span>"</span>'+bl('','m')+'<span>202</span>'+bl('')+'<span>-yil.</span></div>'+
-      '</div><div class="tl-qr">'+qr+'<div class="c">Xat ma\'lumoti va sanasi.<br>QR kodni skanerlang</div></div></div>'+
+      '</div><div class="tl-qr">'+qr+'<div class="c">Xat va maktab ma\'muriyati.<br>QR kodni skanerlang</div></div></div>'+
     '</div>';
   }
   function tSheetInner(){return tLetterHTML(tl,qrSvg(tLetterQrUrl(tl)))}
