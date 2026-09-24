@@ -3171,6 +3171,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 //# sourceMappingURL=jspdf.umd.min.js.map
 
 </script>
+<!-- Firebase (xatlar ro'yxatini barcha qurilmalarda sinxronlash uchun) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 (function(){
   var DEFAULT_URL = "https://claude.ai/artifact/MPGQUet5jqaV77n1QeDmox#malumot";
@@ -3188,6 +3191,42 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function pad(n){return n<10?'0'+n:''+n}
   function todayISO(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
   function fmtDate(iso){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');return m?(m[3]+'.'+m[2]+'.'+m[1]):(iso||'')}
+
+  /* ---------- bulutli sinxronizatsiya (Firebase Firestore) ----------
+     Xatlar ro'yxati (m28_log, m28_tlog) shu orqali barcha qurilmalarda bir xil ko'rinadi.
+     PASTGA O'ZINGIZNING Firebase loyihangiz sozlamalarini yozing (Firebase Console → Project settings → Your apps → Config).
+     apiKey to'ldirilmasa, ilova avvalgidek faqat shu qurilmada (localStorage) ishlayveradi. */
+  var FIREBASE_CONFIG = {
+    apiKey: "",
+    authDomain: "",
+    projectId: "",
+    storageBucket: "",
+    messagingSenderId: "",
+    appId: ""
+  };
+  var db = null, cloudReady = false;
+  try{
+    if(FIREBASE_CONFIG.apiKey && window.firebase){
+      firebase.initializeApp(FIREBASE_CONFIG);
+      db = firebase.firestore();
+      cloudReady = true;
+    }
+  }catch(e){ console.warn('Firebase init xato:', e); db = null; }
+  function cloudDocId(key){ return 'm28_'+key; }
+  function cloudSave(key, arr){
+    if(!db) return;
+    db.collection('m28letters').doc(cloudDocId(key)).set({items: arr, updatedAt: Date.now()})
+      .catch(function(e){ console.warn('Bulutga saqlashda xato ('+key+'):', e); });
+  }
+  function cloudSync(key, onChange){
+    if(!db) return;
+    db.collection('m28letters').doc(cloudDocId(key)).onSnapshot(function(snap){
+      var data = snap.data();
+      var arr = (data && Array.isArray(data.items)) ? data.items : [];
+      lset('m28_'+key, JSON.stringify(arr));
+      onChange();
+    }, function(e){ console.warn('Bulutdan sinxronlashda xato ('+key+'):', e); });
+  }
 
   var DEF_ADMINS = [
     {role:"Direktor", name:"A.Norqobilov"},
@@ -3582,7 +3621,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
   /* ---------- registry ---------- */
   function loadLog(){var l=jparse(lget('m28_log'),[]);return Array.isArray(l)?l:[]}
-  function saveLog(l){lset('m28_log',JSON.stringify(l))}
+  function saveLog(l){lset('m28_log',JSON.stringify(l));cloudSave('log',l)}
   function logFilled(){
     var log=loadLog(), added=0;
     slots.forEach(function(s){
@@ -3772,7 +3811,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
   /* o'qituvchilar ro'yxati (o'quvchilardan alohida) */
   function loadTLog(){var l=jparse(lget('m28_tlog'),[]);return Array.isArray(l)?l:[]}
-  function saveTLog(l){lset('m28_tlog',JSON.stringify(l))}
+  function saveTLog(l){lset('m28_tlog',JSON.stringify(l));cloudSave('tlog',l)}
   function logTeacher(){
     if(!tl.name||!tl.name.trim()) return 0;
     var log=loadTLog(), d=tl.date||todayISO();
@@ -3861,6 +3900,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   window.addEventListener('beforeprint',function(){renderSheet();renderTSheet()});
 
   /* ---------- start ---------- */
+  if(cloudReady){
+    cloudSync('log', renderLog);
+    cloudSync('tlog', renderTLog);
+  }
   window.__syncChips=syncChips; renderTpl();
   var infoMode=false; try{infoMode=(location.hash==='#malumot'||location.hash.indexOf('#x=')===0||location.hash.indexOf('#t=')===0)}catch(e){}
   if(infoMode) showInfo();
