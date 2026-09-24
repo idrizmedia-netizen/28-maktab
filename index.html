@@ -93,6 +93,16 @@ main{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
 .note{font-size:13px;color:var(--muted);margin-top:10px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
 .toast.show{opacity:1}
+.gbtn{gap:12px;background:#fff;color:#1f1f1f;border:1px solid #dadce0;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.gbtn svg{width:20px;height:20px;flex:none}
+.gbtn:disabled{opacity:.6}
+.adm-line{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:15px;word-break:break-all}
+.adm-line:first-child{border-top:0}
+.adm-line .who{display:flex;flex-direction:column;gap:2px;min-width:0}
+.adm-line .who small{color:var(--muted);font-size:12px}
+.adm-line .rm{flex:none;border:1px solid var(--line);background:transparent;color:var(--danger);border-radius:10px;padding:6px 10px;font-weight:700;cursor:pointer}
+.add-row{display:flex;gap:8px;align-items:stretch}
+.add-row .inp{flex:1;min-width:0}
 
 /* ---------- letter (paper: always white/black) ---------- */
 .letter{width:105mm;height:148.5mm;padding:6mm 7mm 5mm;display:flex;flex-direction:column;font-family:"Times New Roman",Times,Georgia,serif;color:#000;font-size:10pt;overflow:hidden;background:#fff}
@@ -214,22 +224,12 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
     <div class="logo">28</div>
     <h1 id="authTitle">Kirish</h1>
     <p class="sub" id="authSub">28-maktab platformasi</p>
-    <form id="authForm" autocomplete="off">
-      <label class="fl" for="aLogin">Login</label>
-      <input class="inp" id="aLogin" autocomplete="username" autocapitalize="off" spellcheck="false">
-      <label class="fl" for="aPass">Parol</label>
-      <div class="pw">
-        <input class="inp" id="aPass" type="password" autocomplete="current-password">
-        <button type="button" data-toggle="aPass">Ko'rsatish</button>
-      </div>
-      <div id="aPass2Wrap" class="hidden">
-        <label class="fl" for="aPass2">Parolni takrorlang</label>
-        <input class="inp" id="aPass2" type="password" autocomplete="new-password">
-      </div>
-      <button class="btn block" id="authBtn" type="submit">Kirish</button>
-      <div class="msg" id="authMsg"></div>
-    </form>
-    <div id="authCfg"></div>
+    <button class="btn block gbtn" id="googleBtn" type="button">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      <span>Google orqali kirish</span>
+    </button>
+    <div class="msg" id="authMsg"></div>
+    <p class="note" style="text-align:center">Faqat admin ro'yxatidagi Google hisoblari kira oladi.</p>
   </div>
 </section>
 
@@ -383,33 +383,20 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
     <section id="tab-settings" class="hidden">
       <div class="settings-grid">
         <div>
-          <div class="card" id="localCred">
-            <h2>Login va parol</h2>
-            <p class="hint">Hozirgi kirish ma'lumotlari shu yerda ko'rinadi. O'zgartirish uchun yangisini yozib "Saqlash" ni bosing.</p>
-            <div class="cred-now">
-              <div><span class="k">Login</span><code id="curLogin">—</code></div>
-              <div><span class="k">Parol</span><span><code id="curPass">••••••</code> <button class="mini" id="eyeBtn" type="button">Ko'rsatish</button> <button class="mini" id="copyBtn" type="button">Nusxa</button></span></div>
+          <div class="card" id="adminCard">
+            <h2>Platforma adminlari</h2>
+            <p class="hint">Faqat shu ro'yxatdagi Google hisoblari platformaga kira oladi.</p>
+            <div class="cred-now"><div><span class="k">Siz kirgansiz</span><code id="meEmail">—</code></div></div>
+            <div id="adminList" style="margin-top:8px"></div>
+            <div id="adminAddBox" class="hidden">
+              <label class="fl" for="newAdmin">Yangi admin (Google / Gmail manzili)</label>
+              <div class="add-row">
+                <input class="inp" id="newAdmin" type="email" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="nom@gmail.com">
+                <button class="btn" id="addAdminBtn" type="button">Qo'shish</button>
+              </div>
             </div>
-            <label class="fl" for="s_login">Yangi login</label>
-            <input class="inp" id="s_login" autocapitalize="off" spellcheck="false">
-            <label class="fl" for="s_pass">Yangi parol</label>
-            <div class="pw"><input class="inp" id="s_pass" type="password"><button type="button" data-toggle="s_pass">Ko'rsatish</button></div>
-            <div class="actions"><button class="btn" id="saveCred">Saqlash</button></div>
-            <div class="msg" id="credMsg"></div>
-            <div class="note">Login va parol shu qurilmadagi brauzerda saqlanadi. Boshqa qurilmada birinchi kirishda qayta o'rnatiladi.</div>
-          </div>
-          <div class="card hidden" id="lockedCred">
-            <h2>Login va parol</h2>
-            <p class="hint">Parol xavfsizlik uchun shifrlangan holda GitHub'dagi <b>config.js</b> faylida saqlanadi. Shu sababli uni ko'rsatib bo'lmaydi va boshqa qurilmada qayta o'rnatib bo'lmaydi. Almashtirish uchun yangisini yozib, yangi config.js yarating.</p>
-            <label class="fl" for="n_login">Yangi login</label>
-            <input class="inp" id="n_login" autocapitalize="off" spellcheck="false">
-            <label class="fl" for="n_pass">Yangi parol</label>
-            <div class="pw"><input class="inp" id="n_pass" type="password"><button type="button" data-toggle="n_pass">Ko'rsatish</button></div>
-            <label class="fl" for="n_pass2">Parolni takrorlang</label>
-            <input class="inp" id="n_pass2" type="password">
-            <div class="actions"><button class="btn" id="chgBtn" type="button">config.js yaratish</button></div>
-            <div class="msg" id="chgMsg"></div>
-            <div id="setCfg"></div>
+            <div class="msg" id="adminMsg"></div>
+            <div class="note" id="adminNote"></div>
           </div>
         </div>
         <div>
@@ -3171,12 +3158,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 //# sourceMappingURL=jspdf.umd.min.js.map
 
 </script>
-<!-- Firebase (xatlar ro'yxatini barcha qurilmalarda sinxronlash uchun) -->
+<!-- Firebase: Google orqali kirish (Auth) + xatlar ro'yxatini sinxronlash (Firestore) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 (function(){
-  var DEFAULT_URL = "https://claude.ai/artifact/MPGQUet5jqaV77n1QeDmox#malumot";
+  var DEFAULT_URL = "https://28-maktab.vercel.app/#malumot";
   var $ = function(s){return document.querySelector(s)};
   var $$ = function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
   var mem = {}, memS = {};
@@ -3192,40 +3180,65 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function todayISO(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
   function fmtDate(iso){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');return m?(m[3]+'.'+m[2]+'.'+m[1]):(iso||'')}
 
-  /* ---------- bulutli sinxronizatsiya (Firebase Firestore) ----------
-     Xatlar ro'yxati (m28_log, m28_tlog) shu orqali barcha qurilmalarda bir xil ko'rinadi.
-     PASTGA O'ZINGIZNING Firebase loyihangiz sozlamalarini yozing (Firebase Console → Project settings → Your apps → Config).
-     apiKey to'ldirilmasa, ilova avvalgidek faqat shu qurilmada (localStorage) ishlayveradi. */
+  /* ---------- Firebase: Google orqali kirish + Firestore sinxronizatsiya ----------
+     Faqat admin ro'yxatidagi Google hisoblari kira oladi va xatlar ro'yxati barcha qurilmalarda bir xil ko'rinadi.
+     Asosiy admin OWNER_EMAIL. Qo'shimcha adminlar Firestore'dagi "admins" to'plamida saqlanadi. */
+  var OWNER_EMAIL = "idrizmedia@gmail.com";
   var FIREBASE_CONFIG = {
-    apiKey: "",
-    authDomain: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: ""
+    apiKey: "AIzaSyCyY4iguO742_S9Io843WK5GGHZFSYDPOc",
+    authDomain: "maktab-49da5.firebaseapp.com",
+    projectId: "maktab-49da5",
+    storageBucket: "maktab-49da5.firebasestorage.app",
+    messagingSenderId: "437130046048",
+    appId: "1:437130046048:web:27b0a43304507a1bc57105",
+    measurementId: "G-17G69680JC"
   };
-  var db = null, cloudReady = false;
+  var db = null, auth = null;
   try{
-    if(FIREBASE_CONFIG.apiKey && window.firebase){
+    if(window.firebase){
       firebase.initializeApp(FIREBASE_CONFIG);
       db = firebase.firestore();
-      cloudReady = true;
+      auth = firebase.auth();
     }
-  }catch(e){ console.warn('Firebase init xato:', e); db = null; }
+  }catch(e){ console.warn('Firebase init xato:', e); db = null; auth = null; }
+
+  var curUser = null, isOwner = false, unsubs = [], synced = {};
   function cloudDocId(key){ return 'm28_'+key; }
   function cloudSave(key, arr){
-    if(!db) return;
-    db.collection('m28letters').doc(cloudDocId(key)).set({items: arr, updatedAt: Date.now()})
-      .catch(function(e){ console.warn('Bulutga saqlashda xato ('+key+'):', e); });
+    if(!db || !curUser) return;
+    db.collection('m28letters').doc(cloudDocId(key)).set({items: arr, updatedAt: Date.now(), updatedBy: curUser.email})
+      .catch(function(e){ console.warn('Bulutga saqlashda xato ('+key+'):', e); toast("Bulutga saqlab bo'lmadi. Internetni tekshiring"); });
   }
   function cloudSync(key, onChange){
     if(!db) return;
-    db.collection('m28letters').doc(cloudDocId(key)).onSnapshot(function(snap){
+    var first = true;
+    var un = db.collection('m28letters').doc(cloudDocId(key)).onSnapshot(function(snap){
+      var localArr = jparse(lget('m28_'+key), []);
+      if(!snap.exists){
+        /* bulutda hali hech narsa yo'q: shu qurilmadagi eski ma'lumotni bulutga ko'chiramiz */
+        if(first && Array.isArray(localArr) && localArr.length){ first = false; cloudSave(key, localArr); return; }
+        first = false; synced[key] = true; lset('m28_'+key, '[]'); onChange(); return;
+      }
+      first = false; synced[key] = true;
       var data = snap.data();
       var arr = (data && Array.isArray(data.items)) ? data.items : [];
       lset('m28_'+key, JSON.stringify(arr));
       onChange();
     }, function(e){ console.warn('Bulutdan sinxronlashda xato ('+key+'):', e); });
+    unsubs.push(un);
+  }
+  function startCloud(){
+    stopCloud(true);
+    cloudSync('log', function(){ renderLog() });
+    cloudSync('tlog', function(){ renderTLog() });
+  }
+  function stopCloud(keepLocal){
+    unsubs.forEach(function(u){ try{u()}catch(e){} }); unsubs = [];
+    if(!keepLocal){
+      /* umumiy kompyuterda o'quvchi ma'lumoti qolib ketmasin (faqat bulutga saqlanganlari o'chiriladi) */
+      ['log','tlog'].forEach(function(k){ if(synced[k]){ lset('m28_'+k, '[]'); } });
+      synced = {};
+    }
   }
 
   var DEF_ADMINS = [
@@ -3238,24 +3251,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   if(!settings.school) settings.school = "28-maktab";
   if(!settings.schoolFull) settings.schoolFull = "28-sonli umumiy o'rta ta'lim maktabi";
   if(!Array.isArray(settings.admins)) settings.admins = JSON.parse(JSON.stringify(DEF_ADMINS));
-  var cred = jparse(lget('m28_cred'), null);
-
-  /* mode: 'local' (config.js yo'q, har qurilmada alohida), 'locked' (config.js da parol xeshi bor), 'setup' (parol hali yaratilmagan) */
-  var CFG = window.M28_CONFIG;
-  var mode = (CFG===undefined) ? 'local' : ((CFG && CFG.hash) ? 'locked' : 'setup');
-  function hex(buf){return Array.prototype.map.call(new Uint8Array(buf),function(b){return ('0'+b.toString(16)).slice(-2)}).join('')}
-  function unhex(h){var a=new Uint8Array(h.length/2);for(var i=0;i<a.length;i++)a[i]=parseInt(h.substr(i*2,2),16);return a}
-  function derive(login,pw,salt,iter){
-    var subtle=window.crypto&&window.crypto.subtle; if(!subtle) return Promise.reject(new Error('nocrypto'));
-    var enc=new TextEncoder();
-    return subtle.importKey('raw',enc.encode(login.trim().toLowerCase()+'\n'+pw),'PBKDF2',false,['deriveBits'])
-      .then(function(k){return subtle.deriveBits({name:'PBKDF2',salt:salt,iterations:iter,hash:'SHA-256'},k,256)}).then(hex);
-  }
-  function makeConfig(login,pw){
-    var salt=window.crypto.getRandomValues(new Uint8Array(16)), iter=200000;
-    return derive(login,pw,salt,iter).then(function(h){return 'window.M28_CONFIG = '+JSON.stringify({v:1,salt:hex(salt),iter:iter,hash:h})+';\n'});
-  }
-  function verifyLogin(login,pw){return derive(login,pw,unhex(CFG.salt),CFG.iter).then(function(h){return h===CFG.hash})}
 
   function platformUrl(){
     return (settings.url && settings.url.trim()) || DEFAULT_URL || (function(){try{return location.href}catch(e){return ''}})();
@@ -3289,27 +3284,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     });
   });
 
-  /* ---------- AUTH ---------- */
-  var setupMode = false;
+  /* ---------- AUTH (Google) ---------- */
+  var infoActive = false, pendingDenied = '';
   function hideAll(){['#authView','#appView','#infoView'].forEach(function(s){$(s).classList.add('hidden')})}
   function showAuth(){
     hideAll(); $('#authView').classList.remove('hidden');
-    setupMode = (mode==='local' && !cred);
-    var title='Kirish', sub=settings.school+' platformasi', btn='Kirish', two=false;
-    if(setupMode){title="Login va parol o'rnating";sub="Birinchi kirish: o'zingiz uchun login va parol yarating";btn="O'rnatish va kirish";two=true}
-    if(mode==='setup'){title="Parolni birinchi marta yarating";sub="Parol GitHub'dagi config.js faylida saqlanadi. Shundan keyin boshqalar uni qayta o'rnata olmaydi.";btn="config.js yaratish";two=true}
-    $('#authTitle').textContent=title; $('#authSub').textContent=sub; $('#authBtn').textContent=btn;
-    $('#aPass2Wrap').classList.toggle('hidden', !two);
-    $('#aPass').autocomplete = two ? 'new-password' : 'current-password';
-    $('#aLogin').value=''; $('#aPass').value=''; $('#aPass2').value=''; $('#authMsg').textContent=''; $('#authCfg').innerHTML='';
+    $('#authTitle').textContent = 'Kirish';
+    $('#authSub').textContent = settings.school+' platformasi';
+    $('#googleBtn').disabled = false;
+    $('#authMsg').textContent = ''; $('#authMsg').className = 'msg';
   }
   function showApp(){
     hideAll(); $('#appView').classList.remove('hidden');
     $('#brandName').textContent = settings.school+' platformasi';
-    $('#localCred').classList.toggle('hidden', mode!=='local');
-    $('#lockedCred').classList.toggle('hidden', mode==='local');
-    if(mode==='local') renderCred();
     fillSettings(); loadSlotToForm(); renderSlots(); renderSheet(); renderLog(); fillSigner(); loadTlToForm(); renderTSheet(); renderTLog(); fit();
+    loadAdmins();
   }
   function unb64u(s){
     s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='=';
@@ -3344,82 +3333,108 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   function authMsg(t,cls){var m=$('#authMsg');m.textContent=t;m.className='msg '+(cls||'')}
 
-  $('#authForm').addEventListener('submit',function(e){
-    e.preventDefault();
-    var l=$('#aLogin').value.trim(), p=$('#aPass').value;
-    if(mode==='local'){
-      if(setupMode){
-        if(l.length<3) return authMsg("Login kamida 3 ta belgi bo'lsin",'err');
-        if(p.length<4) return authMsg("Parol kamida 4 ta belgi bo'lsin",'err');
-        if(p!==$('#aPass2').value) return authMsg("Parollar mos kelmadi",'err');
-        cred={login:l,password:p}; lset('m28_cred',JSON.stringify(cred)); sset('m28_auth','1'); showApp();
-      } else if(l===cred.login && p===cred.password){ sset('m28_auth','1'); showApp(); }
-      else authMsg("Login yoki parol noto'g'ri",'err');
-    } else if(mode==='locked'){
-      authMsg('Tekshirilmoqda...','');
-      verifyLogin(l,p).then(function(ok){
-        if(ok){sset('m28_auth','1');showApp()} else authMsg("Login yoki parol noto'g'ri",'err');
-      },function(){authMsg("Bu brauzerda tekshirib bo'lmadi (https manzil kerak)",'err')});
-    } else {
-      if(l.length<3) return authMsg("Login kamida 3 ta belgi bo'lsin",'err');
-      if(p.length<6) return authMsg("Parol kamida 6 ta belgi bo'lsin",'err');
-      if(p!==$('#aPass2').value) return authMsg("Parollar mos kelmadi",'err');
-      makeConfig(l,p).then(function(t){authMsg('Tayyor. Quyidagi qadamlarni bajaring.','ok');showCfgOut('#authCfg',t)},
-        function(){authMsg("Bu brauzerda shifrlash ishlamaydi (https manzil kerak)",'err')});
-    }
+  $('#googleBtn').addEventListener('click',function(){
+    if(!auth) return authMsg("Firebase yuklanmadi. Internetni tekshirib sahifani yangilang",'err');
+    var p = new firebase.auth.GoogleAuthProvider();
+    p.setCustomParameters({prompt:'select_account'});
+    var b = this; b.disabled = true; authMsg('Google oynasi ochilmoqda...','');
+    auth.signInWithPopup(p).catch(function(e){
+      b.disabled = false;
+      var c = e && e.code;
+      if(c==='auth/popup-blocked' || c==='auth/operation-not-supported-in-this-environment') return auth.signInWithRedirect(p);
+      if(c==='auth/popup-closed-by-user' || c==='auth/cancelled-popup-request') return authMsg('Kirish bekor qilindi','');
+      if(c==='auth/unauthorized-domain') return authMsg("Bu sayt manzili Firebase'da ruxsat etilmagan (Authentication → Settings → Authorized domains)",'err');
+      if(c==='auth/operation-not-allowed') return authMsg("Firebase'da Google orqali kirish yoqilmagan",'err');
+      authMsg('Kirishda xato: '+(c||e.message),'err');
+    });
   });
-  function showCfgOut(sel,text){
-    var box=$(sel);
-    box.innerHTML='<label class="fl">Tayyor config.js mazmuni</label>'+
-      '<textarea class="inp" readonly rows="4" style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px"></textarea>'+
-      '<div class="actions"><button class="btn sm" type="button" data-a="copy">Nusxa olish</button><button class="btn ghost sm" type="button" data-a="dl">config.js yuklab olish</button></div>'+
-      '<ol class="steps"><li>GitHub\'da repozitoriyingizni oching. <b>config.js</b> fayli bo\'lsa, uni oching va qalam (Edit) belgisini bosing. Bo\'lmasa <b>Add file → Create new file</b> orqali shu nom bilan yarating.</li>'+
-      '<li>Ichidagi hamma matnni yuqoridagi matn bilan almashtirib, <b>Commit changes</b> ni bosing.</li>'+
-      '<li>Vercel 20–30 soniyada saytni yangilaydi. Sahifani yangilang. Endi faqat shu login va parol ishlaydi.</li></ol>';
-    box.querySelector('textarea').value=text;
-    box.querySelector('[data-a=copy]').onclick=function(){copyText(text,'Nusxa olindi')};
-    box.querySelector('[data-a=dl]').onclick=function(){saveFile('config.js',text).then(function(){toast('config.js saqlandi')},function(e){toast(saveErr(e))})};
+
+  function checkAdmin(user){
+    var em = (user.email||'').toLowerCase();
+    if(!user.emailVerified || !em) return Promise.resolve(false);
+    if(em === OWNER_EMAIL) return Promise.resolve(true);
+    return db.collection('admins').doc(em).get().then(function(s){return s.exists},function(e){console.warn('Admin tekshiruvi xato:',e);return false});
   }
-  $('#logoutBtn').addEventListener('click',function(){sdel('m28_auth');showAuth()});
-  $('#infoStaff').addEventListener('click',function(){ try{history.replaceState(null,'',location.pathname+location.search)}catch(e){} if(sget('m28_auth')==='1') showApp(); else showAuth(); });
+  var authSeq = 0;
+  function onUser(user){
+    var seq = ++authSeq;
+    stopCloud(false); curUser = null; isOwner = false;
+    if(!user){
+      if(!infoActive){
+        showAuth();
+        if(pendingDenied){ authMsg(pendingDenied+" — admin ro'yxatida yo'q. Asosiy admin sizni qo'shishi kerak.",'err'); pendingDenied=''; }
+      }
+      return;
+    }
+    if(!infoActive){ hideAll(); $('#authView').classList.remove('hidden'); $('#googleBtn').disabled = true; authMsg('Tekshirilmoqda...',''); }
+    checkAdmin(user).then(function(ok){
+      if(seq !== authSeq) return;
+      if(!ok){ pendingDenied = user.email || 'Bu hisob'; auth.signOut(); return; }
+      curUser = user; isOwner = (user.email||'').toLowerCase() === OWNER_EMAIL;
+      startCloud();
+      if(!infoActive) showApp();
+    });
+  }
+  $('#logoutBtn').addEventListener('click',function(){ if(auth) auth.signOut(); else showAuth(); });
+  $('#infoStaff').addEventListener('click',function(){
+    try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
+    infoActive = false;
+    if(curUser) showApp(); else showAuth();
+  });
+
+  /* ---------- adminlar boshqaruvi ---------- */
+  var adminsList = [];
+  function renderAdminCard(){
+    $('#meEmail').textContent = curUser ? curUser.email : '—';
+    $('#adminAddBox').classList.toggle('hidden', !isOwner);
+    $('#adminNote').textContent = isOwner ? '' : "Adminlarni faqat asosiy admin ("+OWNER_EMAIL+") qo'shishi va o'chirishi mumkin.";
+    var html = '<div class="adm-line"><div class="who"><b>'+esc(OWNER_EMAIL)+'</b><small>Asosiy admin</small></div></div>';
+    adminsList.forEach(function(a){
+      html += '<div class="adm-line"><div class="who"><b>'+esc(a.email)+'</b><small>Admin'+(a.addedBy?' · qo\'shgan: '+esc(a.addedBy):'')+'</small></div>'+
+              (isOwner?'<button class="rm" type="button" data-rm="'+esc(a.email)+'">O\'chirish</button>':'')+'</div>';
+    });
+    $('#adminList').innerHTML = html;
+    $$('#adminList [data-rm]').forEach(function(b){
+      b.addEventListener('click',function(){
+        var em = b.getAttribute('data-rm');
+        if(!window.confirm(em+" adminlikdan olinsinmi?")) return;
+        db.collection('admins').doc(em).delete().then(function(){ setMsg('#adminMsg','Admin olib tashlandi','ok'); loadAdmins() },
+          function(){ setMsg('#adminMsg',"O'chirib bo'lmadi (ruxsat yo'q yoki internet)",'err') });
+      });
+    });
+  }
+  function loadAdmins(){
+    renderAdminCard();
+    if(!db || !curUser) return;
+    db.collection('admins').get().then(function(qs){
+      adminsList = qs.docs.map(function(d){ var x = d.data()||{}; return {email:d.id, addedBy:x.addedBy||''} })
+                          .sort(function(a,b){ return a.email<b.email?-1:1 });
+      renderAdminCard();
+    },function(e){ console.warn('Adminlar ro\'yxatini olib bo\'lmadi:',e); });
+  }
+  $('#addAdminBtn').addEventListener('click',function(){
+    if(!isOwner || !db) return;
+    var em = $('#newAdmin').value.trim().toLowerCase();
+    if(!/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(em)) return setMsg('#adminMsg',"To'g'ri email manzil yozing",'err');
+    if(em === OWNER_EMAIL) return setMsg('#adminMsg',"Bu asosiy admin, allaqachon qo'shilgan",'err');
+    if(adminsList.some(function(a){return a.email===em})) return setMsg('#adminMsg',"Bu admin allaqachon ro'yxatda",'err');
+    db.collection('admins').doc(em).set({email:em, addedBy:curUser.email, addedAt:Date.now()}).then(function(){
+      $('#newAdmin').value=''; setMsg('#adminMsg',em+" admin qilib qo'shildi",'ok'); loadAdmins();
+    },function(){ setMsg('#adminMsg',"Qo'shib bo'lmadi (ruxsat yo'q yoki internet)",'err') });
+  });
 
   /* ---------- tabs ---------- */
   function goTab(t){
     $$('nav.tabs [data-tab]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-tab')===t)});
     ['letter','log','tletter','tlog','settings'].forEach(function(n){$('#tab-'+n).classList.toggle('hidden',n!==t)});
-    if(t==='letter') fit(); else if(t==='tletter'){fillSigner();fit()} else if(t==='settings') fillSettings(); else if(t==='log') renderLog(); else if(t==='tlog') renderTLog();
+    if(t==='letter') fit(); else if(t==='tletter'){fillSigner();fit()} else if(t==='settings'){fillSettings();loadAdmins()} else if(t==='log') renderLog(); else if(t==='tlog') renderTLog();
     window.scrollTo(0,0);
   }
   $$('nav.tabs [data-tab]').forEach(function(b){b.addEventListener('click',function(){goTab(b.getAttribute('data-tab'))})});
 
-  $('#chgBtn').addEventListener('click',function(){
-    var l=$('#n_login').value.trim(), p=$('#n_pass').value;
-    if(l.length<3) return setMsg('#chgMsg',"Login kamida 3 ta belgi bo'lsin",'err');
-    if(p.length<6) return setMsg('#chgMsg',"Parol kamida 6 ta belgi bo'lsin",'err');
-    if(p!==$('#n_pass2').value) return setMsg('#chgMsg',"Parollar mos kelmadi",'err');
-    makeConfig(l,p).then(function(t){showCfgOut('#setCfg',t);setMsg('#chgMsg','Tayyor. Quyidagi qadamlarni bajaring.','ok')},
-      function(){setMsg('#chgMsg',"Bu brauzerda shifrlash ishlamaydi (https manzil kerak)",'err')});
-  });
-
-  /* ---------- credentials in settings ---------- */
-  var pwShown=false;
-  function renderCred(){
-    $('#curLogin').textContent=cred.login;
-    $('#curPass').textContent=pwShown?cred.password:'••••••';
-    $('#eyeBtn').textContent=pwShown?'Yashirish':"Ko'rsatish";
-    $('#s_login').value=cred.login; $('#s_pass').value=cred.password;
-  }
-  $('#eyeBtn').addEventListener('click',function(){pwShown=!pwShown;renderCred()});
   function copyText(t,okMsg){
     try{navigator.clipboard.writeText(t).then(function(){toast(okMsg)},function(){toast("Nusxa olib bo'lmadi")})}catch(e){toast("Nusxa olib bo'lmadi")}
   }
-  $('#copyBtn').addEventListener('click',function(){copyText("Login: "+cred.login+"\nParol: "+cred.password,'Nusxa olindi')});
-  $('#saveCred').addEventListener('click',function(){
-    var l=$('#s_login').value.trim(), p=$('#s_pass').value;
-    if(l.length<3) return setMsg('#credMsg',"Login kamida 3 ta belgi bo'lsin",'err');
-    if(p.length<4) return setMsg('#credMsg',"Parol kamida 4 ta belgi bo'lsin",'err');
-    cred={login:l,password:p}; lset('m28_cred',JSON.stringify(cred)); renderCred(); setMsg('#credMsg',"Saqlandi. Keyingi kirishda yangi ma'lumot ishlaydi.",'ok');
-  });
 
   /* ---------- school settings ---------- */
   function admRows(){
@@ -3900,17 +3915,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   window.addEventListener('beforeprint',function(){renderSheet();renderTSheet()});
 
   /* ---------- start ---------- */
-  if(cloudReady){
-    cloudSync('log', renderLog);
-    cloudSync('tlog', renderTLog);
-  }
   window.__syncChips=syncChips; renderTpl();
   var infoMode=false; try{infoMode=(location.hash==='#malumot'||location.hash.indexOf('#x=')===0||location.hash.indexOf('#t=')===0)}catch(e){}
-  if(infoMode) showInfo();
-  else if(mode==='setup') showAuth();
-  else if(mode==='local' && !cred) showAuth();
-  else if(sget('m28_auth')==='1') showApp();
-  else showAuth();
+  if(infoMode){ infoActive = true; showInfo(); }
+  else { showAuth(); $('#googleBtn').disabled = true; authMsg('Yuklanmoqda...',''); }
+  if(auth){
+    auth.getRedirectResult().catch(function(e){ if(!infoActive) authMsg('Kirishda xato: '+(e&&e.code||e),'err'); });
+    auth.onAuthStateChanged(onUser);
+  } else if(!infoMode){
+    $('#googleBtn').disabled = true; authMsg("Firebase yuklanmadi. Internetni tekshirib sahifani yangilang",'err');
+  }
 })();
 </script>
 </body>
