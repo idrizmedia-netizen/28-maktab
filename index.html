@@ -59,7 +59,7 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background
 .brand{display:flex;align-items:center;gap:10px;font-weight:800}
 .brand .logo{width:36px;height:36px;font-size:15px;margin:0;border-radius:10px}
 nav.tabs{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
-nav.tabs button{border:0;background:transparent;color:var(--muted);padding:9px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+nav.tabs button{border:0;background:transparent;color:var(--muted);padding:8px 11px;font-size:15px;border-radius:10px;font-weight:700;cursor:pointer}
 nav.tabs button.on{background:var(--brand-soft);color:var(--brand)}
 nav.tabs button.exit{color:var(--danger)}
 main{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
@@ -171,11 +171,32 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
 .chip .x{margin-left:8px;color:var(--danger);font-weight:700}
 .reason-meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin-top:4px}
 .l-lines .tx.s9{font-size:9pt}.l-lines .tx.s8{font-size:8pt}
+
+.sheet.single{display:block}
+.tl{width:210mm;height:297mm;box-sizing:border-box;padding:13mm 18mm 11mm;display:flex;flex-direction:column;font-family:"Times New Roman",Times,Georgia,serif;font-size:11pt;line-height:1.35;color:#000;background:#fff;overflow:hidden}
+.tl-title{border-top:0.5mm solid #000;border-bottom:0.5mm solid #000;text-align:center;padding:3mm 0;font-size:20pt;font-weight:700;letter-spacing:.6mm;margin-bottom:5mm}
+.tl-p{margin-top:2.6mm}
+.tf{display:inline-block;border-bottom:0.25mm solid #000;min-height:5mm;padding:0 1.5mm;text-align:center;vertical-align:bottom;line-height:1.2}
+.tf.w50{min-width:50mm}.tf.w110{min-width:110mm}.tf.w32{min-width:32mm}
+.tl-h{font-weight:700;margin-top:4.5mm}
+.tl-lines{position:relative;height:22.5mm;margin-top:1mm}
+.tl-lines.two{height:15mm}
+.tl-lines i{position:absolute;left:0;right:0;height:0;border-top:0.25mm solid #000}
+.tl-lines i:nth-child(1){top:7.25mm}.tl-lines i:nth-child(2){top:14.75mm}.tl-lines i:nth-child(3){top:22.25mm}
+.tl-lines .tx{position:relative;line-height:7.5mm;height:22.5mm;overflow:hidden}
+.tl-lines .tx.s10{font-size:10pt}.tl-lines .tx.s9{font-size:9pt}
+.tl-bottom{margin-top:auto;display:flex;gap:8mm;align-items:flex-end}
+.tl-sign{flex:1;min-width:0}
+.tl-row{display:flex;align-items:flex-end;gap:2mm;margin-top:3.2mm}
+.tl-row .grow{flex:1;min-width:0;text-align:left}
+.tl-qr{flex:none;width:38mm;text-align:center}
+.tl-qr svg{width:36mm;height:36mm;display:block;margin:0 auto}
+.tl-qr .c{font-size:7pt;line-height:1.2;margin-top:1mm}
 @page{size:A4;margin:0}
 @media print{
   :root{padding:0!important}
   html,body{background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  #authView,#infoView,header.top,#formPanel,.previewbar,#tab-settings,#tab-log,.toast{display:none!important}
+  #authView,#infoView,header.top,#formPanel,#tFormPanel,.previewbar,#tab-settings,#tab-log,#tab-tlog,.toast{display:none!important}
   main{padding:0!important;max-width:none!important}
   .layout{display:block!important}
   .paper-area{background:#fff!important;padding:0!important;border-radius:0!important;overflow:visible!important}
@@ -230,8 +251,10 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
     <div class="top-in">
       <div class="brand"><div class="logo">28</div><span id="brandName">28-maktab platformasi</span></div>
       <nav class="tabs">
-        <button data-tab="letter" class="on">Ogohlantirish xati</button>
-        <button data-tab="log">Xatlar ro'yxati</button>
+        <button data-tab="letter" class="on">O'quvchilar xati</button>
+        <button data-tab="log">O'quvchilar ro'yxati</button>
+        <button data-tab="tletter">O'qituvchilar xati</button>
+        <button data-tab="tlog">O'qituvchilar ro'yxati</button>
         <button data-tab="settings">Sozlamalar</button>
         <button class="exit" id="logoutBtn">Chiqish</button>
       </nav>
@@ -243,7 +266,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
     <section id="tab-letter">
       <div class="layout">
         <div class="card" id="formPanel">
-          <h2>Ogohlantirish xati</h2>
+          <h2>O'quvchiga ogohlantirish xati</h2>
           <p class="hint">Har bir xat (1–4) alohida to'ldiriladi. Bo'sh qoldirsangiz, qo'lda yozish uchun blank chiqadi.</p>
           <div class="slots" id="slots"></div>
           <label class="fl" for="f_name">O'quvchi (F.I.Sh)</label>
@@ -284,7 +307,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
     <!-- Xatlar ro'yxati -->
     <section id="tab-log" class="hidden">
       <div class="card">
-        <h2>Xatlar ro'yxati</h2>
+        <h2>O'quvchilar ro'yxati</h2>
         <p class="hint">Berilgan xatlar shu yerda yig'iladi (shu qurilmada saqlanadi). <b>O'quvchi qatorini bosing</b>: xati "Ogohlantirish xati" oynasida qayta ochiladi. Bir nechtasini belgilab (eng ko'pi 4 ta), bitta A4 varaqqa joylash ham mumkin.</p>
         <div class="filters">
           <input class="inp" id="q" placeholder="Qidirish: ism, sinf, sabab...">
@@ -298,6 +321,61 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
           <button class="btn line" id="wipeBtn" type="button">Hammasini o'chirish</button>
         </div>
         <div class="msg" id="logMsg"></div>
+      </div>
+    </section>
+
+    <!-- O'qituvchilar xati -->
+    <section id="tab-tletter" class="hidden">
+      <div class="layout">
+        <div class="card" id="tFormPanel">
+          <h2>O'qituvchiga ogohlantirish xati</h2>
+          <p class="hint">Bir varaqqa bitta xat. Matnni o'zingiz yozasiz, tayyor shablon shart emas.</p>
+          <label class="fl" for="t_name">O'qituvchi (F.I.Sh)</label>
+          <input class="inp" id="t_name">
+          <div class="row2">
+            <div><label class="fl" for="t_subject">Fani</label><input class="inp" id="t_subject" placeholder="masalan, Matematika"></div>
+            <div><label class="fl" for="t_date">Sana</label><input class="inp" id="t_date" type="date"></div>
+          </div>
+          <label class="fl" for="t_issue">Aniqlangan kamchilik / intizom buzilishi holati</label>
+          <textarea class="inp" id="t_issue" maxlength="280" style="min-height:120px"></textarea>
+          <div class="reason-meta"><span id="tIssueCnt">0 / 280</span></div>
+          <label class="fl" for="t_signer">Imzolovchi (direktor yoki o'rinbosari)</label>
+          <select class="inp" id="t_signer"></select>
+          <label class="check"><input type="checkbox" id="tAutoLog" checked><span>Chop etilganda yoki PDF olinganda xat "O'qituvchilar ro'yxati"ga yozilsin</span></label>
+          <div class="actions">
+            <button class="btn" id="tPrintBtn" type="button">Chop etish (A4 · 1 ta)</button>
+            <button class="btn ghost" id="tPdfBtn" type="button">PDF yuklab olish</button>
+            <button class="btn line" id="tLogBtn" type="button">Ro'yxatga yozish</button>
+            <button class="btn line" id="tClearBtn" type="button">Tozalash</button>
+          </div>
+          <div class="msg" id="tMsg"></div>
+          <div class="note">Chop etishda brauzerda "Fon grafikasi"ni yoqing, masshtab 100%, chetlar: yo'q.</div>
+        </div>
+        <div>
+          <div class="previewbar"><b>Ko'rinish: A4 varaq</b><span>Tushuntirish xati va imzo joylari bo'sh qoladi</span></div>
+          <div class="paper-area" id="tPaperArea">
+            <div class="sheet-wrap" id="tSheetWrap"><div class="sheet single" id="tSheet"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- O'qituvchilar ro'yxati -->
+    <section id="tab-tlog" class="hidden">
+      <div class="card">
+        <h2>O'qituvchilar ro'yxati</h2>
+        <p class="hint">Bu ro'yxat o'quvchilar ro'yxatidan alohida. Qatorni bossangiz, xat "O'qituvchilar xati" oynasida qayta ochiladi. Ro'yxat shu qurilmada saqlanadi.</p>
+        <div class="filters">
+          <input class="inp" id="tq" placeholder="Qidirish: ism, fan, holat...">
+          <select class="inp" id="tqSubj"><option value="">Barcha fanlar</option></select>
+        </div>
+        <div class="stat"><span id="tlogCount"></span></div>
+        <div class="tbl-wrap"><table class="log"><thead><tr><th>Sana</th><th>O'qituvchi</th><th>Fani</th><th>Holat</th><th>Imzolovchi</th><th>Marta</th><th></th></tr></thead><tbody id="tlogBody"></tbody></table></div>
+        <div class="actions">
+          <button class="btn" id="tcsvBtn" type="button">CSV yuklab olish</button>
+          <button class="btn line" id="twipeBtn" type="button">Hammasini o'chirish</button>
+        </div>
+        <div class="msg" id="tlogMsg"></div>
       </div>
     </section>
 
@@ -340,6 +418,8 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
             <p class="hint">Xatning pastki qismida "Maktab ma'muriyati" ostida chiqadi. Ismi bo'sh qatorlar chiqmaydi.</p>
             <label class="fl" for="s_school">Maktab nomi</label>
             <input class="inp" id="s_school">
+            <label class="fl" for="s_full">Maktab to'liq nomi (o'qituvchi xatidagi "Kimdan" uchun)</label>
+            <input class="inp" id="s_full">
             <div id="admList"></div>
             <div class="actions">
               <button class="btn ghost" id="addAdm" type="button">+ Qator qo'shish</button>
@@ -367,8 +447,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
 </div>
 <div class="toast" id="toast"></div>
 
-<script>window.M28_CONFIG = null;</script>
-<script src="config.js"></script>
+
 <script>
 //---------------------------------------------------------------------
 //
@@ -3094,7 +3173,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 </script>
 <script>
 (function(){
-  var DEFAULT_URL = "";
+  var DEFAULT_URL = "https://claude.ai/artifact/MPGQUet5jqaV77n1QeDmox#malumot";
   var $ = function(s){return document.querySelector(s)};
   var $$ = function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
   var mem = {}, memS = {};
@@ -3118,6 +3197,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   ];
   var settings = jparse(lget('m28_settings'), null) || {};
   if(!settings.school) settings.school = "28-maktab";
+  if(!settings.schoolFull) settings.schoolFull = "28-sonli umumiy o'rta ta'lim maktabi";
   if(!Array.isArray(settings.admins)) settings.admins = JSON.parse(JSON.stringify(DEF_ADMINS));
   var cred = jparse(lget('m28_cred'), null);
 
@@ -3190,7 +3270,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     $('#localCred').classList.toggle('hidden', mode!=='local');
     $('#lockedCred').classList.toggle('hidden', mode==='local');
     if(mode==='local') renderCred();
-    fillSettings(); loadSlotToForm(); renderSlots(); renderSheet(); renderLog(); fit();
+    fillSettings(); loadSlotToForm(); renderSlots(); renderSheet(); renderLog(); fillSigner(); loadTlToForm(); renderTSheet(); renderTLog(); fit();
   }
   function unb64u(s){
     s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='=';
@@ -3203,16 +3283,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   function readPayload(){
     var h=''; try{h=location.hash}catch(e){}
-    if(h.indexOf('#x=')!==0) return null;
-    try{var a=unb64u(h.slice(3)).split('\n'); return {name:a[0]||'',cls:a[1]||'',parent:a[2]||'',reason:unpackReason(a[3]||''),date:a[4]||''}}catch(e){return null}
+    var typ = h.indexOf('#x=')===0 ? 's' : (h.indexOf('#t=')===0 ? 't' : null);
+    if(!typ) return null;
+    try{
+      var a=unb64u(h.slice(3)).split('\n');
+      if(typ==='s') return {type:'s',name:a[0]||'',cls:a[1]||'',parent:a[2]||'',reason:unpackReason(a[3]||''),date:a[4]||''};
+      return {type:'t',name:a[0]||'',subject:a[1]||'',issue:a[2]||'',date:a[3]||'',signer:a[4]||''};
+    }catch(e){return null}
   }
   function showInfo(){
     hideAll(); $('#infoView').classList.remove('hidden');
     var pl=readPayload();
-    $('#infoTitle').textContent = pl ? 'Ogohlantirish xati' : settings.school;
+    $('#infoTitle').textContent = pl ? (pl.type==='t' ? "O'qituvchiga ogohlantirish xati" : 'Ogohlantirish xati') : settings.school;
     $('#infoSub').textContent = pl ? settings.school : "Maktab ma'muriyati";
     function row(k,v){return v?'<div class="adm"><span>'+k+'</span><b>'+esc(String(v).slice(0,300))+'</b></div>':''}
-    $('#infoData').innerHTML = pl ? (row("O'quvchi",pl.name)+row('Sinf',pl.cls)+row('Ota-onasi',pl.parent)+row('Sababi',pl.reason)+row('Sana',fmtDate(pl.date))) : '';
+    $('#infoData').innerHTML = !pl ? '' : (pl.type==='t' ? (row("O'qituvchi",pl.name)+row('Fani',pl.subject)+row('Aniqlangan holat',pl.issue)+row('Berilgan sana',fmtDate(pl.date))+row('Imzolagan',pl.signer)) : (row("O'quvchi",pl.name)+row('Sinf',pl.cls)+row('Ota-onasi',pl.parent)+row('Sababi',pl.reason)+row('Berilgan sana',fmtDate(pl.date))));
     var adm=settings.admins.filter(function(a){return a.name&&a.name.trim()}).map(function(a){
       return '<div class="adm">'+(a.role?'<span>'+esc(a.role)+'</span>':'')+'<b>'+esc(a.name)+'</b></div>';
     }).join('');
@@ -3262,8 +3347,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   /* ---------- tabs ---------- */
   function goTab(t){
     $$('nav.tabs [data-tab]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-tab')===t)});
-    ['letter','log','settings'].forEach(function(n){$('#tab-'+n).classList.toggle('hidden',n!==t)});
-    if(t==='letter') fit(); else if(t==='settings') fillSettings(); else if(t==='log') renderLog();
+    ['letter','log','tletter','tlog','settings'].forEach(function(n){$('#tab-'+n).classList.toggle('hidden',n!==t)});
+    if(t==='letter') fit(); else if(t==='tletter'){fillSigner();fit()} else if(t==='settings') fillSettings(); else if(t==='log') renderLog(); else if(t==='tlog') renderTLog();
     window.scrollTo(0,0);
   }
   $$('nav.tabs [data-tab]').forEach(function(b){b.addEventListener('click',function(){goTab(b.getAttribute('data-tab'))})});
@@ -3316,10 +3401,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   function fillSettings(){
     $('#s_school').value=settings.school;
+    $('#s_full').value=settings.schoolFull;
     $('#s_url').value=platformUrl();
     admRows(); renderQrPrev();
   }
   $('#addAdm').addEventListener('click',function(){settings.admins.push({role:'',name:''});admRows();renderSheet()});
+  $('#s_full').addEventListener('input',function(){settings.schoolFull=this.value;renderTSheet()});
   $('#s_school').addEventListener('input',function(){settings.school=this.value;$('#brandName').textContent=(this.value||'Maktab')+' platformasi';renderSheet()});
   $('#s_url').addEventListener('input',function(){settings.url=this.value.trim();renderQrPrev();renderSheet()});
   $('#saveSet').addEventListener('click',function(){lset('m28_settings',JSON.stringify(settings));setMsg('#setMsg','Saqlandi','ok')});
@@ -3328,7 +3415,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   /* ---------- QR ---------- */
   function qrMatrix(text){
     if(!text) return null;
-    try{var qr=qrcode(0,'M'); qr.addData(text); qr.make(); return qr}catch(e){return null}
+    try{var qr=qrcode(0,text.length>330?'L':'M'); qr.addData(text); qr.make(); return qr}catch(e){return null}
   }
   function qrSvg(text){
     var qr=qrMatrix(text); if(!qr) return '';
@@ -3418,7 +3505,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function selectSlot(i){cur=i;loadSlotToForm();renderSlots();renderSheet()}
   Object.keys(FIELDS).forEach(function(id){
     document.getElementById(id).addEventListener('input',function(){
-      slots[cur][FIELDS[id]]=this.value; saveSlots(); renderSheet();
+      slots[cur][FIELDS[id]]=this.value;
+      if(id==='f_name' && this.value.trim() && !slots[cur].date){slots[cur].date=todayISO();document.getElementById('f_date').value=slots[cur].date}
+      saveSlots(); renderSheet();
       var sm=$('#slots .slot.on small'); if(sm) sm.textContent=slots[cur].name||"bo'sh";
     });
   });
@@ -3598,11 +3687,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var n=autoLogIfOn(); if(n) toast(n+" ta xat ro'yxatga yozildi");
     try{window.print()}catch(e){toast("Ctrl+P (yoki brauzer menyusi → Chop etish) ni bosing")}
   });
-  function buildPdfBlob(){
+  function buildPdfBlob(inner,single){
     var host=document.createElement('div');
     host.style.cssText='position:fixed;left:-10000px;top:0;width:210mm;height:297mm;background:#fff';
-    var sh=document.createElement('div'); sh.className='sheet'; sh.style.cssText='position:static;transform:none;box-shadow:none';
-    sh.innerHTML=sheetInner(); host.appendChild(sh); document.body.appendChild(host);
+    var sh=document.createElement('div'); sh.className='sheet'+(single?' single':''); sh.style.cssText='position:static;transform:none;box-shadow:none';
+    sh.innerHTML=(inner==null?sheetInner():inner); host.appendChild(sh); document.body.appendChild(host);
     return html2canvas(sh,{scale:3,backgroundColor:'#ffffff',logging:false}).then(function(cv){
       host.remove();
       var pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true});
@@ -3613,27 +3702,167 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   window.__buildPdfBlob=buildPdfBlob;
   $('#pdfBtn').addEventListener('click',function(){
     var b=this; b.disabled=true; var old=b.textContent; b.textContent='Tayyorlanmoqda...';
-    buildPdfBlob().then(function(blob){
+    buildPdfBlob(sheetInner(),false).then(function(blob){
       return saveFile('ogohlantirish-xati-'+todayISO()+'.pdf',blob).then(function(){
         var n=autoLogIfOn(); setMsg('#letMsg',"PDF saqlandi"+(n?" · "+n+" ta xat ro'yxatga yozildi":""),'ok');
       });
     }).catch(function(e){setMsg('#letMsg',saveErr(e),'err')}).then(function(){b.disabled=false;b.textContent=old});
   });
 
+  /* ---------- O'QITUVCHILAR ---------- */
+  var TEMPTY={name:'',subject:'',issue:'',date:'',signer:''};
+  var tl=Object.assign({},TEMPTY,jparse(lget('m28_tl'),{}));
+  function saveTl(){lset('m28_tl',JSON.stringify(tl))}
+  var TF={t_name:'name',t_subject:'subject',t_issue:'issue',t_date:'date',t_signer:'signer'};
+  function fillSigner(){
+    var sel=$('#t_signer'), names=settings.admins.filter(function(a){return a.name&&a.name.trim()});
+    var opts='<option value="">Qo\'lda to\'ldiraman (bo\'sh)</option>'+names.map(function(a){return '<option value="'+esc(a.name)+'">'+esc(a.name)+(a.role?' — '+esc(a.role):'')+'</option>'}).join('');
+    if(tl.signer && !names.some(function(a){return a.name===tl.signer})) opts+='<option value="'+esc(tl.signer)+'">'+esc(tl.signer)+'</option>';
+    sel.innerHTML=opts; sel.value=tl.signer||'';
+  }
+  function loadTlToForm(){
+    ['t_name','t_subject','t_issue','t_date'].forEach(function(id){document.getElementById(id).value=tl[TF[id]]||''});
+    $('#t_signer').value=tl.signer||''; tCount();
+  }
+  function tCount(){var n=$('#t_issue').value.length,el=$('#tIssueCnt');el.textContent=n+' / 280';el.style.color=n>240?'var(--danger)':''}
+  function tLetterQrUrl(f){
+    var base=platformUrl().split('#')[0];
+    if(!(f.name||f.subject||f.issue)) return platformUrl();
+    var issue=f.issue.replace(/\s+/g,' ').trim(); if(issue.length>200) issue=issue.slice(0,198)+'…';
+    return base+'#t='+b64u([f.name,f.subject,issue,f.date,f.signer].join('\n'));
+  }
+  function tf(txt,cls){return '<span class="tf '+(cls||'')+'">'+(txt?esc(txt):'&nbsp;')+'</span>'}
+  function tLetterHTML(f,qr){
+    var L=(f.issue||'').length, sz=L>240?' s9':(L>190?' s10':'');
+    return '<div class="tl">'+
+      '<div class="tl-title">OGOHLANTIRISH XATI</div>'+
+      '<div class="tl-p"><b>Kimdan:</b> '+esc(settings.schoolFull)+' ma\'muriyatidan</div>'+
+      '<div class="tl-p"><b>Kimga:</b> '+tf(f.subject,'w50')+' fani o\'qituvchisi</div>'+
+      '<div class="tl-p">'+tf(f.name,'w110')+' (F.I.Sh.)</div>'+
+      '<div class="tl-p">'+dateHTML(f.date)+'</div>'+
+      '<div class="tl-p" style="margin-top:5mm">Mazkur ogohlantirish xati Sizga quyidagi holatlar yuzasidan taqdim etiladi:</div>'+
+      '<div class="tl-h">1. Aniqlangan kamchilik / Intizom buzilishi holati:</div>'+
+      '<div class="tl-lines"><i></i><i></i><i></i><div class="tx'+sz+'">'+esc(f.issue)+'</div></div>'+
+      '<div class="tl-h">2. Yo\'l qo\'yilgan kamchiliklar bo\'yicha asosiy talablar:</div>'+
+      '<div class="tl-p" style="margin-top:1mm">O\'zbekiston Respublikasining Mehnat kodeksi hamda maktabning ichki mehnat tartib-qoidalari talablariga qat\'iy rioya qilishingiz, o\'z vazifalaringizga mas\'uliyat bilan yondashishingiz talab etiladi.</div>'+
+      '<div class="tl-h">3. Ogohlantirish:</div>'+
+      '<div class="tl-p" style="margin-top:1mm">Agar yuqoridagi kabi holatlar takrorlangan taqdirda, Mehnat qonunchiligiga muvofiq intizomiy jazo choralari (hayfsan, jarima yoki boshqa choralar) ko\'rilishini ma\'lum qilamiz.</div>'+
+      '<div class="tl-h">O\'qituvchining tushuntirish xati (talab etilsa):</div>'+
+      '<div class="tl-lines two"><i></i><i></i></div>'+
+      '<div class="tl-bottom"><div class="tl-sign">'+
+        '<div class="tl-p"><b>Maktab direktori (yoki o\'rinbosari):</b></div>'+
+        '<div class="tl-row"><span>F.I.Sh.</span>'+tf(f.signer,'grow')+'<span>Imzo:</span>'+tf('','w32')+'</div>'+
+        '<div class="tl-p" style="margin-top:6mm"><b>Ogohlantirish xati bilan tanishdim:</b></div>'+
+        '<div class="tl-row"><span>O\'qituvchi F.I.Sh.</span>'+tf(f.name,'grow')+'<span>Imzo:</span>'+tf('','w32')+'</div>'+
+        '<div class="tl-row"><span>Sana: "</span>'+bl('')+'<span>"</span>'+bl('','m')+'<span>202</span>'+bl('')+'<span>-yil.</span></div>'+
+      '</div><div class="tl-qr">'+qr+'<div class="c">Xat ma\'lumoti va sanasi.<br>QR kodni skanerlang</div></div></div>'+
+    '</div>';
+  }
+  function tSheetInner(){return tLetterHTML(tl,qrSvg(tLetterQrUrl(tl)))}
+  function renderTSheet(){$('#tSheet').innerHTML=tSheetInner()}
+  Object.keys(TF).forEach(function(id){
+    var el=document.getElementById(id);
+    el.addEventListener(id==='t_signer'?'change':'input',function(){
+      tl[TF[id]]=this.value;
+      if(id==='t_name' && this.value.trim() && !tl.date){tl.date=todayISO();$('#t_date').value=tl.date}
+      saveTl(); renderTSheet(); if(id==='t_issue') tCount();
+    });
+  });
+  $('#tClearBtn').addEventListener('click',function(){tl=Object.assign({},TEMPTY);saveTl();loadTlToForm();fillSigner();renderTSheet()});
+
+  /* o'qituvchilar ro'yxati (o'quvchilardan alohida) */
+  function loadTLog(){var l=jparse(lget('m28_tlog'),[]);return Array.isArray(l)?l:[]}
+  function saveTLog(l){lset('m28_tlog',JSON.stringify(l))}
+  function logTeacher(){
+    if(!tl.name||!tl.name.trim()) return 0;
+    var log=loadTLog(), d=tl.date||todayISO();
+    var id=[tl.name,tl.subject,tl.issue,d].join('|').toLowerCase();
+    if(log.some(function(e){return e.id===id})) return 0;
+    log.push({id:id,name:tl.name.trim(),subject:(tl.subject||'').trim(),issue:(tl.issue||'').trim(),date:d,signer:tl.signer||'',at:Date.now()});
+    saveTLog(log); return 1;
+  }
+  function tKey(e){return e.name.toLowerCase().replace(/\s+/g,' ').trim()}
+  function filteredTLog(){
+    var log=loadTLog(), q=($('#tq').value||'').toLowerCase().trim(), sj=$('#tqSubj').value;
+    log.sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.at-a.at});
+    return log.filter(function(e){
+      if(sj && e.subject!==sj) return false;
+      return !q || (e.name+' '+e.subject+' '+e.issue+' '+e.signer).toLowerCase().indexOf(q)>=0;
+    });
+  }
+  function renderTLog(){
+    var all=loadTLog(), sel=$('#tqSubj'), keep=sel.value, subs=[];
+    all.forEach(function(e){if(e.subject&&subs.indexOf(e.subject)<0)subs.push(e.subject)});
+    subs.sort(function(a,b){return a.localeCompare(b,'uz')});
+    sel.innerHTML='<option value="">Barcha fanlar</option>'+subs.map(function(c){return '<option value="'+esc(c)+'"'+(c===keep?' selected':'')+'>'+esc(c)+'</option>'}).join('');
+    var counts={}; all.forEach(function(e){var k=tKey(e);counts[k]=(counts[k]||0)+1});
+    var rows=filteredTLog();
+    $('#tlogCount').textContent = all.length ? ("Jami: "+all.length+" ta xat"+(rows.length!==all.length?" · ko'rsatilgan: "+rows.length:"")) : '';
+    $('#tlogBody').innerHTML = rows.length ? rows.map(function(e){
+      var n=counts[tKey(e)];
+      return '<tr class="rowlink" data-topen="'+esc(e.id)+'"><td>'+esc(fmtDate(e.date))+'</td><td><b class="lnk">'+esc(e.name)+'</b></td><td>'+esc(e.subject)+'</td><td>'+esc(e.issue)+'</td><td>'+esc(e.signer)+'</td>'+
+             '<td><span class="badge'+(n>=3?' warn':'')+'">'+n+' marta</span></td>'+
+             '<td><button class="mini" style="color:var(--danger)" data-trm="'+esc(e.id)+'">O\'chirish</button></td></tr>';
+    }).join('') : '<tr><td colspan="7"><div class="empty">'+(all.length?"Hech narsa topilmadi.":"Hozircha xat yo'q. Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.")+'</div></td></tr>';
+    $$('#tlogBody tr[data-topen]').forEach(function(tr){tr.addEventListener('click',function(e){
+      if(e.target.closest('button')) return;
+      var r=loadTLog().filter(function(x){return x.id===tr.dataset.topen})[0]; if(!r) return;
+      tl={name:r.name,subject:r.subject,issue:r.issue,date:r.date,signer:r.signer}; saveTl();
+      goTab('tletter'); loadTlToForm(); fillSigner(); renderTSheet(); setMsg('#tMsg',"Xat qayta ochildi",'ok');
+    })});
+    $$('#tlogBody [data-trm]').forEach(function(b){b.addEventListener('click',function(){
+      saveTLog(loadTLog().filter(function(x){return x.id!==b.dataset.trm})); renderTLog();
+    })});
+  }
+  $('#tq').addEventListener('input',renderTLog); $('#tqSubj').addEventListener('change',renderTLog);
+  var twipeArmed=false;
+  $('#twipeBtn').addEventListener('click',function(){
+    var b=this;
+    if(!twipeArmed){twipeArmed=true;b.textContent="Aniq o'chirilsinmi? Yana bosing";setTimeout(function(){twipeArmed=false;b.textContent="Hammasini o'chirish"},3500);return}
+    twipeArmed=false;b.textContent="Hammasini o'chirish";saveTLog([]);renderTLog();setMsg('#tlogMsg',"Ro'yxat tozalandi",'ok');
+  });
+  $('#tcsvBtn').addEventListener('click',function(){
+    var rows=filteredTLog(); if(!rows.length) return setMsg('#tlogMsg',"Yuklab olish uchun ma'lumot yo'q",'err');
+    var all=loadTLog(), counts={}; all.forEach(function(e){var k=tKey(e);counts[k]=(counts[k]||0)+1});
+    var out=[["№","Sana","O'qituvchi","Fani","Holat","Imzolovchi","Necha marta"]];
+    rows.forEach(function(e,i){out.push([i+1,fmtDate(e.date),e.name,e.subject,e.issue,e.signer,counts[tKey(e)]])});
+    var csv='\ufeff'+out.map(function(r){return r.map(csvCell).join(';')}).join('\r\n');
+    saveFile('oqituvchilar-xatlari-'+todayISO()+'.csv',csv).then(function(){setMsg('#tlogMsg','CSV saqlandi','ok')},function(e){setMsg('#tlogMsg',saveErr(e),'err')});
+  });
+
+  /* o'qituvchi xatini chop etish / PDF */
+  function tAutoLog(){ if(!$('#tAutoLog').checked) return 0; var n=logTeacher(); if(n) renderTLog(); return n }
+  $('#tLogBtn').addEventListener('click',function(){
+    var n=logTeacher(); renderTLog();
+    setMsg('#tMsg', n ? "Xat ro'yxatga yozildi" : "Yangi xat yo'q (to'ldirilmagan yoki avval yozilgan)", n?'ok':'err');
+  });
+  $('#tPrintBtn').addEventListener('click',function(){
+    renderTSheet(); var n=tAutoLog(); if(n) toast("Xat ro'yxatga yozildi");
+    try{window.print()}catch(e){toast("Ctrl+P (yoki brauzer menyusi → Chop etish) ni bosing")}
+  });
+  $('#tPdfBtn').addEventListener('click',function(){
+    var b=this; b.disabled=true; var old=b.textContent; b.textContent='Tayyorlanmoqda...';
+    buildPdfBlob(tSheetInner(),true).then(function(blob){
+      return saveFile('oqituvchi-ogohlantirish-xati-'+todayISO()+'.pdf',blob).then(function(){
+        var n=tAutoLog(); setMsg('#tMsg',"PDF saqlandi"+(n?" · xat ro'yxatga yozildi":""),'ok');
+      });
+    }).catch(function(e){setMsg('#tMsg',saveErr(e),'err')}).then(function(){b.disabled=false;b.textContent=old});
+  });
+
   /* ---------- fit A4 preview to screen ---------- */
-  function fit(){
-    var area=$('#paperArea'), wrap=$('#sheetWrap'), sheet=$('#sheet');
+  function fitOne(area,wrap,sheet){
     var avail=area.clientWidth-28; if(avail<=0) return;
     var s=Math.min(1,avail/794);
     sheet.style.transform='scale('+s+')';
     wrap.style.width=(794*s)+'px'; wrap.style.height=(1123*s)+'px';
   }
+  function fit(){fitOne($('#paperArea'),$('#sheetWrap'),$('#sheet')); fitOne($('#tPaperArea'),$('#tSheetWrap'),$('#tSheet'))}
   window.addEventListener('resize',fit);
-  window.addEventListener('beforeprint',function(){renderSheet()});
+  window.addEventListener('beforeprint',function(){renderSheet();renderTSheet()});
 
   /* ---------- start ---------- */
   window.__syncChips=syncChips; renderTpl();
-  var infoMode=false; try{infoMode=(location.hash==='#malumot'||location.hash.indexOf('#x=')===0)}catch(e){}
+  var infoMode=false; try{infoMode=(location.hash==='#malumot'||location.hash.indexOf('#x=')===0||location.hash.indexOf('#t=')===0)}catch(e){}
   if(infoMode) showInfo();
   else if(mode==='setup') showAuth();
   else if(mode==='local' && !cred) showAuth();
