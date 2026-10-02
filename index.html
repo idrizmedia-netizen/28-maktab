@@ -98,6 +98,16 @@ main{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
 .gbtn:disabled{opacity:.6}
 .adm-line{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:15px;word-break:break-all}
 .adm-line:first-child{border-top:0}
+.stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat-card{background:var(--brand-soft);border-radius:12px;padding:14px;text-align:center}
+.stat-card b{display:block;font-size:26px;color:var(--brand)}
+.stat-card span{font-size:13px;color:var(--muted)}
+.bar-row{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:14px}
+.bar-row .lbl{width:92px;flex:none;text-align:right;color:var(--ink);word-break:break-word}
+.bar-row .bar-wrap{flex:1;background:var(--line);border-radius:8px;overflow:hidden;height:20px}
+.bar-row .bar{height:100%;background:var(--brand);border-radius:8px 0 0 8px;min-width:3px}
+.bar-row .n{width:34px;flex:none;font-weight:700}
+.stat-empty{color:var(--muted);font-size:14px;padding:6px 0}
 .adm-line .who{display:flex;flex-direction:column;gap:2px;min-width:0}
 .adm-line .who small{color:var(--muted);font-size:12px}
 .adm-line .rm{flex:none;border:1px solid var(--line);background:transparent;color:var(--danger);border-radius:10px;padding:6px 10px;font-weight:700;cursor:pointer}
@@ -209,7 +219,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
 @media print{
   :root{padding:0!important}
   html,body{background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  #authView,#infoView,header.top,#formPanel,#tFormPanel,.previewbar,#tab-settings,#tab-log,#tab-tlog,.toast{display:none!important}
+  #authView,#infoView,header.top,#formPanel,#tFormPanel,.previewbar,#tab-settings,#tab-log,#tab-tlog,#tab-stats,.toast{display:none!important}
   main{padding:0!important;max-width:none!important}
   .layout{display:block!important}
   .paper-area{background:#fff!important;padding:0!important;border-radius:0!important;overflow:visible!important}
@@ -258,6 +268,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
         <button data-tab="log">O'quvchilar ro'yxati</button>
         <button data-tab="tletter">O'qituvchilar xati</button>
         <button data-tab="tlog">O'qituvchilar ro'yxati</button>
+        <button data-tab="stats">Statistika</button>
         <button data-tab="settings">Sozlamalar</button>
         <button class="exit" id="logoutBtn">Chiqish</button>
       </nav>
@@ -315,6 +326,9 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
         <div class="filters">
           <input class="inp" id="q" placeholder="Qidirish: ism, sinf, sabab...">
           <select class="inp" id="qClass"><option value="">Barcha sinflar</option></select>
+          <label class="fl" for="qFrom" style="margin:0">Sanadan</label><input class="inp" id="qFrom" type="date">
+          <label class="fl" for="qTo" style="margin:0">Sanagacha</label><input class="inp" id="qTo" type="date">
+          <button class="mini" id="qClear" type="button">Filtrni tozalash</button>
         </div>
         <div class="stat"><span id="logCount"></span></div>
         <div class="tbl-wrap"><table class="log"><thead><tr><th></th><th>Sana</th><th>O'quvchi</th><th>Sinf</th><th>Ota-onasi</th><th>Sababi</th><th>Marta</th><th></th></tr></thead><tbody id="logBody"></tbody></table></div>
@@ -371,6 +385,9 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
         <div class="filters">
           <input class="inp" id="tq" placeholder="Qidirish: ism, fan, holat...">
           <select class="inp" id="tqSubj"><option value="">Barcha fanlar</option></select>
+          <label class="fl" for="tqFrom" style="margin:0">Sanadan</label><input class="inp" id="tqFrom" type="date">
+          <label class="fl" for="tqTo" style="margin:0">Sanagacha</label><input class="inp" id="tqTo" type="date">
+          <button class="mini" id="tqClear" type="button">Filtrni tozalash</button>
         </div>
         <div class="stat"><span id="tlogCount"></span></div>
         <div class="tbl-wrap"><table class="log"><thead><tr><th>Sana</th><th>O'qituvchi</th><th>Fani</th><th>Holat</th><th>Imzolovchi</th><th>Marta</th><th></th></tr></thead><tbody id="tlogBody"></tbody></table></div>
@@ -379,6 +396,31 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
           <button class="btn line" id="twipeBtn" type="button">Hammasini o'chirish</button>
         </div>
         <div class="msg" id="tlogMsg"></div>
+      </div>
+    </section>
+
+    <!-- Statistika -->
+    <section id="tab-stats" class="hidden">
+      <div class="card">
+        <h2>Statistika</h2>
+        <p class="hint">O'quvchilar va o'qituvchilar ro'yxatidagi ma'lumotlar asosida avtomatik hisoblanadi.</p>
+        <div class="stat-cards" id="statCards"></div>
+      </div>
+      <div class="card">
+        <h2>Sinflar bo'yicha (o'quvchilar)</h2>
+        <div id="statByClass"></div>
+      </div>
+      <div class="card">
+        <h2>Oyma-oy dinamika</h2>
+        <div id="statByMonth"></div>
+      </div>
+      <div class="card">
+        <h2>Eng ko'p uchraydigan sabablar (o'quvchilar)</h2>
+        <div id="statByReason"></div>
+      </div>
+      <div class="card">
+        <h2>Fanlar bo'yicha (o'qituvchilar)</h2>
+        <div id="statBySubject"></div>
       </div>
     </section>
 
@@ -3468,9 +3510,52 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   /* ---------- tabs ---------- */
   function goTab(t){
     $$('nav.tabs [data-tab]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-tab')===t)});
-    ['letter','log','tletter','tlog','settings'].forEach(function(n){$('#tab-'+n).classList.toggle('hidden',n!==t)});
-    if(t==='letter') fit(); else if(t==='tletter'){fillSigner();fit()} else if(t==='settings'){fillSettings();loadAdmins()} else if(t==='log') renderLog(); else if(t==='tlog') renderTLog();
+    ['letter','log','tletter','tlog','stats','settings'].forEach(function(n){$('#tab-'+n).classList.toggle('hidden',n!==t)});
+    if(t==='letter') fit(); else if(t==='tletter'){fillSigner();fit()} else if(t==='settings'){fillSettings();loadAdmins()} else if(t==='log') renderLog(); else if(t==='tlog') renderTLog(); else if(t==='stats') renderStats();
     window.scrollTo(0,0);
+  }
+  /* ---------- Statistika ---------- */
+  function topEntries(obj, n){
+    return Object.keys(obj).map(function(k){return {k:k, n:obj[k]}}).sort(function(a,b){return b.n-a.n}).slice(0, n||1e9);
+  }
+  function barList(entries, max, emptyText){
+    if(!entries.length) return '<div class="stat-empty">'+emptyText+'</div>';
+    return entries.map(function(e){
+      var w = max>0 ? Math.max(3, Math.round(e.n/max*100)) : 0;
+      return '<div class="bar-row"><div class="lbl" title="'+esc(e.k)+'">'+esc(e.k)+'</div>'+
+             '<div class="bar-wrap"><div class="bar" style="width:'+w+'%"></div></div><div class="n">'+e.n+'</div></div>';
+    }).join('');
+  }
+  function renderStats(){
+    var log=loadLog(), tlog=loadTLog();
+    var people={}; log.forEach(function(e){people[personKey(e)]=1});
+    var tpeople={}; tlog.forEach(function(e){tpeople[(e.name||'').toLowerCase().trim()]=1});
+    $('#statCards').innerHTML =
+      '<div class="stat-card"><b>'+log.length+"</b><span>O'quvchi xatlari</span></div>"+
+      '<div class="stat-card"><b>'+Object.keys(people).length+"</b><span>Noyob o'quvchi</span></div>"+
+      '<div class="stat-card"><b>'+tlog.length+"</b><span>O'qituvchi xatlari</span></div>"+
+      '<div class="stat-card"><b>'+Object.keys(tpeople).length+"</b><span>Noyob o'qituvchi</span></div>";
+
+    var byClass={}; log.forEach(function(e){var k=e.cls||'(sinfsiz)';byClass[k]=(byClass[k]||0)+1});
+    var clsTop=topEntries(byClass).sort(function(a,b){return a.k.localeCompare(b.k,'uz',{numeric:true})});
+    var clsMax=Math.max.apply(null,[0].concat(clsTop.map(function(e){return e.n})));
+    $('#statByClass').innerHTML = barList(clsTop, clsMax, "Hali o'quvchilar ro'yxatida xat yo'q.");
+
+    var byMonth={}; log.forEach(function(e){if(!e.date)return; var m=/^(\d{4})-(\d{2})/.exec(e.date); if(!m)return; var k=m[1]+'-'+m[2]; byMonth[k]=(byMonth[k]||0)+1});
+    var monthKeys=Object.keys(byMonth).sort();
+    var monthEntries=monthKeys.map(function(k){var p=k.split('-');return {k:(MONTHS[+p[1]-1]||p[1])+' '+p[0], n:byMonth[k]}});
+    var monMax=Math.max.apply(null,[0].concat(monthEntries.map(function(e){return e.n})));
+    $('#statByMonth').innerHTML = barList(monthEntries, monMax, "Hali sana bo'yicha ma'lumot yo'q.");
+
+    var byReason={}; log.forEach(function(e){var r=(e.reason||'').trim(); if(!r)return; if(r.length>60)r=r.slice(0,58)+'…'; byReason[r]=(byReason[r]||0)+1});
+    var reasonTop=topEntries(byReason,8);
+    var reasMax=Math.max.apply(null,[0].concat(reasonTop.map(function(e){return e.n})));
+    $('#statByReason').innerHTML = barList(reasonTop, reasMax, "Hali sabab kiritilgan xat yo'q.");
+
+    var bySubj={}; tlog.forEach(function(e){var k=e.subject||'(fansiz)';bySubj[k]=(bySubj[k]||0)+1});
+    var subjTop=topEntries(bySubj).sort(function(a,b){return b.n-a.n});
+    var subjMax=Math.max.apply(null,[0].concat(subjTop.map(function(e){return e.n})));
+    $('#statBySubject').innerHTML = barList(subjTop, subjMax, "Hali o'qituvchilar ro'yxatida xat yo'q.");
   }
   $$('nav.tabs [data-tab]').forEach(function(b){b.addEventListener('click',function(){goTab(b.getAttribute('data-tab'))})});
 
@@ -3698,9 +3783,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function personKey(e){return (e.name+'|'+e.cls).toLowerCase().replace(/\s+/g,' ')}
   function filteredLog(){
     var log=loadLog(), q=($('#q').value||'').toLowerCase().trim(), cl=$('#qClass').value;
+    var from=$('#qFrom').value, to=$('#qTo').value;
     log.sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.at-a.at});
     return log.filter(function(e){
       if(cl && e.cls!==cl) return false;
+      if(from && e.date && e.date<from) return false;
+      if(to && e.date && e.date>to) return false;
       if(!q) return true;
       return (e.name+' '+e.cls+' '+e.parent+' '+e.reason).toLowerCase().indexOf(q)>=0;
     });
@@ -3757,6 +3845,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   $('#selLoad').addEventListener('click',function(){var ids=Object.keys(selected);selected={};openEntries(ids)});
   $('#q').addEventListener('input',renderLog); $('#qClass').addEventListener('change',renderLog);
+  $('#qFrom').addEventListener('change',renderLog); $('#qTo').addEventListener('change',renderLog);
+  $('#qClear').addEventListener('click',function(){$('#q').value='';$('#qClass').value='';$('#qFrom').value='';$('#qTo').value='';renderLog()});
   var wipeArmed=false;
   $('#wipeBtn').addEventListener('click',function(){
     var b=this;
@@ -3885,9 +3975,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function tKey(e){return e.name.toLowerCase().replace(/\s+/g,' ').trim()}
   function filteredTLog(){
     var log=loadTLog(), q=($('#tq').value||'').toLowerCase().trim(), sj=$('#tqSubj').value;
+    var from=$('#tqFrom').value, to=$('#tqTo').value;
     log.sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.at-a.at});
     return log.filter(function(e){
       if(sj && e.subject!==sj) return false;
+      if(from && e.date && e.date<from) return false;
+      if(to && e.date && e.date>to) return false;
       return !q || (e.name+' '+e.subject+' '+e.issue+' '+e.signer).toLowerCase().indexOf(q)>=0;
     });
   }
@@ -3916,6 +4009,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     })});
   }
   $('#tq').addEventListener('input',renderTLog); $('#tqSubj').addEventListener('change',renderTLog);
+  $('#tqFrom').addEventListener('change',renderTLog); $('#tqTo').addEventListener('change',renderTLog);
+  $('#tqClear').addEventListener('click',function(){$('#tq').value='';$('#tqSubj').value='';$('#tqFrom').value='';$('#tqTo').value='';renderTLog()});
   var twipeArmed=false;
   $('#twipeBtn').addEventListener('click',function(){
     var b=this;
