@@ -108,6 +108,12 @@ main{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
 .bar-row .bar{height:100%;background:var(--brand);border-radius:8px 0 0 8px;min-width:3px}
 .bar-row .n{width:34px;flex:none;font-weight:700}
 .stat-empty{color:var(--muted);font-size:14px;padding:6px 0}
+.muted{color:var(--muted)}
+.tg-card{background:var(--brand-soft);border-radius:12px;padding:14px;margin:10px 0;display:grid;gap:10px;grid-template-columns:auto 1fr;align-items:start}
+.tg-card .qr{background:#fff;border-radius:10px;padding:8px}
+.tg-card .qr svg{width:110px;height:110px;display:block}
+.tg-card .tx{font-size:14px;line-height:1.5}
+.tg-card .tx code{font-family:ui-monospace,Menlo,Consolas,monospace;background:#fff;padding:1px 6px;border-radius:6px}
 .adm-line .who{display:flex;flex-direction:column;gap:2px;min-width:0}
 .adm-line .who small{color:var(--muted);font-size:12px}
 .adm-line .rm{flex:none;border:1px solid var(--line);background:transparent;color:var(--danger);border-radius:10px;padding:6px 10px;font-weight:700;cursor:pointer}
@@ -291,6 +297,8 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
           </div>
           <label class="fl" for="f_parent">Ota-onasi (F.I.Sh)</label>
           <input class="inp" id="f_parent">
+          <label class="fl" for="f_phone">Ota-ona Telegram raqami (ixtiyoriy)</label>
+          <input class="inp" id="f_phone" placeholder="+998 90 123 45 67" inputmode="tel">
           <label class="fl" for="f_reason">Sababi</label>
           <details class="tpl" open><summary>Tayyor sabablar (bosib tanlang)</summary><div id="tplBox"></div></details>
           <textarea class="inp" id="f_reason" maxlength="220" placeholder="Shablon tanlang yoki o'zingiz yozing"></textarea>
@@ -306,7 +314,11 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
             <button class="btn ghost" id="pdfBtn" type="button">PDF yuklab olish</button>
             <button class="btn line" id="logBtn" type="button">Ro'yxatga yozish</button>
           </div>
+          <div class="actions">
+            <button class="btn ghost" id="tgSendBtn" type="button">📩 Telegramda ota-onaga xabar berish</button>
+          </div>
           <div class="msg" id="letMsg"></div>
+          <div class="msg" id="tgMsg"></div>
           <div class="note">Chop etishda brauzerda "Fon grafikasi"ni yoqing, masshtab 100%, chetlar: yo'q.</div>
         </div>
         <div>
@@ -331,7 +343,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
           <button class="mini" id="qClear" type="button">Filtrni tozalash</button>
         </div>
         <div class="stat"><span id="logCount"></span></div>
-        <div class="tbl-wrap"><table class="log"><thead><tr><th></th><th>Sana</th><th>O'quvchi</th><th>Sinf</th><th>Ota-onasi</th><th>Sababi</th><th>Marta</th><th></th></tr></thead><tbody id="logBody"></tbody></table></div>
+        <div class="tbl-wrap"><table class="log"><thead><tr><th></th><th>Sana</th><th>O'quvchi</th><th>Sinf</th><th>Ota-onasi</th><th>Sababi</th><th>Telegram</th><th>Marta</th><th></th></tr></thead><tbody id="logBody"></tbody></table></div>
         <div class="actions">
           <button class="btn ghost" id="selLoad" type="button" disabled>Tanlanganlarni xatga joylash (0)</button>
           <button class="btn" id="csvBtn" type="button">CSV yuklab olish</button>
@@ -469,6 +481,12 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
                 <li>Yoki bu faylni maktabning o'z saytiga (hosting) qo'yib, uning manzilini yuqoriga yozing.</li>
                 <li>Har bir xatdagi QR kodga faqat o'quvchi yoki o'qituvchining ismi va sanasi joylanadi (sinf, ota-ona va sabab kabi maxfiy ma'lumotlar QR ichida bo'lmaydi). Skanerlaganda login so'ramaydigan sahifada shu ism, sana va maktab ma'muriyati ko'rinadi.</li>
               </ol></div>
+            <label class="fl" for="s_tgbot" style="margin-top:14px">Telegram bot (username, @ va t.me/ siz)</label>
+            <input class="inp" id="s_tgbot" autocapitalize="off" spellcheck="false" placeholder="masalan, maktab28_bot">
+            <div class="tg-card">
+              <div class="qr"><div id="tgQrPrev"></div></div>
+              <div class="tx" id="tgInfo"></div>
+            </div>
             <div class="actions"><button class="btn" id="saveSet">Saqlash</button></div>
             <div class="msg" id="setMsg"></div>
           </div>
@@ -3298,6 +3316,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(!o.school) o.school = "28-maktab";
     if(!o.schoolFull) o.schoolFull = "28-sonli umumiy o'rta ta'lim maktabi";
     if(!Array.isArray(o.admins)) o.admins = JSON.parse(JSON.stringify(DEF_ADMINS));
+    if(typeof o.telegramBot !== 'string') o.telegramBot = '';
     return o;
   }
   var settings = normSettings(jparse(lget('m28_settings'), null));
@@ -3584,12 +3603,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     $('#s_school').value=settings.school;
     $('#s_full').value=settings.schoolFull;
     $('#s_url').value=platformUrl();
-    admRows(); renderQrPrev();
+    $('#s_tgbot').value=settings.telegramBot||'';
+    admRows(); renderQrPrev(); renderTgCard();
   }
   $('#addAdm').addEventListener('click',function(){settings.admins.push({role:'',name:''});admRows();renderSheet()});
   $('#s_full').addEventListener('input',function(){settings.schoolFull=this.value;renderTSheet()});
   $('#s_school').addEventListener('input',function(){settings.school=this.value;$('#brandName').textContent=(this.value||'Maktab')+' platformasi';renderSheet()});
   $('#s_url').addEventListener('input',function(){settings.url=this.value.trim();renderQrPrev();renderSheet()});
+  $('#s_tgbot').addEventListener('input',function(){settings.telegramBot=this.value.replace(/^@+/,'').replace(/^https?:\/\/t\.me\//i,'').trim();renderTgCard()});
   $('#saveSet').addEventListener('click',function(){
     lset('m28_settings',JSON.stringify(settings));
     if(!db || !curUser) return setMsg('#setMsg','Saqlandi (faqat shu qurilmada)','ok');
@@ -3611,6 +3632,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+s+' '+s+'" shape-rendering="crispEdges"><rect width="'+s+'" height="'+s+'" fill="#fff"/><path d="'+path+'" fill="#000"/></svg>';
   }
   function renderQrPrev(){$('#qrPrev').innerHTML=qrSvg(platformUrl())}
+  function tgBotLink(){ return settings.telegramBot ? 'https://t.me/'+settings.telegramBot+'?start=link' : '' }
+  function renderTgCard(){
+    var link=tgBotLink();
+    $('#tgQrPrev').innerHTML = link ? qrSvg(link) : '';
+    $('#tgInfo').innerHTML = link
+      ? "Ota-onalar shu botni ochib, telefon raqamini ulashsin: <code>"+esc(link)+"</code>. Shundan keyin xat formasida o'sha raqamni kiritib, \"Telegramda ota-onaga xabar berish\" tugmasini bossangiz, ota-onaga avtomatik xabar boradi."
+      : "Hali bot ulanmagan. Avval @BotFather orqali bot yarating, keyin uning username'ini yuqoriga kiriting va Saqlashni bosing. (Xabar yuborish uchun server tomoni ham sozlanishi kerak — ko'rsatma alohida beriladi.)";
+  }
   $('#qrPng').addEventListener('click',function(){
     var qr=qrMatrix(platformUrl()); if(!qr) return toast('QR yaratib bo\'lmadi');
     var n=qr.getModuleCount(), q=4, k=16, size=(n+q*2)*k, cv=document.createElement('canvas');
@@ -3624,7 +3653,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
   /* ---------- letters: 4 slots ---------- */
   var MONTHS=['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'];
-  function emptySlot(){return {name:'',cls:'',parent:'',reason:'',date:''}}
+  function emptySlot(){return {name:'',cls:'',parent:'',reason:'',date:'',phone:''}}
+  /* Telegram uchun telefonni 998XXXXXXXXX ko'rinishiga keltiradi (faqat raqamlar, mamlakat kodi bilan) */
+  function normPhone(p){
+    p=(p||'').replace(/\D/g,'');
+    if(p.length===9) p='998'+p;
+    else if(p.length===12 && p.indexOf('998')===0){ /* ok */ }
+    else if(p.length===13 && p.indexOf('8998')===0) p=p.slice(1);
+    return p;
+  }
   var slots=jparse(lget('m28_slots'),null);
   if(!Array.isArray(slots)||slots.length!==4) slots=[emptySlot(),emptySlot(),emptySlot(),emptySlot()];
   slots=slots.map(function(s){return Object.assign(emptySlot(),s||{})});
@@ -3685,7 +3722,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     }).join('');
     $$('#slots .slot').forEach(function(b){b.addEventListener('click',function(){selectSlot(+b.dataset.slot)})});
   }
-  var FIELDS={f_name:'name',f_class:'cls',f_parent:'parent',f_reason:'reason',f_date:'date'};
+  var FIELDS={f_name:'name',f_class:'cls',f_parent:'parent',f_reason:'reason',f_date:'date',f_phone:'phone'};
   function loadSlotToForm(){Object.keys(FIELDS).forEach(function(id){document.getElementById(id).value=slots[cur][FIELDS[id]]||''}); if(window.__syncChips) window.__syncChips()}
   function selectSlot(i){cur=i;loadSlotToForm();renderSlots();renderSheet()}
   Object.keys(FIELDS).forEach(function(id){
@@ -3769,15 +3806,19 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function loadLog(){var l=jparse(lget('m28_log'),[]);return Array.isArray(l)?l:[]}
   function saveLog(l){lset('m28_log',JSON.stringify(l));cloudSave('log',l)}
   function logFilled(){
-    var log=loadLog(), added=0;
+    var log=loadLog(), added=0, changed=false;
     slots.forEach(function(s){
       if(!s.name||!s.name.trim()) return;
       var d=s.date||todayISO();
       var id=[s.name,s.cls,s.parent,s.reason,d].join('|').toLowerCase();
-      if(log.some(function(e){return e.id===id})) return;
-      log.push({id:id,name:s.name.trim(),cls:(s.cls||'').trim(),parent:(s.parent||'').trim(),reason:(s.reason||'').trim(),date:d,at:Date.now()}); added++;
+      var existing=log.filter(function(e){return e.id===id})[0];
+      if(existing){
+        if((s.phone||'').trim() && existing.phone!==s.phone.trim()){ existing.phone=s.phone.trim(); changed=true; }
+        return;
+      }
+      log.push({id:id,name:s.name.trim(),cls:(s.cls||'').trim(),parent:(s.parent||'').trim(),reason:(s.reason||'').trim(),date:d,phone:(s.phone||'').trim(),at:Date.now()}); added++;
     });
-    if(added) saveLog(log);
+    if(added||changed) saveLog(log);
     return added;
   }
   function personKey(e){return (e.name+'|'+e.cls).toLowerCase().replace(/\s+/g,' ')}
@@ -3805,9 +3846,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var n=counts[personKey(e)];
       return '<tr class="rowlink" data-open="'+esc(e.id)+'"><td><input type="checkbox" data-sel="'+esc(e.id)+'"'+(selected[e.id]?' checked':'')+'></td>'+
              '<td>'+esc(fmtDate(e.date))+'</td><td><b class="lnk">'+esc(e.name)+'</b></td><td>'+esc(e.cls)+'</td><td>'+esc(e.parent)+'</td><td>'+esc(e.reason)+'</td>'+
+             '<td>'+(e.phone?esc(e.phone):'<span class="muted">—</span>')+'</td>'+
              '<td><span class="badge'+(n>=3?' warn':'')+'">'+n+' marta</span></td>'+
              '<td><button class="mini" style="color:var(--danger)" data-rm="'+esc(e.id)+'">O\'chirish</button></td></tr>';
-    }).join('') : '<tr><td colspan="8"><div class="empty">'+(all.length?"Hech narsa topilmadi.":"Hozircha xat yo'q. Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.")+'</div></td></tr>';
+    }).join('') : '<tr><td colspan="9"><div class="empty">'+(all.length?"Hech narsa topilmadi.":"Hozircha xat yo'q. Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.")+'</div></td></tr>';
     $$('#logBody tr[data-open]').forEach(function(tr){tr.addEventListener('click',function(e){
       if(e.target.closest('input,button')) return; openEntries([tr.dataset.open]);
     })});
@@ -3826,7 +3868,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   var selected={};
   function selCount(){return Object.keys(selected).length}
   function updSel(){var n=selCount(),b=$('#selLoad');b.disabled=!n;b.textContent="Tanlanganlarni xatga joylash ("+n+")"}
-  function toSlot(e){return {name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date}}
+  function toSlot(e){return {name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date,phone:e.phone||''}}
   function openEntries(ids){
     var log=loadLog(), es=ids.map(function(id){return log.filter(function(x){return x.id===id})[0]}).filter(Boolean);
     if(!es.length) return;
@@ -3857,8 +3899,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   $('#csvBtn').addEventListener('click',function(){
     var rows=filteredLog(); if(!rows.length) return setMsg('#logMsg',"Yuklab olish uchun ma'lumot yo'q",'err');
     var all=loadLog(), counts={}; all.forEach(function(e){var k=personKey(e);counts[k]=(counts[k]||0)+1});
-    var out=[["№","Sana","O'quvchi","Sinf","Ota-onasi","Sababi","Necha marta"]];
-    rows.forEach(function(e,i){out.push([i+1,fmtDate(e.date),e.name,e.cls,e.parent,e.reason,counts[personKey(e)]])});
+    var out=[["№","Sana","O'quvchi","Sinf","Ota-onasi","Telefon","Sababi","Necha marta"]];
+    rows.forEach(function(e,i){out.push([i+1,fmtDate(e.date),e.name,e.cls,e.parent,e.phone||'',e.reason,counts[personKey(e)]])});
     var csv='\ufeff'+out.map(function(r){return r.map(csvCell).join(';')}).join('\r\n');
     saveFile('ogohlantirish-xatlari-'+todayISO()+'.csv',csv).then(function(){setMsg('#logMsg','CSV saqlandi','ok')},function(e){setMsg('#logMsg',saveErr(e),'err')});
   });
@@ -3872,6 +3914,32 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var n=logFilled(); renderLog();
     setMsg('#letMsg', n? (n+" ta xat ro'yxatga yozildi") : "Yangi xat yo'q (to'ldirilmagan yoki avval yozilgan)", n?'ok':'err');
   });
+  /* ---------- Telegram orqali ota-onaga xabar (Vercel /api orqali) ---------- */
+  function sendTelegramNotice(f, btn, msgSel){
+    var phone=normPhone(f.phone);
+    if(!phone) return setMsg(msgSel, "Avval ota-ona Telegram raqamini kiriting", 'err');
+    if(phone.length!==12) return setMsg(msgSel, "Telefon raqami to'liq emas (masalan: +998 90 123 45 67)", 'err');
+    if(!auth || !curUser) return setMsg(msgSel, "Avval tizimga kiring", 'err');
+    var was=btn.textContent; btn.disabled=true; btn.textContent='Yuborilmoqda...';
+    setMsg(msgSel, '', '');
+    curUser.getIdToken().then(function(idToken){
+      return fetch('/api/send-parent-notice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+idToken },
+        body: JSON.stringify({ phone: phone, name: f.name||'', cls: f.cls||'', date: f.date||'', reason: f.reason||'', infoUrl: platformUrl() })
+      });
+    }).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, body:j}; }) })
+    .then(function(res){
+      var st = res.body && res.body.status;
+      if(st==='sent') setMsg(msgSel, "Ota-onaga Telegram xabari yuborildi", 'ok');
+      else if(st==='not_linked') setMsg(msgSel, "Bu raqam botga ulanmagan. Ota-onadan botni ochib, raqamini ulashishni so'rang (Sozlamalar → Telegram)", 'err');
+      else if(res.body && res.body.error) setMsg(msgSel, "Yuborib bo'lmadi: "+res.body.error, 'err');
+      else setMsg(msgSel, "Noma'lum natija", 'err');
+    }).catch(function(e){
+      setMsg(msgSel, "Yuborib bo'lmadi: "+(e&&e.message||e), 'err');
+    }).finally(function(){ btn.disabled=false; btn.textContent=was; });
+  }
+  $('#tgSendBtn').addEventListener('click',function(){ sendTelegramNotice(slots[cur], this, '#tgMsg') });
   $('#printBtn').addEventListener('click',function(){
     renderSheet();
     var n=autoLogIfOn(); if(n) toast(n+" ta xat ro'yxatga yozildi");
