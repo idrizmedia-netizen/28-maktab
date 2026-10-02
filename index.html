@@ -191,6 +191,9 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
 .tl-h{font-weight:700;margin-top:4.5mm}
 .tl-lines{position:relative;height:22.5mm;margin-top:1mm}
 .tl-lines.two{height:15mm}
+.tl-lines.five{height:37.5mm}
+.tl-lines.five i:nth-child(4){top:29.75mm}.tl-lines.five i:nth-child(5){top:37.25mm}
+.tl-hint{font-size:9pt;font-style:italic;line-height:1.25;margin-top:.8mm}
 .tl-lines i{position:absolute;left:0;right:0;height:0;border-top:0.25mm solid #000}
 .tl-lines i:nth-child(1){top:7.25mm}.tl-lines i:nth-child(2){top:14.75mm}.tl-lines i:nth-child(3){top:22.25mm}
 .tl-lines .tx{position:relative;line-height:7.5mm;height:22.5mm;overflow:hidden}
@@ -3845,7 +3848,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       '<div class="tl-h">3. Ogohlantirish:</div>'+
       '<div class="tl-p" style="margin-top:1mm">Agar yuqoridagi kabi holatlar takrorlangan taqdirda, Mehnat qonunchiligiga muvofiq intizomiy jazo choralari (hayfsan, jarima yoki boshqa choralar) ko\'rilishini ma\'lum qilamiz.</div>'+
       '<div class="tl-h">O\'qituvchining tushuntirish xati (talab etilsa):</div>'+
-      '<div class="tl-lines two"><i></i><i></i></div>'+
+      '<div class="tl-hint">(O\'qituvchi holat yuzasidan o\'z izohini o\'z qo\'li bilan yozadi, sana qo\'yadi va imzolaydi.)</div>'+
+      '<div class="tl-lines five"><i></i><i></i><i></i><i></i><i></i></div>'+
       '<div class="tl-bottom"><div class="tl-sign">'+
         '<div class="tl-p"><b>Maktab direktori (yoki o\'rinbosari):</b></div>'+
         '<div class="tl-row"><span>F.I.Sh.</span>'+tf(f.signer,'grow')+'<span>Imzo:</span>'+tf('','w32')+'</div>'+
