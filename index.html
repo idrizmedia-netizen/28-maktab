@@ -3555,7 +3555,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       '<div class="stat-card"><b>'+tlog.length+"</b><span>O'qituvchi xatlari</span></div>"+
       '<div class="stat-card"><b>'+Object.keys(tpeople).length+"</b><span>Noyob o'qituvchi</span></div>";
 
-    var byClass={}; log.forEach(function(e){var k=e.cls||'(sinfsiz)';byClass[k]=(byClass[k]||0)+1});
+    var byClass={}; log.forEach(function(e){var k=normClass(e.cls)||'(sinfsiz)';byClass[k]=(byClass[k]||0)+1});
     var clsTop=topEntries(byClass).sort(function(a,b){return a.k.localeCompare(b.k,'uz',{numeric:true})});
     var clsMax=Math.max.apply(null,[0].concat(clsTop.map(function(e){return e.n})));
     $('#statByClass').innerHTML = barList(clsTop, clsMax, "Hali o'quvchilar ro'yxatida xat yo'q.");
@@ -3566,7 +3566,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var monMax=Math.max.apply(null,[0].concat(monthEntries.map(function(e){return e.n})));
     $('#statByMonth').innerHTML = barList(monthEntries, monMax, "Hali sana bo'yicha ma'lumot yo'q.");
 
-    var byReason={}; log.forEach(function(e){var r=(e.reason||'').trim(); if(!r)return; if(r.length>60)r=r.slice(0,58)+'…'; byReason[r]=(byReason[r]||0)+1});
+    var byReason={}; log.forEach(function(e){var r=canonReason(e.reason); if(!r)return; if(r.length>60)r=r.slice(0,58)+'…'; byReason[r]=(byReason[r]||0)+1});
     var reasonTop=topEntries(byReason,8);
     var reasMax=Math.max.apply(null,[0].concat(reasonTop.map(function(e){return e.n})));
     $('#statByReason').innerHTML = barList(reasonTop, reasMax, "Hali sabab kiritilgan xat yo'q.");
@@ -3822,6 +3822,18 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     return added;
   }
   function personKey(e){return (e.name+'|'+e.cls).toLowerCase().replace(/\s+/g,' ')}
+  /* "9-a", "9-A", "9 a" kabi yozuvlarni bitta "9-A" ko'rinishiga keltiradi (statistika uchun) */
+  function normClass(c){
+    c=(c||'').trim(); if(!c) return c;
+    var m=/^(\d{1,2})\s*-?\s*([A-Za-zА-Яа-яЎўЎғҚқҒғҲҳ']+)$/.exec(c);
+    return m ? (m[1]+'-'+m[2].toUpperCase()) : c;
+  }
+  /* bir nechta sabab turli tartibda tanlangan bo'lsa ham, statistikada bitta guruh sifatida hisoblanishi uchun */
+  function canonReason(r){
+    var parts=(r||'').split(/;\s*/).map(function(s){return s.trim()}).filter(Boolean);
+    parts.sort(function(a,b){return a.localeCompare(b,'uz')});
+    return parts.join('; ');
+  }
   function filteredLog(){
     var log=loadLog(), q=($('#q').value||'').toLowerCase().trim(), cl=$('#qClass').value;
     var from=$('#qFrom').value, to=$('#qTo').value;
