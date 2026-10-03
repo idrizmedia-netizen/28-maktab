@@ -530,9 +530,10 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
 
             <label class="fl" for="rosterStudentsFile">O'quvchilar — fayldan yuklash (CSV yoki Excel)</label>
             <input class="inp" id="rosterStudentsFile" type="file" accept=".csv,.xlsx,.xls">
-            <p class="hint">Ustunlar tartibi: <b>Ism, Sinf, Telefon</b> (telefon ixtiyoriy). Birinchi qator sarlavha bo'lsa ("Ism", "F.I.Sh" va h.k.), avtomatik tanib olib o'tkazib yuboriladi.</p>
-            <label class="fl" for="rosterStudents" style="margin-top:10px">...yoki qo'lda yozing (Ism, Sinf, Telefon)</label>
-            <textarea class="inp" id="rosterStudents" rows="6" placeholder="Ali Valiyev, 9-A, +998901234567&#10;Olim Yusupov, 8-B"></textarea>
+            <p class="hint">Ustunlar tartibi: <b>Ism, Sinf, Telefon, Ota-ona</b> (telefon va ota-ona ixtiyoriy). Birinchi qator sarlavha bo'lsa ("Ism", "F.I.Sh" va h.k.), avtomatik tanib olib o'tkazib yuboriladi.</p>
+            <label class="fl" for="rosterStudents" style="margin-top:10px">...yoki qo'lda yozing (Ism, Sinf, Telefon, Ota-ona)</label>
+            <textarea class="inp" id="rosterStudents" rows="6" placeholder="Ali Valiyev, 9-A, +998901234567, Vali Valiyev&#10;Olim Yusupov, 8-B"></textarea>
+            <p class="hint">Bu ro'yxatni qo'lda to'ldirishning hojati yo'q — "Telegramda xabar berish" yoki "Ro'yxatga yozish" tugmasini bossangiz, o'quvchining sinfi, telefoni va ota-onasi avtomatik shu bazaga yozib boriladi.</p>
             <div class="actions"><button class="btn line" id="rosterStudentsSave" type="button">O'quvchilar ro'yxatini yangilash</button></div>
             <div class="msg" id="rosterStudentsMsg"></div>
             <div class="hint" id="rosterStudentsCount"></div>
@@ -3375,8 +3376,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     $('#studentNames').innerHTML = roster.students.map(function(s){return '<option value="'+esc(s.name)+'">'}).join('');
     $('#teacherNames').innerHTML = roster.teachers.map(function(t){return '<option value="'+esc(t.name)+'">'}).join('');
   }
+  /* "Ism, Sinf, Telefon, Ota-ona" qatorini yasaydi; oxiridagi bo'sh ustunlarni tashlab yuboradi */
+  function buildStudentLine(s){
+    var f=[s.name||'', s.cls||'', s.phone||'', s.parent||''];
+    while(f.length>2 && !f[f.length-1]) f.pop();
+    return f.join(', ');
+  }
   function renderRosterTextareas(){
-    $('#rosterStudents').value = roster.students.map(function(s){return s.name+', '+s.cls+(s.phone?', '+s.phone:'')}).join('\n');
+    $('#rosterStudents').value = roster.students.map(buildStudentLine).join('\n');
     $('#rosterTeachers').value = roster.teachers.map(function(t){return t.name+', '+t.subject}).join('\n');
     $('#rosterStudentsCount').textContent = roster.students.length+" ta o'quvchi saqlangan";
     $('#rosterTeachersCount').textContent = roster.teachers.length+" ta o'qituvchi saqlangan";
@@ -3409,7 +3416,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var parts=splitCSVLine(line);
       var name=(parts[0]||'').trim();
       if(!name) return null;
-      if(mode==='student') return {name:name, cls:normClass(parts[1]||''), phone:(parts[2]||'').trim()};
+      if(mode==='student') return {name:name, cls:normClass(parts[1]||''), phone:(parts[2]||'').trim(), parent:(parts[3]||'').trim()};
       return {name:name, subject:(parts[1]||'').trim()};
     }).filter(Boolean);
   }
@@ -3441,8 +3448,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var lines = rows.map(function(r){
         var name=(r[0]||'').toString().trim(); if(!name) return null;
         if(kind==='student'){
-          var cls=(r[1]||'').toString().trim(), phone=(r[2]||'').toString().trim();
-          return name+', '+cls+(phone?', '+phone:'');
+          var cls=(r[1]||'').toString().trim(), phone=(r[2]||'').toString().trim(), parent=(r[3]||'').toString().trim();
+          return buildStudentLine({name:name, cls:cls, phone:phone, parent:parent});
         }
         var subject=(r[1]||'').toString().trim();
         return name+', '+subject;
@@ -3460,8 +3467,30 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   $('#f_name').addEventListener('input', function(){
     var v=this.value;
     var hit=roster.students.filter(function(s){return s.name===v})[0];
-    if(hit){ if(hit.cls) $('#f_class').value=hit.cls; if(hit.phone) $('#f_phone').value=hit.phone; }
+    if(hit){ if(hit.cls) $('#f_class').value=hit.cls; if(hit.phone) $('#f_phone').value=hit.phone; if(hit.parent) $('#f_parent').value=hit.parent; }
   });
+  /* Xat yozilganda yoki Telegram xabari yuborilganda, o'quvchining sinfi,
+     telefoni va ota-onasi avtomatik bazaga yozib boriladi (keyingi safar
+     ismini yozishning o'zi yetarli bo'ladi). */
+  function learnRosterFromStudent(f){
+    var name=(f && f.name || '').trim(); if(!name) return;
+    var cls=normClass(f.cls||''), phone=(f.phone||'').trim(), parent=(f.parent||'').trim();
+    var hit=null;
+    for(var i=0;i<roster.students.length;i++){ if(roster.students[i].name===name){ hit=roster.students[i]; break; } }
+    var changed=false;
+    if(hit){
+      if(cls && hit.cls!==cls){ hit.cls=cls; changed=true; }
+      if(phone && hit.phone!==phone){ hit.phone=phone; changed=true; }
+      if(parent && hit.parent!==parent){ hit.parent=parent; changed=true; }
+    } else if(cls || phone || parent){
+      roster.students.push({name:name, cls:cls, phone:phone, parent:parent}); changed=true;
+    }
+    if(changed){
+      fillDatalists();
+      if(!$('#appView').classList.contains('hidden') && !$('#tab-settings').classList.contains('hidden')) renderRosterTextareas();
+      if(db && curUser) cloudSaveRoster().catch(function(e){ console.warn("Bazani avtomatik yangilab bo'lmadi:", e); });
+    }
+  }
   $('#t_name').addEventListener('input', function(){
     var v=this.value;
     var hit=roster.teachers.filter(function(t){return t.name===v})[0];
@@ -4109,10 +4138,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var existing=log.filter(function(e){return e.id===id})[0];
       if(existing){
         if((s.phone||'').trim() && existing.phone!==s.phone.trim()){ existing.phone=s.phone.trim(); changed=true; }
+        learnRosterFromStudent(s);
         return;
       }
       log.push({id:id,name:s.name.trim(),cls:(s.cls||'').trim(),parent:(s.parent||'').trim(),reason:(s.reason||'').trim(),date:d,phone:(s.phone||'').trim(),at:Date.now()}); added++;
       logAudit('student_letter_logged', {name:s.name.trim(), cls:(s.cls||'').trim(), date:d});
+      learnRosterFromStudent(s);
     });
     if(added||changed) saveLog(log);
     return added;
@@ -4241,7 +4272,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     }).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, body:j}; }) })
     .then(function(res){
       var st = res.body && res.body.status;
-      if(st==='sent'){ setMsg(msgSel, "Ota-onaga Telegram xabari yuborildi", 'ok'); logAudit('telegram_sent', {name:f.name||'', cls:f.cls||'', date:f.date||''}); }
+      if(st==='sent'){ setMsg(msgSel, "Ota-onaga Telegram xabari yuborildi", 'ok'); logAudit('telegram_sent', {name:f.name||'', cls:f.cls||'', date:f.date||''}); learnRosterFromStudent(f); }
       else if(st==='not_linked') setMsg(msgSel, "Bu raqam botga ulanmagan. Ota-onadan botni ochib, raqamini ulashishni so'rang (Sozlamalar → Telegram)", 'err');
       else if(res.body && res.body.error) setMsg(msgSel, "Yuborib bo'lmadi: "+res.body.error, 'err');
       else setMsg(msgSel, "Noma'lum natija", 'err');
