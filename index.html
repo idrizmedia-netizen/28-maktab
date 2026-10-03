@@ -225,7 +225,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
 @media print{
   :root{padding:0!important}
   html,body{background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  #authView,#infoView,header.top,#formPanel,#tFormPanel,.previewbar,#tab-settings,#tab-log,#tab-tlog,#tab-stats,.toast{display:none!important}
+  #authView,#infoView,header.top,#formPanel,#tFormPanel,.previewbar,#tab-settings,#tab-log,#tab-tlog,#tab-stats,#tab-audit,.toast{display:none!important}
   main{padding:0!important;max-width:none!important}
   .layout{display:block!important}
   .paper-area{background:#fff!important;padding:0!important;border-radius:0!important;overflow:visible!important}
@@ -275,11 +275,13 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
         <button data-tab="tletter">O'qituvchilar xati</button>
         <button data-tab="tlog">O'qituvchilar ro'yxati</button>
         <button data-tab="stats">Statistika</button>
+        <button data-tab="audit">Faollik jurnali</button>
         <button data-tab="settings">Sozlamalar</button>
         <button class="exit" id="logoutBtn">Chiqish</button>
       </nav>
     </div>
   </header>
+  <div class="msg hidden" id="roleNote" style="margin:10px 20px 0;padding:10px 14px;border-radius:10px;background:var(--brand-soft)"></div>
 
   <main>
     <!-- Ogohlantirish xati -->
@@ -290,7 +292,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
           <p class="hint">Har bir xat (1–4) alohida to'ldiriladi. Bo'sh qoldirsangiz, qo'lda yozish uchun blank chiqadi.</p>
           <div class="slots" id="slots"></div>
           <label class="fl" for="f_name">O'quvchi (F.I.Sh)</label>
-          <input class="inp" id="f_name">
+          <input class="inp" id="f_name" list="studentNames" autocomplete="off">
           <div class="row2">
             <div><label class="fl" for="f_class">Sinf</label><input class="inp" id="f_class" placeholder="masalan, 8-A"></div>
             <div><label class="fl" for="f_date">Sana</label><input class="inp" id="f_date" type="date"></div>
@@ -299,6 +301,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
           <input class="inp" id="f_parent">
           <label class="fl" for="f_phone">Ota-ona Telegram raqami (ixtiyoriy)</label>
           <input class="inp" id="f_phone" placeholder="+998 90 123 45 67" inputmode="tel">
+          <datalist id="studentNames"></datalist>
           <label class="fl" for="f_reason">Sababi</label>
           <details class="tpl" open><summary>Tayyor sabablar (bosib tanlang)</summary><div id="tplBox"></div></details>
           <textarea class="inp" id="f_reason" maxlength="220" placeholder="Shablon tanlang yoki o'zingiz yozing"></textarea>
@@ -360,7 +363,8 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
           <h2>O'qituvchiga ogohlantirish xati</h2>
           <p class="hint">Bir varaqqa bitta xat. Matnni o'zingiz yozasiz, tayyor shablon shart emas.</p>
           <label class="fl" for="t_name">O'qituvchi (F.I.Sh)</label>
-          <input class="inp" id="t_name">
+          <input class="inp" id="t_name" list="teacherNames" autocomplete="off">
+          <datalist id="teacherNames"></datalist>
           <div class="row2">
             <div><label class="fl" for="t_subject">Fani</label><input class="inp" id="t_subject" placeholder="masalan, Matematika"></div>
             <div><label class="fl" for="t_date">Sana</label><input class="inp" id="t_date" type="date"></div>
@@ -436,6 +440,28 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
       </div>
     </section>
 
+    <!-- Faollik jurnali -->
+    <section id="tab-audit" class="hidden">
+      <div class="card">
+        <h2>Faollik jurnali</h2>
+        <p class="hint">Qaysi admin, qachon, nima qilgani — oxirgi 200 ta amal. Bu yerga yoziladigan ma'lumotni hech kim o'zgartira yoki o'chira olmaydi.</p>
+        <div class="filters">
+          <input class="inp" id="auditQ" placeholder="Qidirish: admin, ism, sinf...">
+          <select class="inp" id="auditAction">
+            <option value="">Barcha amallar</option>
+            <option value="student_letter_logged">O'quvchi xati yozildi</option>
+            <option value="teacher_letter_logged">O'qituvchi xati yozildi</option>
+            <option value="telegram_sent">Telegram xabari</option>
+            <option value="admin_added">Admin qo'shildi</option>
+            <option value="admin_removed">Admin olib tashlandi</option>
+            <option value="settings_changed">Sozlamalar o'zgartirildi</option>
+          </select>
+          <button class="mini" id="auditRefresh" type="button">Yangilash</button>
+        </div>
+        <div id="auditBody"><div class="stat-empty">Yuklanmoqda...</div></div>
+      </div>
+    </section>
+
     <!-- Sozlamalar -->
     <section id="tab-settings" class="hidden">
       <div class="settings-grid">
@@ -447,10 +473,18 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
             <div id="adminList" style="margin-top:8px"></div>
             <div id="adminAddBox" class="hidden">
               <label class="fl" for="newAdmin">Yangi admin (Google / Gmail manzili)</label>
-              <div class="add-row">
-                <input class="inp" id="newAdmin" type="email" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="nom@gmail.com">
-                <button class="btn" id="addAdminBtn" type="button">Qo'shish</button>
+              <input class="inp" id="newAdmin" type="email" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="nom@gmail.com">
+              <label class="fl" for="newAdminRole" style="margin-top:8px">Darajasi</label>
+              <select class="inp" id="newAdminRole">
+                <option value="full">To'liq — hamma narsani qila oladi</option>
+                <option value="homeroom">Sinf rahbari — faqat o'z sinfi, faqat o'quvchi xatlari</option>
+                <option value="viewer">Faqat ko'ruvchi — hech narsa yoza/yubora olmaydi</option>
+              </select>
+              <div id="newAdminClassBox" class="hidden">
+                <label class="fl" for="newAdminClass" style="margin-top:8px">Sinfi (bir nechta bo'lsa, vergul bilan: 9-A, 9-B)</label>
+                <input class="inp" id="newAdminClass" placeholder="9-A">
               </div>
+              <div class="actions" style="margin-top:8px"><button class="btn" id="addAdminBtn" type="button">Qo'shish</button></div>
             </div>
             <div class="msg" id="adminMsg"></div>
             <div class="note" id="adminNote"></div>
@@ -489,6 +523,20 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
             </div>
             <div class="actions"><button class="btn" id="saveSet">Saqlash</button></div>
             <div class="msg" id="setMsg"></div>
+          </div>
+          <div class="card" id="rosterCard">
+            <h2>O'quvchilar va o'qituvchilar bazasi</h2>
+            <p class="hint">Har qatorga bitta kishi: "Ism, Sinf" yoki "Ism, Fan". Saqlangach, xat formasida ism yozishni boshlaganingizda shu ro'yxatdan tanlab olish mumkin bo'ladi, sinf/fan maydoni o'zi to'ladi.</p>
+            <label class="fl" for="rosterStudents">O'quvchilar (Ism, Sinf)</label>
+            <textarea class="inp" id="rosterStudents" rows="6" placeholder="Ali Valiyev, 9-A&#10;Olim Yusupov, 8-B"></textarea>
+            <div class="actions"><button class="btn line" id="rosterStudentsSave" type="button">O'quvchilar ro'yxatini yangilash</button></div>
+            <div class="msg" id="rosterStudentsMsg"></div>
+            <div class="hint" id="rosterStudentsCount"></div>
+            <label class="fl" for="rosterTeachers" style="margin-top:14px">O'qituvchilar (Ism, Fan)</label>
+            <textarea class="inp" id="rosterTeachers" rows="6" placeholder="T. Karimov, Matematika&#10;SH. Nortoshova, Fizika"></textarea>
+            <div class="actions"><button class="btn line" id="rosterTeachersSave" type="button">O'qituvchilar ro'yxatini yangilash</button></div>
+            <div class="msg" id="rosterTeachersMsg"></div>
+            <div class="hint" id="rosterTeachersCount"></div>
           </div>
         </div>
       </div>
@@ -3266,6 +3314,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }catch(e){ console.warn('Firebase init xato:', e); db = null; auth = null; }
 
   var curUser = null, isOwner = false, unsubs = [], synced = {};
+  var myRole = 'full', myClasses = [];
+  function isViewer(){ return myRole==='viewer' }
+  function isHomeroom(){ return myRole==='homeroom' }
   function cloudDocId(key){ return 'm28_'+key; }
   function cloudSave(key, arr){
     if(!db || !curUser) return;
@@ -3295,7 +3346,129 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     cloudSync('log', function(){ renderLog() });
     cloudSync('tlog', function(){ renderTLog() });
     ensureSettingsDoc();
+    watchRoster();
   }
+  /* ---------- O'quvchilar/o'qituvchilar bazasi (ism tanlab kiritish uchun) ---------- */
+  var roster = {students:[], teachers:[]};
+  function normRoster(o){
+    o=(o&&typeof o==='object')?o:{};
+    if(!Array.isArray(o.students)) o.students=[];
+    if(!Array.isArray(o.teachers)) o.teachers=[];
+    return o;
+  }
+  function rosterRef(){ return db.collection('adminonly').doc('roster'); }
+  function cloudSaveRoster(){
+    if(!db || !curUser) return Promise.reject(new Error('no-auth'));
+    return rosterRef().set({ data: JSON.parse(JSON.stringify(roster)), updatedAt: Date.now(), updatedBy: curUser.email });
+  }
+  function fillDatalists(){
+    $('#studentNames').innerHTML = roster.students.map(function(s){return '<option value="'+esc(s.name)+'">'}).join('');
+    $('#teacherNames').innerHTML = roster.teachers.map(function(t){return '<option value="'+esc(t.name)+'">'}).join('');
+  }
+  function renderRosterTextareas(){
+    $('#rosterStudents').value = roster.students.map(function(s){return s.name+', '+s.cls}).join('\n');
+    $('#rosterTeachers').value = roster.teachers.map(function(t){return t.name+', '+t.subject}).join('\n');
+    $('#rosterStudentsCount').textContent = roster.students.length+" ta o'quvchi saqlangan";
+    $('#rosterTeachersCount').textContent = roster.teachers.length+" ta o'qituvchi saqlangan";
+  }
+  function watchRoster(){
+    if(!db) return;
+    rosterRef().onSnapshot(function(snap){
+      if(!snap.exists || snap.metadata.hasPendingWrites) return;
+      var d=snap.data(); if(!d || !d.data) return;
+      roster = normRoster(d.data);
+      fillDatalists();
+      if(!$('#appView').classList.contains('hidden') && !$('#tab-settings').classList.contains('hidden')) renderRosterTextareas();
+    }, function(e){ console.warn("Bazani bulutdan olib bo'lmadi:", e); });
+  }
+  function parseRosterLines(text, field){
+    return text.split('\n').map(function(line){
+      var parts=line.split(',');
+      var name=(parts[0]||'').trim();
+      var val=(parts.slice(1).join(',')||'').trim();
+      if(!name) return null;
+      var o={name:name}; o[field]= field==='cls' ? normClass(val) : val;
+      return o;
+    }).filter(Boolean);
+  }
+  $('#f_name').addEventListener('input', function(){
+    var v=this.value;
+    var hit=roster.students.filter(function(s){return s.name===v})[0];
+    if(hit && hit.cls) $('#f_class').value=hit.cls;
+  });
+  $('#t_name').addEventListener('input', function(){
+    var v=this.value;
+    var hit=roster.teachers.filter(function(t){return t.name===v})[0];
+    if(hit && hit.subject) $('#t_subject').value=hit.subject;
+  });
+  $('#rosterStudentsSave').addEventListener('click',function(){
+    roster.students = parseRosterLines($('#rosterStudents').value, 'cls');
+    fillDatalists(); renderRosterTextareas();
+    if(!db || !curUser) return setMsg('#rosterStudentsMsg',"Internet yo'q, saqlab bo'lmadi",'err');
+    cloudSaveRoster().then(function(){ setMsg('#rosterStudentsMsg',"Saqlandi: "+roster.students.length+" ta o'quvchi",'ok') },
+      function(){ setMsg('#rosterStudentsMsg',"Saqlab bo'lmadi",'err') });
+  });
+  $('#rosterTeachersSave').addEventListener('click',function(){
+    roster.teachers = parseRosterLines($('#rosterTeachers').value, 'subject');
+    fillDatalists(); renderRosterTextareas();
+    if(!db || !curUser) return setMsg('#rosterTeachersMsg',"Internet yo'q, saqlab bo'lmadi",'err');
+    cloudSaveRoster().then(function(){ setMsg('#rosterTeachersMsg',"Saqlandi: "+roster.teachers.length+" ta o'qituvchi",'ok') },
+      function(){ setMsg('#rosterTeachersMsg',"Saqlab bo'lmadi",'err') });
+  });
+  /* ---------- Faollik jurnali (audit log): kim, qachon, nima qildi ---------- */
+  function logAudit(action, details){
+    if(!db || !curUser) return;
+    db.collection('audit_log').add({ action: action, details: details||{}, by: curUser.email, at: Date.now() })
+      .catch(function(e){ console.warn("Faollik jurnaliga yozib bo'lmadi:", e); });
+  }
+  var AUDIT_LABELS = {
+    student_letter_logged: "O'quvchi xati ro'yxatga yozildi",
+    teacher_letter_logged: "O'qituvchi xati ro'yxatga yozildi",
+    telegram_sent: "Telegram orqali ota-onaga xabar yuborildi",
+    admin_added: "Admin qo'shildi",
+    admin_removed: "Admin olib tashlandi",
+    settings_changed: "Sozlamalar o'zgartirildi"
+  };
+  function auditDetailText(a){
+    var d=a.details||{};
+    switch(a.action){
+      case 'student_letter_logged': return (d.name||'')+(d.cls?' ('+d.cls+')':'')+(d.date?' — '+fmtDate(d.date):'');
+      case 'teacher_letter_logged': return (d.name||'')+(d.subject?' ('+d.subject+')':'')+(d.date?' — '+fmtDate(d.date):'');
+      case 'telegram_sent': return (d.name||'')+(d.cls?' ('+d.cls+')':'')+(d.date?' — '+fmtDate(d.date):'');
+      case 'admin_added': case 'admin_removed': return d.email||'';
+      default: return '';
+    }
+  }
+  var auditCache = [];
+  function loadAuditLog(){
+    $('#auditBody').innerHTML = '<div class="stat-empty">Yuklanmoqda...</div>';
+    if(!db){ $('#auditBody').innerHTML = "<div class=\"stat-empty\">Internet ulanishi yo'q.</div>"; return; }
+    db.collection('audit_log').orderBy('at','desc').limit(200).get().then(function(qs){
+      auditCache = qs.docs.map(function(d){ return d.data() });
+      renderAuditLog();
+    }, function(e){
+      console.warn("Faollik jurnalini olib bo'lmadi:", e);
+      $('#auditBody').innerHTML = "<div class=\"stat-empty\">Yuklab bo'lmadi.</div>";
+    });
+  }
+  function renderAuditLog(){
+    var q=($('#auditQ').value||'').toLowerCase().trim(), act=$('#auditAction').value;
+    var rows = auditCache.filter(function(a){
+      if(act && a.action!==act) return false;
+      if(!q) return true;
+      var hay=((a.by||'')+' '+(AUDIT_LABELS[a.action]||a.action)+' '+auditDetailText(a)).toLowerCase();
+      return hay.indexOf(q)>=0;
+    });
+    if(!rows.length){ $('#auditBody').innerHTML='<div class="stat-empty">Hech narsa topilmadi.</div>'; return; }
+    $('#auditBody').innerHTML = '<table class="log"><thead><tr><th>Vaqt</th><th>Kim</th><th>Amal</th><th>Tafsilot</th></tr></thead><tbody>'+
+      rows.map(function(a){
+        var dt=new Date(a.at||0), ts=isNaN(dt.getTime())?'':(fmtDate(dt.toISOString().slice(0,10))+' '+dt.toTimeString().slice(0,5));
+        return '<tr><td>'+esc(ts)+'</td><td>'+esc(a.by||'')+'</td><td>'+esc(AUDIT_LABELS[a.action]||a.action)+'</td><td>'+esc(auditDetailText(a))+'</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+  $('#auditQ').addEventListener('input',renderAuditLog);
+  $('#auditAction').addEventListener('change',renderAuditLog);
+  $('#auditRefresh').addEventListener('click',loadAuditLog);
   function stopCloud(keepLocal){
     unsubs.forEach(function(u){ try{u()}catch(e){} }); unsubs = [];
     if(!keepLocal){
@@ -3402,6 +3575,38 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     $('#brandName').textContent = settings.school+' platformasi';
     fillSettings(); loadSlotToForm(); renderSlots(); renderSheet(); renderLog(); fillSigner(); loadTlToForm(); renderTSheet(); renderTLog(); fit();
     loadAdmins();
+    applyRoleUI();
+  }
+  /* ---------- rol darajalariga qarab interfeysni moslash ----------
+     DIQQAT: bu faqat ko'rinish qulayligi uchun (tugmalarni yashirish/o'chirish).
+     Haqiqiy xavfsizlik devori Firestore qoidalarida: "viewer" yoza olmaydi.
+     "homeroom" uchun "faqat o'z sinfi" cheklovi esa hozircha FAQAT shu yerda,
+     interfeys darajasida ta'minlanadi. */
+  function applyRoleUI(){
+    var viewer = isViewer(), homeroom = isHomeroom();
+    // Viewer: yozuvchi/yuboruvchi tugmalar o'chadi
+    [$('#printBtn'), $('#pdfBtn'), $('#logBtn'), $('#tgSendBtn')].forEach(function(b){ if(b) b.disabled = viewer; });
+    var tPrint=$('#tPrintBtn'), tPdf=$('#tPdfBtn'), tLog=$('#tLogBtn');
+    [tPrint,tPdf,tLog].forEach(function(b){ if(b) b.disabled = viewer; });
+    $('#saveSet').disabled = viewer;
+    $('#rosterStudentsSave').disabled = viewer;
+    $('#rosterTeachersSave').disabled = viewer;
+    var homeroomClassTxt = myClasses.join(', ') || 'sizning sinfingiz';
+    $('#roleNote').textContent = viewer
+      ? "Siz \"faqat ko'ruvchi\" sifatida kirgansiz — xat yoza, chop eta yoki yubora olmaysiz, faqat ko'rishingiz mumkin."
+      : (homeroom ? "Siz \"sinf rahbari\" sifatida kirgansiz — faqat "+homeroomClassTxt+" uchun o'quvchi xatlari ko'rsatiladi." : '');
+    $('#roleNote').classList.toggle('hidden', !(viewer||homeroom));
+
+    // Sinf rahbari: faqat o'quvchi bo'limlari, o'qituvchi bo'limlari yashiriladi
+    $$('nav.tabs [data-tab="tletter"], nav.tabs [data-tab="tlog"]').forEach(function(b){ b.classList.toggle('hidden', homeroom); });
+
+    // Sinf rahbari uchun "Sinf" maydoni: bitta sinf bo'lsa qulflanadi, bir nechta bo'lsa tanlovga aylanadi
+    var fClass = $('#f_class');
+    if(homeroom && myClasses.length===1){
+      fClass.value = myClasses[0]; fClass.readOnly = true;
+    } else {
+      fClass.readOnly = false;
+    }
   }
   function unb64u(s){
     s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='=';
@@ -3454,14 +3659,20 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
   function checkAdmin(user){
     var em = (user.email||'').toLowerCase();
-    if(!user.emailVerified || !em) return Promise.resolve(false);
-    if(em === OWNER_EMAIL) return Promise.resolve(true);
-    return db.collection('admins').doc(em).get().then(function(s){return s.exists},function(e){console.warn('Admin tekshiruvi xato:',e);return false});
+    if(!user.emailVerified || !em) return Promise.resolve(null);
+    if(em === OWNER_EMAIL) return Promise.resolve({role:'owner', classes:[]});
+    return db.collection('admins').doc(em).get().then(function(s){
+      if(!s.exists) return null;
+      var d=s.data()||{};
+      var role = d.role || 'full';
+      var classes = Array.isArray(d.classes) ? d.classes : [];
+      return {role:role, classes:classes};
+    },function(e){console.warn('Admin tekshiruvi xato:',e);return null});
   }
   var authSeq = 0;
   function onUser(user){
     var seq = ++authSeq;
-    stopCloud(false); curUser = null; isOwner = false;
+    stopCloud(false); curUser = null; isOwner = false; myRole='full'; myClasses=[];
     if(!user){
       if(!infoActive){
         showAuth();
@@ -3470,10 +3681,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       return;
     }
     if(!infoActive){ hideAll(); $('#authView').classList.remove('hidden'); $('#googleBtn').disabled = true; authMsg('Tekshirilmoqda...',''); }
-    checkAdmin(user).then(function(ok){
+    checkAdmin(user).then(function(info){
       if(seq !== authSeq) return;
-      if(!ok){ pendingDenied = user.email || 'Bu hisob'; auth.signOut(); return; }
+      if(!info){ pendingDenied = user.email || 'Bu hisob'; auth.signOut(); return; }
       curUser = user; isOwner = (user.email||'').toLowerCase() === OWNER_EMAIL;
+      myRole = info.role; myClasses = info.classes||[];
       startCloud();
       if(!infoActive) showApp();
     });
@@ -3487,13 +3699,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
   /* ---------- adminlar boshqaruvi ---------- */
   var adminsList = [];
+  var ROLE_LABELS = { full:"To'liq", viewer:"Faqat ko'ruvchi", homeroom:"Sinf rahbari" };
   function renderAdminCard(){
     $('#meEmail').textContent = curUser ? curUser.email : '—';
     $('#adminAddBox').classList.toggle('hidden', !isOwner);
     $('#adminNote').textContent = isOwner ? '' : "Adminlarni faqat asosiy admin ("+OWNER_EMAIL+") qo'shishi va o'chirishi mumkin.";
-    var html = '<div class="adm-line"><div class="who"><b>'+esc(OWNER_EMAIL)+'</b><small>Asosiy admin</small></div></div>';
+    var html = '<div class="adm-line"><div class="who"><b>'+esc(OWNER_EMAIL)+"</b><small>Asosiy admin · To'liq</small></div></div>";
     adminsList.forEach(function(a){
-      html += '<div class="adm-line"><div class="who"><b>'+esc(a.email)+'</b><small>Admin'+(a.addedBy?' · qo\'shgan: '+esc(a.addedBy):'')+'</small></div>'+
+      var roleTxt = ROLE_LABELS[a.role] || "To'liq";
+      if(a.role==='homeroom' && a.classes && a.classes.length) roleTxt += ' ('+a.classes.join(', ')+')';
+      html += '<div class="adm-line"><div class="who"><b>'+esc(a.email)+'</b><small>'+esc(roleTxt)+(a.addedBy?' · qo\'shgan: '+esc(a.addedBy):'')+'</small></div>'+
               (isOwner?'<button class="rm" type="button" data-rm="'+esc(a.email)+'">O\'chirish</button>':'')+'</div>';
     });
     $('#adminList').innerHTML = html;
@@ -3501,7 +3716,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       b.addEventListener('click',function(){
         var em = b.getAttribute('data-rm');
         if(!window.confirm(em+" adminlikdan olinsinmi?")) return;
-        db.collection('admins').doc(em).delete().then(function(){ setMsg('#adminMsg','Admin olib tashlandi','ok'); loadAdmins() },
+        db.collection('admins').doc(em).delete().then(function(){ setMsg('#adminMsg','Admin olib tashlandi','ok'); logAudit('admin_removed',{email:em}); loadAdmins() },
           function(){ setMsg('#adminMsg',"O'chirib bo'lmadi (ruxsat yo'q yoki internet)",'err') });
       });
     });
@@ -3510,27 +3725,41 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     renderAdminCard();
     if(!db || !curUser) return;
     db.collection('admins').get().then(function(qs){
-      adminsList = qs.docs.map(function(d){ var x = d.data()||{}; return {email:d.id, addedBy:x.addedBy||''} })
-                          .sort(function(a,b){ return a.email<b.email?-1:1 });
+      adminsList = qs.docs.map(function(d){
+        var x = d.data()||{};
+        return {email:d.id, addedBy:x.addedBy||'', role:x.role||'full', classes:Array.isArray(x.classes)?x.classes:[]};
+      }).sort(function(a,b){ return a.email<b.email?-1:1 });
       renderAdminCard();
     },function(e){ console.warn('Adminlar ro\'yxatini olib bo\'lmadi:',e); });
   }
+  $('#newAdminRole').addEventListener('change',function(){
+    $('#newAdminClassBox').classList.toggle('hidden', this.value!=='homeroom');
+  });
   $('#addAdminBtn').addEventListener('click',function(){
     if(!isOwner || !db) return;
     var em = $('#newAdmin').value.trim().toLowerCase();
+    var role = $('#newAdminRole').value || 'full';
     if(!/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(em)) return setMsg('#adminMsg',"To'g'ri email manzil yozing",'err');
     if(em === OWNER_EMAIL) return setMsg('#adminMsg',"Bu asosiy admin, allaqachon qo'shilgan",'err');
     if(adminsList.some(function(a){return a.email===em})) return setMsg('#adminMsg',"Bu admin allaqachon ro'yxatda",'err');
-    db.collection('admins').doc(em).set({email:em, addedBy:curUser.email, addedAt:Date.now()}).then(function(){
-      $('#newAdmin').value=''; setMsg('#adminMsg',em+" admin qilib qo'shildi",'ok'); loadAdmins();
+    var classes = [];
+    if(role==='homeroom'){
+      classes = $('#newAdminClass').value.split(',').map(function(c){return normClass(c.trim())}).filter(Boolean);
+      if(!classes.length) return setMsg('#adminMsg',"Sinf rahbari uchun kamida bitta sinf kiriting",'err');
+    }
+    var doc = {email:em, addedBy:curUser.email, addedAt:Date.now(), role:role};
+    if(role==='homeroom') doc.classes = classes;
+    db.collection('admins').doc(em).set(doc).then(function(){
+      $('#newAdmin').value=''; $('#newAdminClass').value=''; $('#newAdminRole').value='full'; $('#newAdminClassBox').classList.add('hidden');
+      setMsg('#adminMsg',em+" admin qilib qo'shildi",'ok'); logAudit('admin_added',{email:em, role:role}); loadAdmins();
     },function(){ setMsg('#adminMsg',"Qo'shib bo'lmadi (ruxsat yo'q yoki internet)",'err') });
   });
 
   /* ---------- tabs ---------- */
   function goTab(t){
     $$('nav.tabs [data-tab]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-tab')===t)});
-    ['letter','log','tletter','tlog','stats','settings'].forEach(function(n){$('#tab-'+n).classList.toggle('hidden',n!==t)});
-    if(t==='letter') fit(); else if(t==='tletter'){fillSigner();fit()} else if(t==='settings'){fillSettings();loadAdmins()} else if(t==='log') renderLog(); else if(t==='tlog') renderTLog(); else if(t==='stats') renderStats();
+    ['letter','log','tletter','tlog','stats','audit','settings'].forEach(function(n){$('#tab-'+n).classList.toggle('hidden',n!==t)});
+    if(t==='letter') fit(); else if(t==='tletter'){fillSigner();fit()} else if(t==='settings'){fillSettings();loadAdmins()} else if(t==='log') renderLog(); else if(t==='tlog') renderTLog(); else if(t==='stats') renderStats(); else if(t==='audit') loadAuditLog();
     window.scrollTo(0,0);
   }
   /* ---------- Statistika ---------- */
@@ -3604,7 +3833,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     $('#s_full').value=settings.schoolFull;
     $('#s_url').value=platformUrl();
     $('#s_tgbot').value=settings.telegramBot||'';
-    admRows(); renderQrPrev(); renderTgCard();
+    admRows(); renderQrPrev(); renderTgCard(); renderRosterTextareas();
   }
   $('#addAdm').addEventListener('click',function(){settings.admins.push({role:'',name:''});admRows();renderSheet()});
   $('#s_full').addEventListener('input',function(){settings.schoolFull=this.value;renderTSheet()});
@@ -3614,7 +3843,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   $('#saveSet').addEventListener('click',function(){
     lset('m28_settings',JSON.stringify(settings));
     if(!db || !curUser) return setMsg('#setMsg','Saqlandi (faqat shu qurilmada)','ok');
-    cloudSaveSettings().then(function(){ setMsg('#setMsg',"Saqlandi. Barcha qurilmalarda yangilanadi",'ok') },
+    cloudSaveSettings().then(function(){ setMsg('#setMsg',"Saqlandi. Barcha qurilmalarda yangilanadi",'ok'); logAudit('settings_changed',{}) },
       function(){ setMsg('#setMsg',"Shu qurilmada saqlandi, lekin bulutga yozib bo'lmadi",'err') });
   });
   $('#urlCopy').addEventListener('click',function(){copyText(platformUrl(),'Havola nusxalandi')});
@@ -3817,6 +4046,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         return;
       }
       log.push({id:id,name:s.name.trim(),cls:(s.cls||'').trim(),parent:(s.parent||'').trim(),reason:(s.reason||'').trim(),date:d,phone:(s.phone||'').trim(),at:Date.now()}); added++;
+      logAudit('student_letter_logged', {name:s.name.trim(), cls:(s.cls||'').trim(), date:d});
     });
     if(added||changed) saveLog(log);
     return added;
@@ -3839,6 +4069,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var from=$('#qFrom').value, to=$('#qTo').value;
     log.sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.at-a.at});
     return log.filter(function(e){
+      if(isHomeroom() && myClasses.length && myClasses.indexOf(normClass(e.cls))<0) return false;
       if(cl && e.cls!==cl) return false;
       if(from && e.date && e.date<from) return false;
       if(to && e.date && e.date>to) return false;
@@ -3849,6 +4080,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function renderLog(){
     var all=loadLog(), sel=$('#qClass'), keep=sel.value;
     var classes=[]; all.forEach(function(e){if(e.cls&&classes.indexOf(e.cls)<0)classes.push(e.cls)});
+    if(isHomeroom() && myClasses.length) classes=classes.filter(function(c){return myClasses.indexOf(normClass(c))>=0});
     classes.sort(function(a,b){return a.localeCompare(b,'uz',{numeric:true})});
     sel.innerHTML='<option value="">Barcha sinflar</option>'+classes.map(function(c){return '<option value="'+esc(c)+'"'+(c===keep?' selected':'')+'>'+esc(c)+'</option>'}).join('');
     var counts={}; all.forEach(function(e){var k=personKey(e);counts[k]=(counts[k]||0)+1});
@@ -3943,7 +4175,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     }).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, body:j}; }) })
     .then(function(res){
       var st = res.body && res.body.status;
-      if(st==='sent') setMsg(msgSel, "Ota-onaga Telegram xabari yuborildi", 'ok');
+      if(st==='sent'){ setMsg(msgSel, "Ota-onaga Telegram xabari yuborildi", 'ok'); logAudit('telegram_sent', {name:f.name||'', cls:f.cls||'', date:f.date||''}); }
       else if(st==='not_linked') setMsg(msgSel, "Bu raqam botga ulanmagan. Ota-onadan botni ochib, raqamini ulashishni so'rang (Sozlamalar → Telegram)", 'err');
       else if(res.body && res.body.error) setMsg(msgSel, "Yuborib bo'lmadi: "+res.body.error, 'err');
       else setMsg(msgSel, "Noma'lum natija", 'err');
@@ -4050,7 +4282,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var id=[tl.name,tl.subject,tl.issue,d].join('|').toLowerCase();
     if(log.some(function(e){return e.id===id})) return 0;
     log.push({id:id,name:tl.name.trim(),subject:(tl.subject||'').trim(),issue:(tl.issue||'').trim(),date:d,signer:tl.signer||'',at:Date.now()});
-    saveTLog(log); return 1;
+    saveTLog(log);
+    logAudit('teacher_letter_logged', {name:tl.name.trim(), subject:(tl.subject||'').trim(), date:d});
+    return 1;
   }
   function tKey(e){return e.name.toLowerCase().replace(/\s+/g,' ').trim()}
   function filteredTLog(){
