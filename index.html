@@ -4,6 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>28-maktab platformasi</title>
+<meta name="description" content="28-maktab ma'muriyati platformasi">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" type="image/svg+xml" href="icons/favicon/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon/favicon-16.png">
+<link rel="apple-touch-icon" href="icons/apple/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#1f4fd8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1420" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="28-maktab">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta property="og:type" content="website">
+<meta property="og:title" content="28-maktab platformasi">
+<meta property="og:description" content="Maktab ma'muriyati platformasi">
+<meta property="og:image" content="https://28-maktab.vercel.app/icons/social/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
 <style>
 :root{
   --bg:#f3f5f9;--card:#ffffff;--text:#172033;--muted:#5b6578;--line:#dde2eb;
@@ -225,7 +243,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
 @media print{
   :root{padding:0!important}
   html,body{background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  #authView,#infoView,header.top,#formPanel,#tFormPanel,.previewbar,#tab-settings,#tab-log,#tab-tlog,#tab-stats,#tab-audit,.toast{display:none!important}
+  #authView,#infoView,header.top,.inst-row,#instModal,#formPanel,#tFormPanel,.previewbar,#tab-settings,#tab-log,#tab-tlog,#tab-stats,#tab-audit,.toast{display:none!important}
   main{padding:0!important;max-width:none!important}
   .layout{display:block!important}
   .paper-area{background:#fff!important;padding:0!important;border-radius:0!important;overflow:visible!important}
@@ -233,6 +251,24 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
   .sheet{transform:none!important;box-shadow:none!important}
   .sheet .letter.sel{outline:none!important}
 }
+
+/* ---- logo rasmi ---- */
+img.logo{display:block;background:transparent;object-fit:contain;box-shadow:0 2px 8px rgba(31,79,216,.25)}
+/* ---- ilovani o'rnatish tugmalari ---- */
+.inst-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.inst-row.inst-head{margin:0 0 0 auto;justify-content:flex-end}
+.inst-row .btn{white-space:nowrap}
+.inst-modal{position:fixed;inset:0;background:rgba(10,15,30,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:60}
+.inst-box{position:relative;width:100%;max-width:420px;max-height:90vh;overflow:auto;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:22px 20px}
+.inst-box h3{margin:0 0 10px;font-size:18px;padding-right:28px}
+.inst-box p{margin:0 0 10px;font-size:14px;color:var(--muted)}
+.inst-box ol{margin:0 0 12px;padding-left:20px;font-size:14px;line-height:1.55}
+.inst-box ol li{margin-bottom:6px}
+.inst-x{position:absolute;top:10px;right:10px;border:0;background:var(--brand-soft);color:var(--brand);width:30px;height:30px;border-radius:8px;font-size:20px;line-height:1;cursor:pointer}
+.inst-qr{width:200px;max-width:70%;margin:6px auto 12px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.inst-qr svg{display:block;width:100%;height:auto}
+.inst-link{display:flex;gap:8px;align-items:center;margin-top:4px}
+.inst-link code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--brand-soft);color:var(--text);padding:8px 10px;border-radius:8px;font-size:12px}
 </style>
 </head>
 <body>
@@ -240,7 +276,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
 <!-- ============ KIRISH ============ -->
 <section id="authView" class="hidden">
   <div class="auth-card">
-    <div class="logo">28</div>
+    <img class="logo" src="icons/logo/icon.svg" alt="28-maktab" width="56" height="56">
     <h1 id="authTitle">Kirish</h1>
     <p class="sub" id="authSub">28-maktab platformasi</p>
     <button class="btn block gbtn" id="googleBtn" type="button">
@@ -249,18 +285,26 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
     </button>
     <div class="msg" id="authMsg"></div>
     <p class="note" style="text-align:center">Faqat admin ro'yxatidagi Google hisoblari kira oladi.</p>
+    <div class="inst-row" data-inst-row>
+      <button type="button" class="btn ghost sm" data-inst="phone">📱 Telefonga o'rnatish</button>
+      <button type="button" class="btn ghost sm" data-inst="pc">💻 Kompyuterga o'rnatish</button>
+    </div>
   </div>
 </section>
 
 <!-- ============ OMMAVIY MA'LUMOT (QR orqali) ============ -->
 <section id="infoView" class="hidden">
   <div class="info-card">
-    <div class="logo">28</div>
+    <img class="logo" src="icons/logo/icon.svg" alt="28-maktab" width="56" height="56">
     <h1 id="infoTitle">28-maktab</h1>
     <p class="sub" id="infoSub">Maktab ma'muriyati</p>
     <div id="infoData"></div>
     <div id="infoAdm"></div>
     <button class="btn line block" id="infoStaff" type="button">Xodimlar uchun kirish</button>
+    <div class="inst-row" data-inst-row>
+      <button type="button" class="btn ghost sm" data-inst="phone">📱 Telefonga o'rnatish</button>
+      <button type="button" class="btn ghost sm" data-inst="pc">💻 Kompyuterga o'rnatish</button>
+    </div>
   </div>
 </section>
 
@@ -268,7 +312,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
 <div id="appView" class="hidden">
   <header class="top">
     <div class="top-in">
-      <div class="brand"><div class="logo">28</div><span id="brandName">28-maktab platformasi</span></div>
+      <div class="brand"><img class="logo" src="icons/logo/icon.svg" alt="28-maktab" width="36" height="36"><span id="brandName">28-maktab platformasi</span></div>
       <nav class="tabs">
         <button data-tab="letter" class="on">O'quvchilar xati</button>
         <button data-tab="log">O'quvchilar ro'yxati</button>
@@ -279,6 +323,10 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
         <button data-tab="settings">Sozlamalar</button>
         <button class="exit" id="logoutBtn">Chiqish</button>
       </nav>
+      <div class="inst-row inst-head" data-inst-row>
+        <button type="button" class="btn ghost sm" data-inst="phone" title="Telefonga o'rnatish">📱 Telefon</button>
+        <button type="button" class="btn ghost sm" data-inst="pc" title="Kompyuterga o'rnatish">💻 Kompyuter</button>
+      </div>
     </div>
   </header>
   <div class="msg hidden" id="roleNote" style="margin:10px 20px 0;padding:10px 14px;border-radius:10px;background:var(--brand-soft)"></div>
@@ -4310,7 +4358,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     return added+updated;
   }
   /* O'quvchi kaliti: ism-familiya bo'yicha. Bir xil ismli ikki o'quvchini sinf bo'yicha ajratish kerak bo'lsa, quyidagini true qiling */
-  var COUNT_BY_CLASS=true;
+  var COUNT_BY_CLASS=false;
   function personKey(e){ var k=nameKey(e.name); return COUNT_BY_CLASS ? k+'|'+nameKey(normClass(e.cls)) : k }
   /* ro'yxatda ko'rsatish uchun: telefon bo'sh bo'lsa, o'quvchining boshqa xatidan olinadi */
   function phoneMap(all){
@@ -4697,6 +4745,116 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     auth.onAuthStateChanged(onUser);
   } else if(!infoMode){
     $('#googleBtn').disabled = true; authMsg("Firebase yuklanmadi. Internetni tekshirib sahifani yangilang",'err');
+  }
+window.__m28={qrSvg:qrSvg,platformUrl:platformUrl};
+})();
+</script>
+
+<!-- ============ ILOVANI O'RNATISH (telefon / kompyuter) ============ -->
+<div id="instModal" class="inst-modal hidden" role="dialog" aria-modal="true" aria-labelledby="instTitle">
+  <div class="inst-box">
+    <button type="button" class="inst-x" id="instClose" aria-label="Yopish">×</button>
+    <h3 id="instTitle"></h3>
+    <div id="instBody"></div>
+  </div>
+</div>
+<script>
+(function(){
+  var dp=null, ua=navigator.userAgent||'';
+  var isIOS=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  var isAndroid=/Android/i.test(ua), isMobile=isIOS||isAndroid;
+  var isFirefox=/firefox|fxios/i.test(ua);
+  var isEdge=/edg/i.test(ua);
+  var isSafariDesk=!isMobile && /safari/i.test(ua) && !/chrome|chromium|edg|firefox/i.test(ua);
+  var q=function(s){return document.querySelector(s)};
+
+  function standalone(){
+    return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone===true;
+  }
+  function refresh(){
+    var hide=standalone();
+    [].slice.call(document.querySelectorAll('[data-inst-row]')).forEach(function(r){ r.classList.toggle('hidden',hide); });
+  }
+  function siteUrl(){ return location.href.split('#')[0].split('?')[0].replace(/index\.html$/,''); }
+
+  window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); dp=e; refresh(); });
+  window.addEventListener('appinstalled',function(){ dp=null; refresh(); show("O'rnatildi ✅","<p>Ilova o'rnatildi. Endi uni telefoningiz bosh ekranidan yoki kompyuteringiz ilovalar ro'yxatidan ochishingiz mumkin.</p>"); });
+  if(window.matchMedia){ try{ matchMedia('(display-mode: standalone)').addEventListener('change',refresh); }catch(e){} }
+
+  function show(title,html){
+    q('#instTitle').textContent=title; q('#instBody').innerHTML=html;
+    q('#instModal').classList.remove('hidden');
+    var cp=q('#instCopy'); if(cp) cp.addEventListener('click',copyLink);
+  }
+  function hide(){ q('#instModal').classList.add('hidden'); }
+  function copyLink(){
+    var u=siteUrl(), b=q('#instCopy');
+    function ok(){ if(b){ b.textContent='Nusxalandi ✓'; setTimeout(function(){ b.textContent='Nusxalash'; },1800); } }
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(u).then(ok,function(){ window.prompt('Havolani nusxalang:',u); }); }
+    else window.prompt('Havolani nusxalang:',u);
+  }
+  function linkBox(){ return '<div class="inst-link"><code>'+siteUrl()+'</code><button type="button" class="btn ghost sm" id="instCopy">Nusxalash</button></div>'; }
+  function qrBox(){
+    var svg=''; try{ svg=window.__m28 ? window.__m28.qrSvg(siteUrl()) : ''; }catch(e){}
+    return svg ? '<div class="inst-qr">'+svg+'</div>' : '';
+  }
+
+  function go(kind){
+    var wantPhone = kind==='phone';
+    /* qurilma turi mos kelsa va brauzer tayyor bo'lsa: to'g'ridan-to'g'ri o'rnatish oynasi */
+    if(wantPhone===isMobile && dp){
+      var p=dp; dp=null;
+      p.prompt();
+      p.userChoice.then(function(c){ if(c && c.outcome!=='accepted') refresh(); }).catch(function(){});
+      return;
+    }
+    if(wantPhone && !isMobile){
+      show("📱 Telefonga o'rnatish",
+        "<p>Telefon kamerasi bilan QR kodni skanerlang. Sahifa ochilgach shu yerdagi «Telefonga o'rnatish» tugmasini bosing.</p>"+qrBox()+linkBox());
+    } else if(wantPhone && isIOS){
+      show("📱 iPhone / iPad ga o'rnatish",
+        "<p>Sahifani <b>Safari</b> brauzerida oching, so'ng:</p><ol>"+
+        "<li>Pastdagi <b>Ulashish</b> tugmasini bosing (ichidan o'q chiqqan kvadrat).</li>"+
+        "<li>Ro'yxatni pastga suring va <b>«Bosh ekranga qo'shish»</b> ni tanlang.</li>"+
+        "<li>O'ng yuqoridagi <b>«Qo'shish»</b> ni bosing.</li></ol><p>Ikonka bosh ekranda paydo bo'ladi.</p>");
+    } else if(wantPhone){
+      show("📱 Android telefonga o'rnatish",
+        "<p>Sahifani <b>Chrome</b> brauzerida oching, so'ng:</p><ol>"+
+        "<li>Yuqori o'ngdagi <b>⋮</b> (uch nuqta) menyusini oching.</li>"+
+        "<li><b>«Ilovani o'rnatish»</b> yoki <b>«Bosh ekranga qo'shish»</b> ni tanlang.</li>"+
+        "<li><b>«O'rnatish»</b> ni tasdiqlang.</li></ol><p>Agar bu variantlar yo'q bo'lsa, ilova allaqachon o'rnatilgan bo'lishi mumkin.</p>");
+    } else if(isMobile){
+      show("💻 Kompyuterga o'rnatish",
+        "<p>Kompyuterda <b>Chrome</b> yoki <b>Edge</b> brauzerini oching va shu havolaga kiring, so'ng sahifadagi «Kompyuterga o'rnatish» tugmasini bosing.</p>"+linkBox());
+    } else if(isFirefox){
+      show("💻 Kompyuterga o'rnatish",
+        "<p>Firefox kompyuterda ilova o'rnatishni qo'llab-quvvatlamaydi. Shu sahifani <b>Chrome</b> yoki <b>Edge</b> da oching.</p>"+linkBox());
+    } else if(isSafariDesk){
+      show("💻 Mac kompyuterga o'rnatish",
+        "<p>Safari menyusida:</p><ol><li><b>Fayl → «Dock'ga qo'shish…»</b> ni tanlang.</li><li><b>«Qo'shish»</b> ni bosing.</li></ol>"+
+        "<p>Yoki Chrome/Edge da ochib, «Kompyuterga o'rnatish» tugmasini bosing.</p>");
+    } else if(isEdge){
+      show("💻 Kompyuterga o'rnatish (Edge)",
+        "<ol><li>Yuqori o'ngdagi <b>⋯</b> menyusini oching.</li><li><b>Ilovalar → «Bu saytni ilova sifatida o'rnatish»</b> ni tanlang.</li><li><b>«O'rnatish»</b> ni bosing.</li></ol>"+
+        "<p>Manzil satri o'ng chetida o'rnatish belgisi ham bo'lishi mumkin.</p>");
+    } else {
+      show("💻 Kompyuterga o'rnatish (Chrome)",
+        "<ol><li>Manzil satrining o'ng chetidagi <b>o'rnatish belgisini</b> (monitor yoki ⊕) bosing.</li>"+
+        "<li>Belgi ko'rinmasa: <b>⋮ → «Saqlash va ulashish» → «Sahifani ilova sifatida o'rnatish»</b>.</li>"+
+        "<li><b>«O'rnatish»</b> ni bosing.</li></ol><p>Agar bu variantlar yo'q bo'lsa, ilova allaqachon o'rnatilgan bo'lishi mumkin.</p>");
+    }
+  }
+
+  document.addEventListener('click',function(e){
+    var b=e.target.closest && e.target.closest('[data-inst]');
+    if(b){ e.preventDefault(); go(b.getAttribute('data-inst')); return; }
+    if(e.target===q('#instModal') || e.target.closest('#instClose')) hide();
+  });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') hide(); });
+
+  refresh();
+  if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+    window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
   }
 })();
 </script>
