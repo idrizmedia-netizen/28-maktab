@@ -4310,7 +4310,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     return added+updated;
   }
   /* O'quvchi kaliti: ism-familiya bo'yicha. Bir xil ismli ikki o'quvchini sinf bo'yicha ajratish kerak bo'lsa, quyidagini true qiling */
-  var COUNT_BY_CLASS=false;
+  var COUNT_BY_CLASS=true;
   function personKey(e){ var k=nameKey(e.name); return COUNT_BY_CLASS ? k+'|'+nameKey(normClass(e.cls)) : k }
   /* ro'yxatda ko'rsatish uchun: telefon bo'sh bo'lsa, o'quvchining boshqa xatidan olinadi */
   function phoneMap(all){
