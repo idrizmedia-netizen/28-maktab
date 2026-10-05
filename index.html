@@ -326,10 +326,9 @@ img.logo{display:block;background:transparent;object-fit:contain;box-shadow:0 2p
 .sig-prev img{max-width:100%;max-height:100%}
 .sig-ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .sig-th{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
-.l-sign .fill{position:relative}
-.l-sign .fill{width:50mm}
-.l-sign.signed{min-height:6mm}
-img.sig-img{position:absolute;left:50%;bottom:.8mm;transform:translateX(-50%);max-width:48mm;max-height:15mm;pointer-events:none}
+.l-sign{margin-top:1mm}
+.l-sign .fill{position:relative;width:50mm;height:14mm}
+img.sig-img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;padding-bottom:.7mm;box-sizing:border-box;pointer-events:none}
 @media print{#sigPanel{display:none!important}}
 /* ---- rejim tugmasi (Avto / Kun / Tun) ---- */
 #themeBtn{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:50;border:1px solid var(--line);background:var(--card);color:var(--text);box-shadow:var(--shadow);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
@@ -3448,6 +3447,20 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function pad(n){return n<10?'0'+n:''+n}
   function todayISO(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+
+  /* Xat sanasi: bugundan 3 kun oldin ... bugun. Kelajak sanalar yopiq */
+  var BACK_DAYS=3;
+  function dateISO(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+  function dateMax(){ return todayISO(); }
+  function dateMin(){ var d=new Date(); d.setDate(d.getDate()-BACK_DAYS); return dateISO(d); }
+  function dateOK(d){ return /^\d{4}-\d{2}-\d{2}$/.test(d||'') && d>=dateMin() && d<=dateMax(); }
+  function dateLimitMsg(){ return "Xat sanasi faqat "+fmtDate(dateMin())+" dan "+fmtDate(dateMax())+" gacha bo'lishi mumkin (3 kun oldingacha)"; }
+  function clampDate(d){ return d<dateMin() ? dateMin() : (d>dateMax() ? dateMax() : d); }
+  function applyDateLimits(){
+    ['f_date','t_date'].forEach(function(id){ var el=document.getElementById(id); if(el){ el.min=dateMin(); el.max=dateMax(); } });
+  }
+  window.addEventListener('focus', applyDateLimits);
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) applyDateLimits(); });
   function fmtDate(iso){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');return m?(m[3]+'.'+m[2]+'.'+m[1]):(iso||'')}
 
   /* ---------- Firebase: Google orqali kirish + Firestore sinxronizatsiya ----------
@@ -4312,6 +4325,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var sm=$('#slots .slot.on small'); if(sm) sm.textContent=slotLabel(slots[cur]);
     });
   });
+  applyDateLimits();
+  document.getElementById('f_date').addEventListener('blur',function(){
+    var v=this.value; if(!v || dateOK(v)) return;
+    var ent=slots[cur].srcId ? loadLog().filter(function(x){return x.id===slots[cur].srcId})[0] : null;
+    if(ent && ent.date===v) return;           /* ro'yxatdan ochilgan eski xatning o'z sanasi */
+    var c=clampDate(v); this.value=c; slots[cur].date=c; saveSlots(); renderSheet();
+    toast(dateLimitMsg());
+  });
   $('#sheet').addEventListener('click',function(e){
     var el=e.target.closest('.letter'); if(!el) return;
     var i=$$('#sheet .letter').indexOf(el); if(i>=0) selectSlot(i);
@@ -4405,7 +4426,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     return changed;
   }
   function logFilled(){
-    var log=loadLog(), added=0, updated=0, changed=false, forced=[];
+    var log=loadLog(), added=0, updated=0, changed=false, forced=[], blockedDate=0;
     slots.forEach(function(s){
       if(!s.name||!s.name.trim()) return;
       var d=s.date||todayISO();
@@ -4416,6 +4437,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       /* 1) ro'yxatdan ochilgan xat tahrirlangan bo'lsa, o'sha yozuvning o'zi yangilanadi */
       var src = s.srcId ? log.filter(function(e){return e.id===s.srcId})[0] : null;
       if(src){
+        if(src.date!==d && !dateOK(d)){ blockedDate++; return; }
         var before=JSON.stringify([src.name,src.cls,src.parent,src.reason,src.date,src.phone||'']);
         /* shu mazmundagi boshqa (takroriy) yozuv bo'lsa, ikkitaga ko'paymasin */
         log=log.filter(function(e){ return e===src || e.id!==id; });
@@ -4439,6 +4461,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         return;
       }
       /* 3) yangi xat */
+      if(!dateOK(d)){ blockedDate++; return; }
       log.push({id:id,name:rec.name,cls:rec.cls,parent:rec.parent,reason:rec.reason,date:d,phone:phone,at:Date.now()}); added++;
       s.srcId=id;
       if(phone) forced.push([personKey(rec),phone]);
@@ -4448,7 +4471,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     /* telefonni o'quvchining barcha xatlariga tarqatish */
     forced.forEach(function(f){ if(spreadPhones(log,f[0],f[1])) changed=true; });
     if(spreadPhones(log)) changed=true;
-    lastLogStats={added:added,updated:updated};
+    lastLogStats={added:added,updated:updated,blocked:blockedDate};
+    if(blockedDate) toast(blockedDate+" ta xat yozilmadi. "+dateLimitMsg());
     if(added||updated||changed){ saveLog(log); saveSlots(); }
     updEditNote();
     return added+updated;
@@ -4906,6 +4930,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       saveTl(); renderTSheet(); if(id==='t_issue') tCount();
     });
   });
+  applyDateLimits();
+  $('#t_date').addEventListener('blur',function(){
+    var v=this.value; if(!v || dateOK(v)) return;
+    var ent=tl.srcId ? loadTLog().filter(function(x){return x.id===tl.srcId})[0] : null;
+    if(ent && ent.date===v) return;
+    var c=clampDate(v); this.value=c; tl.date=c; saveTl(); renderTSheet();
+    toast(dateLimitMsg());
+  });
   $('#tClearBtn').addEventListener('click',function(){tl=Object.assign({},TEMPTY);saveTl();loadTlToForm();fillSigner();renderTSheet();updTEditNote()});
   $('#tEditNew').addEventListener('click',function(){ delete tl.srcId; saveTl(); updTEditNote(); setMsg('#tMsg',"Endi bu yangi xat sifatida yoziladi",'ok'); });
 
@@ -4922,6 +4954,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var id=[tl.name,tl.subject,tl.issue,d].join('|').toLowerCase();
     var src = tl.srcId ? log.filter(function(e){return e.id===tl.srcId})[0] : null;
     if(src){
+      if(src.date!==d && !dateOK(d)){ toast(dateLimitMsg()); return 0; }
       var before=JSON.stringify([src.name,src.subject,src.issue,src.date,src.signer||'']);
       log=log.filter(function(e){ return e===src || e.id!==id; });
       src.name=tl.name.trim(); src.subject=(tl.subject||'').trim(); src.issue=(tl.issue||'').trim(); src.date=d; src.signer=tl.signer||''; src.id=id; tl.srcId=id;
@@ -4931,6 +4964,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       return 1;
     }
     if(log.some(function(e){return e.id===id})) { tl.srcId=id; saveTl(); return 0; }
+    if(!dateOK(d)){ toast(dateLimitMsg()); return 0; }
     log.push({id:id,name:tl.name.trim(),subject:(tl.subject||'').trim(),issue:(tl.issue||'').trim(),date:d,signer:tl.signer||'',at:Date.now()});
     tl.srcId=id; saveTl();
     saveTLog(log);
