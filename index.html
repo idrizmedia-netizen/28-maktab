@@ -3430,7 +3430,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var parts=splitCSVLine(line);
       var name=(parts[0]||'').trim();
       if(!name) return null;
-      if(mode==='student') return {name:name, cls:normClass(parts[1]||''), phone:(parts[2]||'').trim(), parent:(parts[3]||'').trim()};
+      if(mode==='student') return {name:name, cls:normClass(parts[1]||''), phone:formatPhoneDisplay(parts[2]||''), parent:(parts[3]||'').trim()};
       return {name:name, subject:(parts[1]||'').trim()};
     }).filter(Boolean);
   }
@@ -3462,7 +3462,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var lines = rows.map(function(r){
         var name=(r[0]||'').toString().trim(); if(!name) return null;
         if(kind==='student'){
-          var cls=(r[1]||'').toString().trim(), phone=(r[2]||'').toString().trim(), parent=(r[3]||'').toString().trim();
+          var cls=(r[1]||'').toString().trim(), phone=formatPhoneDisplay((r[2]||'').toString()), parent=(r[3]||'').toString().trim();
           return buildStudentLine({name:name, cls:cls, phone:phone, parent:parent});
         }
         var subject=(r[1]||'').toString().trim();
@@ -3478,13 +3478,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   $('#rosterTeachersFile').addEventListener('change', function(){
     var f=this.files[0]; this.value=''; if(f) handleRosterFile(f, 'teacher', '#rosterTeachers', '#rosterTeachersMsg');
   });
-  $('#f_name').addEventListener('input', function(){
-    var v=this.value;
-    var hit=roster.students.filter(function(s){return s.name===v})[0];
-    if(hit){ if(hit.cls) $('#f_class').value=hit.cls; if(hit.phone) $('#f_phone').value=hit.phone; if(hit.parent) $('#f_parent').value=hit.parent; }
+  /* bo'sh joy va katta/kichik harf farqidan qat'i nazar solishtiradi, shunda
+     "Ali Valiyev" va "ali valiyev " kabi kichik farqlar autofillni buzmaydi */
+  function sameName(a,b){ return (a||'').trim().toLowerCase().replace(/\s+/g,' ') === (b||'').trim().toLowerCase().replace(/\s+/g,' ') }
+  function findRosterStudent(name){
+    for(var i=0;i<roster.students.length;i++){ if(sameName(roster.students[i].name,name)) return roster.students[i]; }
+    return null;
+  }
+  function fillFromRosterStudent(){
+    var hit=findRosterStudent($('#f_name').value);
+    if(hit){
+      if(hit.cls) $('#f_class').value=hit.cls;
+      if(hit.phone) $('#f_phone').value=formatPhoneDisplay(hit.phone);
+      if(hit.parent) $('#f_parent').value=hit.parent;
+    }
     checkRepeatWarn();
-  });
+  }
+  $('#f_name').addEventListener('input', fillFromRosterStudent);
+  $('#f_name').addEventListener('change', fillFromRosterStudent);
   $('#f_class').addEventListener('input', checkRepeatWarn);
+  $('#f_phone').addEventListener('blur', function(){ if(this.value.trim()) this.value=formatPhoneDisplay(this.value); });
   /* o'quvchiga ilgari nechta xat berilganini tekshirib, 3+ bo'lsa ogohlantiradi */
   function checkRepeatWarn(){
     var name=($('#f_name').value||'').trim(), cls=($('#f_class').value||'').trim();
@@ -3504,9 +3517,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
      ismini yozishning o'zi yetarli bo'ladi). */
   function learnRosterFromStudent(f){
     var name=(f && f.name || '').trim(); if(!name) return;
-    var cls=normClass(f.cls||''), phone=(f.phone||'').trim(), parent=(f.parent||'').trim();
-    var hit=null;
-    for(var i=0;i<roster.students.length;i++){ if(roster.students[i].name===name){ hit=roster.students[i]; break; } }
+    var cls=normClass(f.cls||''), phone=formatPhoneDisplay(f.phone||''), parent=(f.parent||'').trim();
+    var hit=findRosterStudent(name);
     var changed=false;
     if(hit){
       if(cls && hit.cls!==cls){ hit.cls=cls; changed=true; }
@@ -4038,6 +4050,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     else if(p.length===13 && p.indexOf('8998')===0) p=p.slice(1);
     return p;
   }
+  /* "90-568-84-86" yoki "901112233" kabi kiritilgan raqamni "+998 90 568 84 86"
+     ko'rinishiga keltiradi. Uzunligi noto'g'ri bo'lsa (hali to'liq yozilmagan
+     bo'lsa), tegmay, borini qaytaradi. */
+  function formatPhoneDisplay(raw){
+    var p=normPhone(raw);
+    if(p.length!==12) return (raw||'').trim();
+    return '+'+p.slice(0,3)+' '+p.slice(3,5)+' '+p.slice(5,8)+' '+p.slice(8,10)+' '+p.slice(10,12);
+  }
   var slots=jparse(lget('m28_slots'),null);
   if(!Array.isArray(slots)||slots.length!==4) slots=[emptySlot(),emptySlot(),emptySlot(),emptySlot()];
   slots=slots.map(function(s){return Object.assign(emptySlot(),s||{})});
@@ -4209,7 +4229,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   /* bir nechta sabab turli tartibda tanlangan bo'lsa ham, statistikada bitta guruh sifatida hisoblanishi uchun */
   function canonReason(r){
-    var parts=(r||'').split(/;\s*/).map(function(s){return s.trim()}).filter(Boolean);
+    var parts=(r||'').split(/;\s*/).map(function(s){
+      /* oxiridagi qavs ichidagi tafsilotni olib tashlaydi, masalan
+         "...kelgani (1ta kitobi yo'q)" va "...(2ta kitobi yo'q)" statistikada
+         bitta sabab sifatida hisoblansin deb */
+      return s.trim().replace(/\s*\([^()]*\)\s*$/, '').trim();
+    }).filter(Boolean);
     parts.sort(function(a,b){return a.localeCompare(b,'uz')});
     return parts.join('; ');
   }
