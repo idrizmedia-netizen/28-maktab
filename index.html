@@ -319,6 +319,17 @@ img.logo{display:block;background:transparent;object-fit:contain;box-shadow:0 2p
 .card-reason{color:var(--muted);margin-top:2px;overflow-wrap:anywhere}
 .card-foot{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:14px}
 @media print{#cardModal{display:none!important}}
+.sigbox{border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 0 12px;background:var(--card)}
+.sig-head{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.sig-body{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.sig-prev{width:210px;height:84px;border:1px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;background-color:#fff;background-image:linear-gradient(45deg,#e6e6e6 25%,transparent 25%),linear-gradient(-45deg,#e6e6e6 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e6e6e6 75%),linear-gradient(-45deg,transparent 75%,#e6e6e6 75%);background-size:12px 12px;background-position:0 0,0 6px,6px -6px,-6px 0;color:#667;font-size:12px;text-align:center;padding:4px}
+.sig-prev img{max-width:100%;max-height:100%}
+.sig-ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sig-th{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.l-sign .fill{position:relative}
+.l-sign.signed{min-height:10mm}
+img.sig-img{position:absolute;left:50%;bottom:.6mm;transform:translateX(-50%);max-width:34mm;max-height:10mm;pointer-events:none}
+@media print{#sigPanel{display:none!important}}
 /* ---- rejim tugmasi (Avto / Kun / Tun) ---- */
 #themeBtn{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:50;border:1px solid var(--line);background:var(--card);color:var(--text);box-shadow:var(--shadow);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
 #themeBtn:hover{border-color:var(--brand)}
@@ -449,6 +460,25 @@ img.logo{display:block;background:transparent;object-fit:contain;box-shadow:0 2p
           <label class="fl" for="qTo" style="margin:0">Sanagacha</label><input class="inp" id="qTo" type="date">
           <button class="mini" id="qClear" type="button">Filtrni tozalash</button>
         </div>
+        <div class="sigbox hidden" id="sigPanel">
+          <div class="sig-head"><b>✍️ Sinf rahbari imzosi</b><span class="hint" id="sigState"></span></div>
+          <div class="sig-body">
+            <div class="sig-prev" id="sigPrev"></div>
+            <div class="sig-ctl">
+              <input type="file" id="sigFile" accept="image/*" class="hidden">
+              <button class="btn line sm" id="sigPick" type="button">Imzo rasmini yuklash</button>
+              <label class="sig-th hidden" id="sigThWrap">Fonni tozalash <input type="range" id="sigTh" min="10" max="90" value="45"></label>
+              <button class="btn sm hidden" id="sigSave" type="button">Saqlash</button>
+              <button class="btn ghost sm hidden" id="sigDel" type="button">Imzoni olib tashlash</button>
+            </div>
+          </div>
+          <p class="hint" style="margin:8px 0 0">Oq qog'ozga ruchka bilan imzo chizib, rasmga oling. Fon va chetlari avtomatik tozalanadi. Keyin xatlarni qatordagi «✍️ Imzolash» tugmasi bilan yoki pastdagi tugmalar bilan imzolang.</p>
+          <div class="actions">
+            <button class="btn ghost sm" id="sigSel" type="button" disabled>✍️ Tanlanganlarni imzolash (0)</button>
+            <button class="btn sm" id="sigAll" type="button">✍️ Ko'rsatilganlarning hammasini imzolash</button>
+            <button class="btn line sm" id="sigUn" type="button">Ko'rsatilganlardan imzoni olib tashlash</button>
+          </div>
+        </div>
         <div class="stat"><span id="logCount"></span></div>
         <div class="tbl-wrap"><table class="log"><thead><tr><th></th><th>Sana</th><th>O'quvchi</th><th>Sinf</th><th>Ota-onasi</th><th>Sababi</th><th>Telegram</th><th>Marta</th><th></th></tr></thead><tbody id="logBody"></tbody></table></div>
         <div class="actions">
@@ -555,6 +585,7 @@ img.logo{display:block;background:transparent;object-fit:contain;box-shadow:0 2p
           <select class="inp" id="auditAction">
             <option value="">Barcha amallar</option>
             <option value="student_letter_logged">O'quvchi xati yozildi</option>
+            <option value="student_letter_signed">O'quvchi xati imzolandi</option>
             <option value="teacher_letter_logged">O'qituvchi xati yozildi</option>
             <option value="telegram_sent">Telegram xabari</option>
             <option value="admin_added">Admin qo'shildi</option>
@@ -3472,6 +3503,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     stopCloud(true);
     cloudSync('log', function(){ renderLog() });
     cloudSync('tlog', function(){ renderTLog() });
+    cloudSync('sigs', function(){ renderSigPanel(); renderSheet(); renderLog(); });
     ensureSettingsDoc();
     watchRoster();
   }
@@ -3706,6 +3738,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   var AUDIT_LABELS = {
     student_letter_logged: "O'quvchi xati ro'yxatga yozildi",
+    student_letter_signed: "O'quvchi xatlari imzolandi",
     teacher_letter_logged: "O'qituvchi xati ro'yxatga yozildi",
     telegram_sent: "Telegram orqali ota-onaga xabar yuborildi",
     admin_added: "Admin qo'shildi",
@@ -3716,6 +3749,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function auditDetailText(a){
     var d=a.details||{};
     switch(a.action){
+      case 'student_letter_signed': return (d.count||0)+" ta xat"+(d.off?" (imzo olib tashlandi)":"");
       case 'student_letter_logged': return (d.name||'')+(d.cls?' ('+d.cls+')':'')+(d.date?' — '+fmtDate(d.date):'');
       case 'teacher_letter_logged': return (d.name||'')+(d.subject?' ('+d.subject+')':'')+(d.date?' — '+fmtDate(d.date):'');
       case 'telegram_sent': return (d.name||'')+(d.cls?' ('+d.cls+')':'')+(d.date?' — '+fmtDate(d.date):'');
@@ -3768,7 +3802,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     unsubs.forEach(function(u){ try{u()}catch(e){} }); unsubs = [];
     if(!keepLocal){
       /* umumiy kompyuterda o'quvchi ma'lumoti qolib ketmasin (faqat bulutga saqlanganlari o'chiriladi) */
-      ['log','tlog'].forEach(function(k){ if(synced[k]){ lset('m28_'+k, '[]'); } });
+      ['log','tlog','sigs'].forEach(function(k){ if(synced[k]){ lset('m28_'+k, '[]'); } });
       synced = {};
     }
   }
@@ -3891,6 +3925,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       ? "Siz \"faqat ko'ruvchi\" sifatida kirgansiz — xat yoza, chop eta yoki yubora olmaysiz, faqat ko'rishingiz mumkin."
       : (homeroom ? "Siz \"sinf rahbari\" sifatida kirgansiz — faqat "+homeroomClassTxt+" uchun o'quvchi xatlari ko'rsatiladi." : '');
     $('#roleNote').classList.toggle('hidden', !(viewer||homeroom));
+    renderSigPanel();
 
     // Sinf rahbari: faqat o'quvchi bo'limlari, o'qituvchi bo'limlari yashiriladi
     $$('nav.tabs [data-tab="tletter"], nav.tabs [data-tab="tlog"]').forEach(function(b){ b.classList.toggle('hidden', homeroom); });
@@ -4208,6 +4243,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     return 'Sana: "'+bl(d)+'" '+bl(m,'m')+' '+year;
   }
   function letterHTML(f,qr){
+    var sg=sigFor(f);
     var admins=settings.admins.filter(function(a){return a.name&&a.name.trim()}).map(function(a){
       return '<div class="a">'+(a.role?'<span class="r">'+esc(a.role)+'</span>':'')+'<span class="n">'+esc(a.name)+'</span></div>';
     }).join('');
@@ -4218,7 +4254,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       '<div class="l-row" style="margin-bottom:0"><span class="lb">Sababi:</span></div>'+
       '<div class="l-lines"><i></i><i></i><i></i><div class="tx'+(f.reason.length>165?' s8':(f.reason.length>130?' s9':''))+'">'+esc(f.reason)+'</div></div>'+
       '<div class="l-row">'+dateHTML(f.date)+'</div>'+
-      '<div class="l-sign"><span class="lb">Sinf rahbari imzosi:</span><span class="fill"></span></div>'+
+      '<div class="l-sign'+(sg?' signed':'')+'"><span class="lb">Sinf rahbari imzosi:</span><span class="fill">'+(sg?'<img class="sig-img" alt="" src="'+sg+'">':'')+'</span></div>'+
       '<div class="l-foot">'+
         '<div class="l-adm"><div class="t">Maktab ma\'muriyati</div>'+admins+'</div>'+
         '<div class="l-qr">'+qr+'<div class="c">Xat va maktab ma\'muriyati.<br>QR kodni skanerlang</div></div>'+
@@ -4451,6 +4487,148 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       return (e.name+' '+e.cls+' '+e.parent+' '+e.reason).toLowerCase().indexOf(q)>=0;
     });
   }
+  /* ---------- Sinf rahbari imzosi ---------- */
+  var SIG_RE=/^data:image\/png;base64,[A-Za-z0-9+\/=]+$/;
+  function myEmail(){ return curUser ? (curUser.email||'').toLowerCase() : ''; }
+  function loadSigs(){ var a=jparse(lget('m28_sigs'),[]); return Array.isArray(a)?a:[]; }
+  function sigOf(email){
+    email=(email||'').toLowerCase(); if(!email) return '';
+    var a=loadSigs();
+    for(var i=0;i<a.length;i++){ if((a[i].email||'').toLowerCase()===email && SIG_RE.test(a[i].png||'')) return a[i].png; }
+    return '';
+  }
+  function sigFor(f){
+    if(!f||!f.srcId) return '';
+    var e=loadLog().filter(function(x){return x.id===f.srcId})[0];
+    return (e&&e.sig) ? sigOf(e.sig) : '';
+  }
+  /* o'z imzomni bulutga yozish (boshqa sinf rahbarlarining imzosiga tegmaydi) */
+  function updateMySig(png){
+    var me=myEmail(); if(!me) return;
+    function mut(a){ a=(a||[]).filter(function(x){return (x.email||'').toLowerCase()!==me}); if(png) a.push({email:me,png:png,at:Date.now()}); return a; }
+    lset('m28_sigs', JSON.stringify(mut(loadSigs())));
+    if(!db) return;
+    var ref=db.collection('m28letters').doc(cloudDocId('sigs'));
+    db.runTransaction(function(tx){
+      return tx.get(ref).then(function(sn){
+        var cur=(sn.exists && sn.data() && Array.isArray(sn.data().items)) ? sn.data().items : [];
+        tx.set(ref,{items:mut(cur.slice()), updatedAt:Date.now(), updatedBy:curUser.email});
+      });
+    }).catch(function(e){ console.warn('Imzoni saqlashda xato:', e); toast("Imzoni bulutga saqlab bo'lmadi"); });
+  }
+  var sigSrc=null, sigPending='';
+  function sigControls(editing){
+    ['#sigThWrap','#sigSave'].forEach(function(q){ $(q).classList.toggle('hidden', !editing); });
+  }
+  function sigLoadFile(file){
+    if(!file) return;
+    var url=URL.createObjectURL(file), im=new Image();
+    im.onload=function(){
+      var sc=Math.min(1, 1000/Math.max(im.width,im.height));
+      var c=document.createElement('canvas'); c.width=Math.max(1,Math.round(im.width*sc)); c.height=Math.max(1,Math.round(im.height*sc));
+      var cx=c.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,c.width,c.height); cx.drawImage(im,0,0,c.width,c.height);
+      URL.revokeObjectURL(url); sigSrc=c; sigControls(true); sigProcess();
+    };
+    im.onerror=function(){ URL.revokeObjectURL(url); toast("Rasmni o'qib bo'lmadi"); };
+    im.src=url;
+  }
+  /* qog'oz fonini shaffof qiladi, chetlarini kesadi, kichraytiradi */
+  function sigProcess(){
+    if(!sigSrc) return;
+    var th=(+$('#sigTh').value)/100, w=sigSrc.width, h=sigSrc.height;
+    var d=sigSrc.getContext('2d').getImageData(0,0,w,h), px=d.data, N=w*h;
+    var lum=new Uint8Array(N), hist=new Array(256), i, l;
+    for(i=0;i<256;i++) hist[i]=0;
+    for(i=0;i<N;i++){ l=(0.299*px[i*4]+0.587*px[i*4+1]+0.114*px[i*4+2])|0; lum[i]=l; hist[l]++; }
+    var acc=0, paper=255;
+    for(l=255;l>=0;l--){ acc+=hist[l]; if(acc>=N*0.35){ paper=l; break; } }
+    if(paper<60) paper=60;
+    var t0=th*0.5, t1=t0+0.2, minX=w, minY=h, maxX=-1, maxY=-1;
+    for(i=0;i<N;i++){
+      var dd=(paper-lum[i])/paper, a=(dd-t0)/(t1-t0);
+      a = a<0?0:(a>1?1:a);
+      var o=i*4;
+      if(a<0.02){ px[o+3]=0; continue; }
+      for(var ch=0;ch<3;ch++){
+        var v=(px[o+ch]-(1-a)*paper)/a; px[o+ch]= v<0?0:(v>255?255:v);
+      }
+      px[o+3]=Math.round(a*255);
+      if(a>0.16){ var x=i%w, y=(i/w)|0; if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
+    }
+    if(maxX<0){ sigPending=''; $('#sigPrev').innerHTML='<span>Imzo topilmadi. «Fonni tozalash»ni kamaytiring yoki boshqa rasm tanlang</span>'; return; }
+    var t=document.createElement('canvas'); t.width=w; t.height=h; t.getContext('2d').putImageData(d,0,0);
+    var pad=6; minX=Math.max(0,minX-pad); minY=Math.max(0,minY-pad); maxX=Math.min(w-1,maxX+pad); maxY=Math.min(h-1,maxY+pad);
+    var bw=maxX-minX+1, bh=maxY-minY+1, sc=Math.min(1, 360/bw, 140/bh), out, png;
+    for(var tries=0;tries<6;tries++){
+      out=document.createElement('canvas'); out.width=Math.max(1,Math.round(bw*sc)); out.height=Math.max(1,Math.round(bh*sc));
+      var oc=out.getContext('2d'); oc.imageSmoothingQuality='high'; oc.drawImage(t,minX,minY,bw,bh,0,0,out.width,out.height);
+      png=out.toDataURL('image/png');
+      if(png.length<=70000) break; sc*=0.8;
+    }
+    sigPending=png;
+    $('#sigPrev').innerHTML='<img alt="Imzo" src="'+png+'">';
+  }
+  function renderSigPanel(){
+    var p=$('#sigPanel'); if(!p) return;
+    var show = !!curUser && !isViewer();
+    p.classList.toggle('hidden', !show); if(!show) return;
+    var mine=sigOf(myEmail()), editing=!$('#sigSave').classList.contains('hidden');
+    if(!editing){
+      $('#sigPrev').innerHTML = mine ? '<img alt="Imzo" src="'+mine+'">' : '<span>Imzo hali yuklanmagan</span>';
+    }
+    $('#sigState').textContent = mine ? 'Imzongiz saqlangan' : 'Imzo yuklanmagan';
+    $('#sigDel').classList.toggle('hidden', !mine || editing);
+    $('#sigPick').textContent = mine ? 'Imzoni almashtirish' : 'Imzo rasmini yuklash';
+    updSigSel();
+  }
+  function updSigSel(){
+    var b=$('#sigSel'); if(!b) return;
+    var n=selCount(); b.disabled=!n; b.textContent='✍️ Tanlanganlarni imzolash ('+n+')';
+  }
+  /* xatlarni imzolash / imzoni olib tashlash */
+  function applySign(ids,on){
+    if(isViewer()) return;
+    var me=myEmail();
+    if(on && !sigOf(me)) return toast("Avval imzo rasmini yuklab, «Saqlash»ni bosing");
+    var set={}; ids.forEach(function(id){set[id]=1});
+    var log=loadLog(), n=0;
+    log.forEach(function(e){
+      if(!set[e.id]) return;
+      if(isHomeroom() && myClasses.length && myClasses.indexOf(normClass(e.cls))<0) return;
+      if(on){ if(e.sig!==me){ e.sig=me; e.sigAt=Date.now(); n++; } }
+      else if(e.sig){ if(isHomeroom() && e.sig!==me) return; delete e.sig; delete e.sigAt; n++; }
+    });
+    if(!n) return toast(on ? "Imzolanadigan yangi xat yo'q" : "Imzosi bor xat topilmadi");
+    saveLog(log); renderLog(); renderSheet();
+    logAudit('student_letter_signed',{count:n, off:!on});
+    toast(on ? (n+" ta xat imzolandi") : (n+" ta xatdan imzo olib tashlandi"));
+  }
+  function bindSig(){
+    $('#sigPick').addEventListener('click',function(){ $('#sigFile').value=''; $('#sigFile').click(); });
+    $('#sigFile').addEventListener('change',function(){ sigLoadFile(this.files && this.files[0]); });
+    var raf=0;
+    $('#sigTh').addEventListener('input',function(){ if(raf) cancelAnimationFrame(raf); raf=requestAnimationFrame(function(){raf=0; sigProcess();}); });
+    $('#sigSave').addEventListener('click',function(){
+      if(!sigPending) return toast("Avval tushunarli imzo rasmini tanlang");
+      updateMySig(sigPending); sigPending=''; sigSrc=null; sigControls(false); renderSigPanel(); renderSheet(); renderLog();
+      toast('Imzo saqlandi');
+    });
+    $('#sigDel').addEventListener('click',function(){
+      if(!confirm("Imzoni olib tashlaysizmi? Imzolangan xatlarda imzo ko'rinmay qoladi.")) return;
+      updateMySig(''); renderSigPanel(); renderSheet(); renderLog();
+    });
+    $('#sigSel').addEventListener('click',function(){ applySign(Object.keys(selected),true); });
+    $('#sigAll').addEventListener('click',function(){
+      var ids=filteredLog().map(function(e){return e.id});
+      if(!ids.length) return toast("Ro'yxat bo'sh");
+      if(confirm(ids.length+" ta xatni imzolaysizmi?")) applySign(ids,true);
+    });
+    $('#sigUn').addEventListener('click',function(){
+      var ids=filteredLog().map(function(e){return e.id});
+      if(ids.length && confirm("Ko'rsatilgan "+ids.length+" ta xatdan imzoni olib tashlaysizmi?")) applySign(ids,false);
+    });
+  }
+  bindSig();
   /* ---------- O'quvchi kartochkasi: bitta o'quvchining barcha xatlari ---------- */
   function openCard(id){
     var all=loadLog(), e=all.filter(function(x){return x.id===id})[0];
@@ -4489,6 +4667,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     m.classList.remove('hidden');
   }
   $('#logBody').addEventListener('click',function(ev){
+    var sb=ev.target.closest('[data-sign]');
+    if(sb){
+      ev.stopPropagation();
+      var se=loadLog().filter(function(x){return x.id===sb.dataset.sign})[0];
+      if(se) applySign([se.id], !se.sig);
+      return;
+    }
     var b=ev.target.closest('[data-card]');
     if(b){ ev.stopPropagation(); openCard(b.dataset.card); }
   });
@@ -4509,7 +4694,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
              '<td>'+esc(fmtDate(e.date))+'</td><td><b class="lnk">'+esc(e.name)+'</b> <button type="button" class="mini" data-card="'+esc(e.id)+'" title="O\'quvchi kartochkasi">📋 Kartochka</button></td><td>'+esc(e.cls)+'</td><td>'+esc(e.parent)+'</td><td>'+esc(e.reason)+'</td>'+
              '<td>'+(phoneOf(e,pm)?esc(phoneOf(e,pm)):'<span class="muted">—</span>')+'</td>'+
              '<td><span class="badge'+(n>=3?' warn':'')+'" title="Bu — '+ordById[e.id]+'-xat">'+n+' marta</span>'+(n>=3?' <span class="badge warn" title="3 va undan ko\'p xat: direktor bilan suhbat tavsiya etiladi">🔴 Suhbat</span>':'')+'</td>'+
-             '<td><button class="mini" style="color:var(--danger)" data-rm="'+esc(e.id)+'">O\'chirish</button></td></tr>';
+             '<td>'+(!isViewer()?'<button type="button" class="mini" data-sign="'+esc(e.id)+'">'+(e.sig?'✓ Imzolangan':'✍️ Imzolash')+'</button> ':'')+'<button class="mini" style="color:var(--danger)" data-rm="'+esc(e.id)+'">O\'chirish</button></td></tr>';
     }).join('') : '<tr><td colspan="9"><div class="empty">'+(all.length?"Hech narsa topilmadi.":"Hozircha xat yo'q. Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.")+'</div></td></tr>';
     $$('#logBody tr[data-open]').forEach(function(tr){tr.addEventListener('click',function(e){
       if(e.target.closest('input,button')) return; openEntries([tr.dataset.open]);
@@ -4528,7 +4713,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   var selected={};
   function selCount(){return Object.keys(selected).length}
-  function updSel(){var n=selCount(),b=$('#selLoad');b.disabled=!n;b.textContent="Tanlanganlarni xatga joylash ("+n+")"}
+  function updSel(){var n=selCount(),b=$('#selLoad');b.disabled=!n;b.textContent="Tanlanganlarni xatga joylash ("+n+")";updSigSel()}
   function toSlot(e){return {name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date,phone:e.phone||phoneForName(e.name),srcId:e.id}}
   function openEntries(ids){
     var log=loadLog(), es=ids.map(function(id){return log.filter(function(x){return x.id===id})[0]}).filter(Boolean);
