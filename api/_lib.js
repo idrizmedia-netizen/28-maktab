@@ -25,6 +25,12 @@ function normPhone(p) {
   return d;
 }
 
+// "2026-10-03" -> "03.10.2026"
+function fmtDateUz(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+  return m ? (m[3] + '.' + m[2] + '.' + m[1]) : (iso || '');
+}
+
 async function isAdminEmail(email) {
   if (!email) return false;
   email = email.toLowerCase();
@@ -46,4 +52,19 @@ async function tgApi(method, payload) {
   return data;
 }
 
-module.exports = { db, adminAuth, OWNER_EMAIL, normPhone, isAdminEmail, tgApi };
+// base64 PDF'ni Telegram'ga hujjat (document) sifatida yuboradi
+async function tgSendDocument(chatId, base64, filename, caption) {
+  const token = process.env.TELEGRAM_TOKEN;
+  if (!token) throw new Error('TELEGRAM_TOKEN sozlanmagan');
+  const buf = Buffer.from(base64, 'base64');
+  const form = new FormData();
+  form.append('chat_id', String(chatId));
+  if (caption) form.append('caption', caption);
+  form.append('document', new Blob([buf], { type: 'application/pdf' }), filename || 'xat.pdf');
+  const res = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, { method: 'POST', body: form });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.ok === false) console.warn('Telegram sendDocument xato:', data);
+  return data;
+}
+
+module.exports = { db, adminAuth, OWNER_EMAIL, normPhone, fmtDateUz, isAdminEmail, tgApi, tgSendDocument };
