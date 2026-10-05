@@ -3929,8 +3929,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     renderSigPanel();
 
     // Sinf rahbari: faqat o'quvchi bo'limlari, o'qituvchi bo'limlari yashiriladi
-    $$('nav.tabs [data-tab="tletter"], nav.tabs [data-tab="tlog"], nav.tabs [data-tab="settings"]').forEach(function(b){ b.classList.toggle('hidden', homeroom); });
-    if(homeroom && ['settings','tletter','tlog'].some(function(n){ var el=$('#tab-'+n); return el && !el.classList.contains('hidden'); })) goTab('letter');
+    $$('nav.tabs [data-tab="tletter"], nav.tabs [data-tab="tlog"], nav.tabs [data-tab="settings"], nav.tabs [data-tab="audit"]').forEach(function(b){ b.classList.toggle('hidden', homeroom); });
+    if(homeroom && ['settings','tletter','tlog','audit'].some(function(n){ var el=$('#tab-'+n); return el && !el.classList.contains('hidden'); })) goTab('letter');
 
     // Sinf rahbari uchun "Sinf" maydoni: bitta sinf bo'lsa qulflanadi, bir nechta bo'lsa tanlovga aylanadi
     var fClass = $('#f_class');
@@ -4089,7 +4089,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
   /* ---------- tabs ---------- */
   function goTab(t){
-    if(isHomeroom() && (t==='settings'||t==='tletter'||t==='tlog')) t='letter';
+    if(isHomeroom() && (t==='settings'||t==='tletter'||t==='tlog'||t==='audit')) t='letter';
     $$('nav.tabs [data-tab]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-tab')===t)});
     ['letter','log','tletter','tlog','stats','audit','settings'].forEach(function(n){$('#tab-'+n).classList.toggle('hidden',n!==t)});
     if(t==='letter') fit(); else if(t==='tletter'){fillSigner();fit()} else if(t==='settings'){fillSettings();loadAdmins()} else if(t==='log') renderLog(); else if(t==='tlog') renderTLog(); else if(t==='stats') renderStats(); else if(t==='audit') loadAuditLog();
