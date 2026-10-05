@@ -293,6 +293,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
           <div class="slots" id="slots"></div>
           <label class="fl" for="f_name">O'quvchi (F.I.Sh)</label>
           <input class="inp" id="f_name" list="studentNames" autocomplete="off">
+          <div class="msg hidden" id="repeatWarn" style="margin:6px 0 0;padding:8px 12px;border-radius:10px;background:#fff3cd;color:#7a5b00;font-size:14px"></div>
           <div class="row2">
             <div><label class="fl" for="f_class">Sinf</label><input class="inp" id="f_class" placeholder="masalan, 8-A"></div>
             <div><label class="fl" for="f_date">Sana</label><input class="inp" id="f_date" type="date"></div>
@@ -456,6 +457,9 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
             <option value="admin_removed">Admin olib tashlandi</option>
             <option value="settings_changed">Sozlamalar o'zgartirildi</option>
           </select>
+          <label class="fl" for="auditFrom" style="margin:0">Sanadan</label><input class="inp" id="auditFrom" type="date">
+          <label class="fl" for="auditTo" style="margin:0">Sanagacha</label><input class="inp" id="auditTo" type="date">
+          <button class="mini" id="auditClear" type="button">Filtrni tozalash</button>
           <button class="mini" id="auditRefresh" type="button">Yangilash</button>
         </div>
         <div id="auditBody"><div class="stat-empty">Yuklanmoqda...</div></div>
@@ -546,6 +550,14 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
             <div class="actions"><button class="btn line" id="rosterTeachersSave" type="button">O'qituvchilar ro'yxatini yangilash</button></div>
             <div class="msg" id="rosterTeachersMsg"></div>
             <div class="hint" id="rosterTeachersCount"></div>
+          </div>
+          <div class="card" id="reportCard">
+            <h2>Oylik avtomatik hisobot</h2>
+            <p class="hint">Har oyning 1-sanasida, ertalab, o'tgan oy bo'yicha statistika (jami xatlar, eng ko'p xat olgan sinflar, eng ko'p uchraydigan sabablar) shu raqamga Telegram orqali avtomatik yuboriladi. Ishlashi uchun raqam avval botga ulangan bo'lishi kerak (yuqoridagi Telegram bot havolasidan foydalaning).</p>
+            <label class="fl" for="reportPhone">Hisobot uchun Telegram raqami</label>
+            <input class="inp" id="reportPhone" placeholder="+998 90 123 45 67" inputmode="tel">
+            <div class="actions"><button class="btn line" id="reportPhoneSave" type="button">Saqlash</button></div>
+            <div class="msg" id="reportPhoneMsg"></div>
           </div>
         </div>
       </div>
@@ -3365,6 +3377,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     o=(o&&typeof o==='object')?o:{};
     if(!Array.isArray(o.students)) o.students=[];
     if(!Array.isArray(o.teachers)) o.teachers=[];
+    if(typeof o.reportPhone !== 'string') o.reportPhone='';
     return o;
   }
   function rosterRef(){ return db.collection('adminonly').doc('roster'); }
@@ -3387,6 +3400,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     $('#rosterTeachers').value = roster.teachers.map(function(t){return t.name+', '+t.subject}).join('\n');
     $('#rosterStudentsCount').textContent = roster.students.length+" ta o'quvchi saqlangan";
     $('#rosterTeachersCount').textContent = roster.teachers.length+" ta o'qituvchi saqlangan";
+    $('#reportPhone').value = roster.reportPhone||'';
   }
   function watchRoster(){
     if(!db) return;
@@ -3468,7 +3482,23 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var v=this.value;
     var hit=roster.students.filter(function(s){return s.name===v})[0];
     if(hit){ if(hit.cls) $('#f_class').value=hit.cls; if(hit.phone) $('#f_phone').value=hit.phone; if(hit.parent) $('#f_parent').value=hit.parent; }
+    checkRepeatWarn();
   });
+  $('#f_class').addEventListener('input', checkRepeatWarn);
+  /* o'quvchiga ilgari nechta xat berilganini tekshirib, 3+ bo'lsa ogohlantiradi */
+  function checkRepeatWarn(){
+    var name=($('#f_name').value||'').trim(), cls=($('#f_class').value||'').trim();
+    var el=$('#repeatWarn');
+    if(!name){ el.classList.add('hidden'); return; }
+    var key=(name+'|'+cls).toLowerCase().replace(/\s+/g,' ');
+    var n = loadLog().filter(function(e){ return personKey(e)===key; }).length;
+    if(n>=3){
+      el.textContent = "⚠️ Bu o'quvchiga oldin "+n+" marta ogohlantirish xati berilgan.";
+      el.classList.remove('hidden');
+    } else {
+      el.classList.add('hidden');
+    }
+  }
   /* Xat yozilganda yoki Telegram xabari yuborilganda, o'quvchining sinfi,
      telefoni va ota-onasi avtomatik bazaga yozib boriladi (keyingi safar
      ismini yozishning o'zi yetarli bo'ladi). */
@@ -3510,6 +3540,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     cloudSaveRoster().then(function(){ setMsg('#rosterTeachersMsg',"Saqlandi: "+roster.teachers.length+" ta o'qituvchi",'ok') },
       function(){ setMsg('#rosterTeachersMsg',"Saqlab bo'lmadi",'err') });
   });
+  $('#reportPhoneSave').addEventListener('click',function(){
+    var raw=$('#reportPhone').value.trim();
+    var phone=normPhone(raw);
+    if(raw && phone.length!==12) return setMsg('#reportPhoneMsg',"Telefon raqami to'liq emas (masalan: +998 90 123 45 67)",'err');
+    roster.reportPhone = phone;
+    $('#reportPhone').value = phone ? '+'+phone : '';
+    if(!db || !curUser) return setMsg('#reportPhoneMsg',"Internet yo'q, saqlab bo'lmadi",'err');
+    cloudSaveRoster().then(function(){ setMsg('#reportPhoneMsg', phone ? "Saqlandi" : "Hisobot raqami tozalandi",'ok') },
+      function(){ setMsg('#reportPhoneMsg',"Saqlab bo'lmadi",'err') });
+  });
   /* ---------- Faollik jurnali (audit log): kim, qachon, nima qildi ---------- */
   function logAudit(action, details){
     if(!db || !curUser) return;
@@ -3522,7 +3562,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     telegram_sent: "Telegram orqali ota-onaga xabar yuborildi",
     admin_added: "Admin qo'shildi",
     admin_removed: "Admin olib tashlandi",
-    settings_changed: "Sozlamalar o'zgartirildi"
+    settings_changed: "Sozlamalar o'zgartirildi",
+    parent_acknowledged: "Ota-ona \"Tanishdim\" tugmasini bosdi"
   };
   function auditDetailText(a){
     var d=a.details||{};
@@ -3531,6 +3572,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       case 'teacher_letter_logged': return (d.name||'')+(d.subject?' ('+d.subject+')':'')+(d.date?' — '+fmtDate(d.date):'');
       case 'telegram_sent': return (d.name||'')+(d.cls?' ('+d.cls+')':'')+(d.date?' — '+fmtDate(d.date):'');
       case 'admin_added': case 'admin_removed': return d.email||'';
+      case 'parent_acknowledged': return (d.phone||'')+(d.date?' — '+fmtDate(d.date):'');
       default: return '';
     }
   }
@@ -3548,8 +3590,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   function renderAuditLog(){
     var q=($('#auditQ').value||'').toLowerCase().trim(), act=$('#auditAction').value;
+    var from=$('#auditFrom').value, to=$('#auditTo').value;
     var rows = auditCache.filter(function(a){
       if(act && a.action!==act) return false;
+      if(from || to){
+        var d=new Date(a.at||0); if(isNaN(d.getTime())) return false;
+        var iso=d.toISOString().slice(0,10);
+        if(from && iso<from) return false;
+        if(to && iso>to) return false;
+      }
       if(!q) return true;
       var hay=((a.by||'')+' '+(AUDIT_LABELS[a.action]||a.action)+' '+auditDetailText(a)).toLowerCase();
       return hay.indexOf(q)>=0;
@@ -3563,6 +3612,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   $('#auditQ').addEventListener('input',renderAuditLog);
   $('#auditAction').addEventListener('change',renderAuditLog);
+  $('#auditFrom').addEventListener('change',renderAuditLog);
+  $('#auditTo').addEventListener('change',renderAuditLog);
+  $('#auditClear').addEventListener('click',function(){$('#auditQ').value='';$('#auditAction').value='';$('#auditFrom').value='';$('#auditTo').value='';renderAuditLog()});
   $('#auditRefresh').addEventListener('click',loadAuditLog);
   function stopCloud(keepLocal){
     unsubs.forEach(function(u){ try{u()}catch(e){} }); unsubs = [];
@@ -4047,7 +4099,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     $$('#slots .slot').forEach(function(b){b.addEventListener('click',function(){selectSlot(+b.dataset.slot)})});
   }
   var FIELDS={f_name:'name',f_class:'cls',f_parent:'parent',f_reason:'reason',f_date:'date',f_phone:'phone'};
-  function loadSlotToForm(){Object.keys(FIELDS).forEach(function(id){document.getElementById(id).value=slots[cur][FIELDS[id]]||''}); if(window.__syncChips) window.__syncChips()}
+  function loadSlotToForm(){Object.keys(FIELDS).forEach(function(id){document.getElementById(id).value=slots[cur][FIELDS[id]]||''}); if(window.__syncChips) window.__syncChips(); checkRepeatWarn();}
   function selectSlot(i){cur=i;loadSlotToForm();renderSlots();renderSheet()}
   Object.keys(FIELDS).forEach(function(id){
     document.getElementById(id).addEventListener('input',function(){
@@ -4256,23 +4308,45 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     setMsg('#letMsg', n? (n+" ta xat ro'yxatga yozildi") : "Yangi xat yo'q (to'ldirilmagan yoki avval yozilgan)", n?'ok':'err');
   });
   /* ---------- Telegram orqali ota-onaga xabar (Vercel /api orqali) ---------- */
+  /* blob -> base64 matn (serverga PDF yuborish uchun) */
+  function blobToBase64(blob){
+    return blob.arrayBuffer().then(function(buf){
+      var bytes=new Uint8Array(buf), binary='';
+      var CHUNK=0x8000;
+      for(var i=0;i<bytes.length;i+=CHUNK){ binary+=String.fromCharCode.apply(null, bytes.subarray(i,i+CHUNK)); }
+      return btoa(binary);
+    });
+  }
   function sendTelegramNotice(f, btn, msgSel){
     var phone=normPhone(f.phone);
     if(!phone) return setMsg(msgSel, "Avval ota-ona Telegram raqamini kiriting", 'err');
     if(phone.length!==12) return setMsg(msgSel, "Telefon raqami to'liq emas (masalan: +998 90 123 45 67)", 'err');
     if(!auth || !curUser) return setMsg(msgSel, "Avval tizimga kiring", 'err');
-    var was=btn.textContent; btn.disabled=true; btn.textContent='Yuborilmoqda...';
+    var was=btn.textContent; btn.disabled=true; btn.textContent="PDF tayyorlanmoqda...";
     setMsg(msgSel, '', '');
-    curUser.getIdToken().then(function(idToken){
+    var pdfP = buildPdfBlob(letterHTML(f, qrSvg(letterQrUrl(f))), true)
+      .then(blobToBase64)
+      .catch(function(e){ console.warn("PDF tayyorlab bo'lmadi, faqat matn yuboriladi:", e); return null; });
+    Promise.all([curUser.getIdToken(), pdfP]).then(function(res){
+      var idToken=res[0], pdfBase64=res[1];
+      btn.textContent='Yuborilmoqda...';
       return fetch('/api/send-parent-notice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+idToken },
-        body: JSON.stringify({ phone: phone, name: f.name||'', cls: f.cls||'', date: f.date||'', reason: f.reason||'', infoUrl: platformUrl() })
+        body: JSON.stringify({ phone: phone, name: f.name||'', cls: f.cls||'', date: f.date||'', reason: f.reason||'', infoUrl: platformUrl(), pdfBase64: pdfBase64||null })
       });
     }).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, body:j}; }) })
     .then(function(res){
       var st = res.body && res.body.status;
-      if(st==='sent'){ setMsg(msgSel, "Ota-onaga Telegram xabari yuborildi", 'ok'); logAudit('telegram_sent', {name:f.name||'', cls:f.cls||'', date:f.date||''}); learnRosterFromStudent(f); }
+      if(st==='sent'){
+        var pdfTxt = (res.body && res.body.pdfSent) ? " (PDF bilan)" : '';
+        setMsg(msgSel, "Ota-onaga Telegram xabari yuborildi"+pdfTxt, 'ok');
+        /* xabar allaqachon yuborilgan — endigi ikkala amal (jurnalga yozish,
+           bazani yangilash) muvaffaqiyatsiz bo'lsa ham "yuborildi" xabari
+           noto'g'ri "xato"ga almashib ketmasligi uchun alohida himoyalanadi */
+        try{ logAudit('telegram_sent', {name:f.name||'', cls:f.cls||'', date:f.date||''}); }catch(e){ console.warn('Audit yozishda xato:', e); }
+        try{ learnRosterFromStudent(f); }catch(e){ console.warn("Bazani yangilashda xato:", e); }
+      }
       else if(st==='not_linked') setMsg(msgSel, "Bu raqam botga ulanmagan. Ota-onadan botni ochib, raqamini ulashishni so'rang (Sozlamalar → Telegram)", 'err');
       else if(res.body && res.body.error) setMsg(msgSel, "Yuborib bo'lmadi: "+res.body.error, 'err');
       else setMsg(msgSel, "Noma'lum natija", 'err');
