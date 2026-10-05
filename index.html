@@ -22,6 +22,45 @@
 <meta property="og:description" content="Maktab ma'muriyati platformasi">
 <meta property="og:image" content="https://28-maktab.vercel.app/icons/social/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
+<script>
+/* Rejim: Avto (qurilma) / Kun / Tun. Tanlov brauzerda saqlanadi. */
+(function(){
+  var K='theme-pref', R=document.documentElement;
+  var mq=window.matchMedia('(prefers-color-scheme: dark)');
+  var metas=[].slice.call(document.querySelectorAll('meta[name="theme-color"]'));
+  var orig=metas.map(function(m){return m.getAttribute('content');});
+  var LABELS={auto:'\uD83D\uDDA5\uFE0F Avto',light:'\u2600\uFE0F Kun',dark:'\uD83C\uDF19 Tun'};
+  var NEXT={auto:'light',light:'dark',dark:'auto'};
+  function get(){var v=null;try{v=localStorage.getItem(K);}catch(e){} return (v==='light'||v==='dark')?v:'auto';}
+  function save(v){try{localStorage.setItem(K,v);}catch(e){}}
+  function apply(p){
+    if(p==='auto') R.removeAttribute('data-theme'); else R.setAttribute('data-theme',p);
+    R.style.colorScheme = p==='auto' ? 'light dark' : p;
+    var dark = p==='auto' ? mq.matches : p==='dark';
+    metas.forEach(function(m,i){
+      m.setAttribute('content', p==='auto' ? orig[i] : (dark ? '#0f1420' : '#1f4fd8'));
+    });
+    var b=document.getElementById('themeBtn');
+    if(b){
+      b.textContent=LABELS[p];
+      b.setAttribute('aria-label','Rejim: '+LABELS[p]+'. Almashtirish uchun bosing');
+    }
+  }
+  apply(get());
+  var onChange=function(){ if(get()==='auto') apply('auto'); };
+  if(mq.addEventListener) mq.addEventListener('change',onChange);
+  else if(mq.addListener) mq.addListener(onChange);
+  function build(){
+    if(document.getElementById('themeBtn')) return;
+    var b=document.createElement('button');
+    b.type='button'; b.id='themeBtn';
+    b.addEventListener('click',function(){var n=NEXT[get()]; save(n); apply(n);});
+    document.body.appendChild(b);
+    apply(get());
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',build); else build();
+})();
+</script>
 <style>
 :root{
   --bg:#f3f5f9;--card:#ffffff;--text:#172033;--muted:#5b6578;--line:#dde2eb;
@@ -269,6 +308,11 @@ img.logo{display:block;background:transparent;object-fit:contain;box-shadow:0 2p
 .inst-qr svg{display:block;width:100%;height:auto}
 .inst-link{display:flex;gap:8px;align-items:center;margin-top:4px}
 .inst-link code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--brand-soft);color:var(--text);padding:8px 10px;border-radius:8px;font-size:12px}
+
+/* ---- rejim tugmasi (Avto / Kun / Tun) ---- */
+#themeBtn{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:50;border:1px solid var(--line);background:var(--card);color:var(--text);box-shadow:var(--shadow);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+#themeBtn:hover{border-color:var(--brand)}
+@media print{#themeBtn{display:none!important}}
 </style>
 </head>
 <body>
