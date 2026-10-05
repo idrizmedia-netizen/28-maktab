@@ -294,6 +294,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
           <label class="fl" for="f_name">O'quvchi (F.I.Sh)</label>
           <input class="inp" id="f_name" list="studentNames" autocomplete="off">
           <div class="msg hidden" id="repeatWarn" style="margin:6px 0 0;padding:8px 12px;border-radius:10px;background:#fff3cd;color:#7a5b00;font-size:14px"></div>
+          <div class="msg hidden" id="editNote" style="margin:6px 0 0;padding:8px 12px;border-radius:10px;background:var(--brand-soft);font-size:14px;text-align:left">✏️ Bu xat ro'yxatdagi yozuvni tahrirlamoqda: «Ro'yxatga yozish» bossangiz o'sha yozuv yangilanadi. <button type="button" class="mini" id="editNew">Yangi xat sifatida yozish</button></div>
           <div class="row2">
             <div><label class="fl" for="f_class">Sinf</label><input class="inp" id="f_class" placeholder="masalan, 8-A"></div>
             <div><label class="fl" for="f_date">Sana</label><input class="inp" id="f_date" type="date"></div>
@@ -382,6 +383,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
             <button class="btn line" id="tLogBtn" type="button">Ro'yxatga yozish</button>
             <button class="btn line" id="tClearBtn" type="button">Tozalash</button>
           </div>
+          <div class="msg hidden" id="tEditNote" style="margin:6px 0 0;padding:8px 12px;border-radius:10px;background:var(--brand-soft);font-size:14px;text-align:left">✏️ Bu xat ro'yxatdagi yozuvni tahrirlamoqda: «Ro'yxatga yozish» bossangiz o'sha yozuv yangilanadi. <button type="button" class="mini" id="tEditNew">Yangi xat sifatida yozish</button></div>
           <div class="msg" id="tMsg"></div>
           <div class="note">Chop etishda brauzerda "Fon grafikasi"ni yoqing, masshtab 100%, chetlar: yo'q.</div>
         </div>
@@ -3480,18 +3482,35 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   });
   /* bo'sh joy va katta/kichik harf farqidan qat'i nazar solishtiradi, shunda
      "Ali Valiyev" va "ali valiyev " kabi kichik farqlar autofillni buzmaydi */
-  function sameName(a,b){ return (a||'').trim().toLowerCase().replace(/\s+/g,' ') === (b||'').trim().toLowerCase().replace(/\s+/g,' ') }
+  /* ism-familiyani solishtirish uchun yagona kalit: kichik harf, ortiqcha probel va apostrof turlari farqsiz */
+  function nameKey(n){ return String(n||'').toLowerCase().replace(/[\u2018\u2019\u02BB\u02BC\u2032`´]/g,"'").replace(/\s+/g,' ').trim() }
+  function sameName(a,b){ return nameKey(a)===nameKey(b) }
   function findRosterStudent(name){
     for(var i=0;i<roster.students.length;i++){ if(sameName(roster.students[i].name,name)) return roster.students[i]; }
     return null;
   }
+  /* maydonni to'ldiradi va "input" hodisasini chaqiradi, shunda qiymat xat varag'iga (slot) ham yoziladi */
+  function autoSet(sel,val){
+    var el=$(sel); if(!el || !val || el.value===val) return;
+    el.value=val; el.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  /* o'quvchining telefoni: avval ro'yxatdagi (oxirgi) xatlardan, bo'lmasa bazadan */
+  function phoneForName(name){
+    var k=nameKey(name); if(!k) return '';
+    var best=null;
+    loadLog().forEach(function(e){ if(e.phone && nameKey(e.name)===k && (!best || (e.at||0)>(best.at||0))) best=e; });
+    if(best) return best.phone;
+    var r=findRosterStudent(name); return (r && r.phone) || '';
+  }
   function fillFromRosterStudent(){
-    var hit=findRosterStudent($('#f_name').value);
+    var name=$('#f_name').value;
+    var hit=findRosterStudent(name);
     if(hit){
-      if(hit.cls) $('#f_class').value=hit.cls;
-      if(hit.phone) $('#f_phone').value=formatPhoneDisplay(hit.phone);
-      if(hit.parent) $('#f_parent').value=hit.parent;
+      autoSet('#f_class', hit.cls);
+      autoSet('#f_parent', hit.parent);
     }
+    var ph=(hit && hit.phone) ? formatPhoneDisplay(hit.phone) : phoneForName(name);
+    if(ph) autoSet('#f_phone', formatPhoneDisplay(ph));
     checkRepeatWarn();
   }
   $('#f_name').addEventListener('input', fillFromRosterStudent);
@@ -3499,18 +3518,33 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   $('#f_class').addEventListener('input', checkRepeatWarn);
   $('#f_phone').addEventListener('blur', function(){ if(this.value.trim()) this.value=formatPhoneDisplay(this.value); });
   /* o'quvchiga ilgari nechta xat berilganini tekshirib, 3+ bo'lsa ogohlantiradi */
+  function priorCount(name,cls,skipId){
+    var key=personKey({name:name,cls:cls});
+    return loadLog().filter(function(e){ return e.id!==skipId && personKey(e)===key; }).length;
+  }
   function checkRepeatWarn(){
     var name=($('#f_name').value||'').trim(), cls=($('#f_class').value||'').trim();
     var el=$('#repeatWarn');
     if(!name){ el.classList.add('hidden'); return; }
-    var key=(name+'|'+cls).toLowerCase().replace(/\s+/g,' ');
-    var n = loadLog().filter(function(e){ return personKey(e)===key; }).length;
+    var n = priorCount(name, cls, slots[cur] && slots[cur].srcId);
     if(n>=3){
       el.textContent = "⚠️ Bu o'quvchiga oldin "+n+" marta ogohlantirish xati berilgan.";
-      el.classList.remove('hidden');
+      el.style.background='#fff3cd'; el.style.color='#7a5b00';
+    } else if(n>=1){
+      el.textContent = "ℹ️ Bu o'quvchiga oldin "+n+" marta ogohlantirish xati berilgan.";
+      el.style.background='#e8f1ff'; el.style.color='#1d4f91';
     } else {
-      el.classList.add('hidden');
+      el.textContent = "✅ Bu o'quvchiga hali ogohlantirish xati berilmagan.";
+      el.style.background='#e6f6ea'; el.style.color='#1f6b34';
     }
+    el.classList.remove('hidden');
+    updEditNote();
+  }
+  function updEditNote(){
+    var n=$('#editNote'); if(!n) return;
+    var id=slots[cur] && slots[cur].srcId;
+    var ok=id && loadLog().some(function(e){return e.id===id});
+    n.classList.toggle('hidden', !ok);
   }
   /* Xat yozilganda yoki Telegram xabari yuborilganda, o'quvchining sinfi,
      telefoni va ota-onasi avtomatik bazaga yozib boriladi (keyingi safar
@@ -4112,21 +4146,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     $('#sheet').innerHTML=sheetInner();
     $$('#sheet .letter').forEach(function(el,i){ if(i===cur) el.classList.add('sel'); });
   }
+  function slotLabel(s){
+    if(!s.name||!s.name.trim()) return "bo'sh";
+    var n=priorCount(s.name,s.cls,s.srcId);
+    return s.name.trim()+(n?' · '+n+' marta':'');
+  }
   function renderSlots(){
     $('#slots').innerHTML=slots.map(function(s,i){
-      return '<button type="button" class="slot'+(i===cur?' on':'')+'" data-slot="'+i+'">'+(i+1)+'-xat<small>'+(s.name?esc(s.name):"bo'sh")+'</small></button>';
+      return '<button type="button" class="slot'+(i===cur?' on':'')+'" data-slot="'+i+'">'+(i+1)+'-xat<small>'+(s.name?esc(slotLabel(s)):"bo'sh")+'</small></button>';
     }).join('');
     $$('#slots .slot').forEach(function(b){b.addEventListener('click',function(){selectSlot(+b.dataset.slot)})});
   }
   var FIELDS={f_name:'name',f_class:'cls',f_parent:'parent',f_reason:'reason',f_date:'date',f_phone:'phone'};
-  function loadSlotToForm(){Object.keys(FIELDS).forEach(function(id){document.getElementById(id).value=slots[cur][FIELDS[id]]||''}); if(window.__syncChips) window.__syncChips(); checkRepeatWarn();}
+  function loadSlotToForm(){updEditNote(); Object.keys(FIELDS).forEach(function(id){document.getElementById(id).value=slots[cur][FIELDS[id]]||''}); if(window.__syncChips) window.__syncChips(); checkRepeatWarn();}
   function selectSlot(i){cur=i;loadSlotToForm();renderSlots();renderSheet()}
   Object.keys(FIELDS).forEach(function(id){
     document.getElementById(id).addEventListener('input',function(){
       slots[cur][FIELDS[id]]=this.value;
       if(id==='f_name' && this.value.trim() && !slots[cur].date){slots[cur].date=todayISO();document.getElementById('f_date').value=slots[cur].date}
       saveSlots(); renderSheet();
-      var sm=$('#slots .slot.on small'); if(sm) sm.textContent=slots[cur].name||"bo'sh";
+      var sm=$('#slots .slot.on small'); if(sm) sm.textContent=slotLabel(slots[cur]);
     });
   });
   $('#sheet').addEventListener('click',function(e){
@@ -4134,7 +4173,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var i=$$('#sheet .letter').indexOf(el); if(i>=0) selectSlot(i);
   });
   $('#copyAll').addEventListener('click',function(){
-    var c=Object.assign({},slots[cur]); slots=slots.map(function(){return Object.assign({},c)}); saveSlots(); renderSlots(); renderSheet(); setMsg('#letMsg','Hamma 4 ta xatga nusxalandi','ok');
+    var c=Object.assign({},slots[cur]); delete c.srcId; slots=slots.map(function(){return Object.assign({},c)}); saveSlots(); renderSlots(); renderSheet(); setMsg('#letMsg','Hamma 4 ta xatga nusxalandi','ok');
   });
   $('#clearOne').addEventListener('click',function(){slots[cur]=emptySlot();saveSlots();loadSlotToForm();renderSlots();renderSheet()});
   $('#clearBtn').addEventListener('click',function(){slots=[emptySlot(),emptySlot(),emptySlot(),emptySlot()];saveSlots();loadSlotToForm();renderSlots();renderSheet()});
@@ -4201,26 +4240,85 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   /* ---------- registry ---------- */
   function loadLog(){var l=jparse(lget('m28_log'),[]);return Array.isArray(l)?l:[]}
   function saveLog(l){lset('m28_log',JSON.stringify(l));cloudSave('log',l)}
+  var lastLogStats={added:0,updated:0};
+  /* bir o'quvchining telefoni barcha xatlariga qo'yiladi (bo'sh qolganlariga; yangi raqam kiritilsa hammasiga) */
+  function spreadPhones(log, forceKey, forcePhone){
+    var changed=false, groups={};
+    log.forEach(function(e){ var k=personKey(e); (groups[k]=groups[k]||[]).push(e); });
+    Object.keys(groups).forEach(function(k){
+      var g=groups[k], ph='';
+      if(forceKey===k && forcePhone) ph=forcePhone;
+      else {
+        var best=null; g.forEach(function(e){ if(e.phone && (!best||(e.at||0)>(best.at||0))) best=e; });
+        if(best) ph=best.phone; else { var r=findRosterStudent(g[0].name); if(r && r.phone) ph=formatPhoneDisplay(r.phone); }
+      }
+      if(!ph) return;
+      g.forEach(function(e){
+        if(forceKey===k && forcePhone){ if(e.phone!==ph){ e.phone=ph; changed=true; } }
+        else if(!e.phone){ e.phone=ph; changed=true; }
+      });
+    });
+    return changed;
+  }
   function logFilled(){
-    var log=loadLog(), added=0, changed=false;
+    var log=loadLog(), added=0, updated=0, changed=false, forced=[];
     slots.forEach(function(s){
       if(!s.name||!s.name.trim()) return;
       var d=s.date||todayISO();
+      if(!(s.phone||'').trim()){ var pf=phoneForName(s.name); if(pf) s.phone=pf; }
+      var phone=(s.phone||'').trim() ? formatPhoneDisplay(s.phone) : '';
       var id=[s.name,s.cls,s.parent,s.reason,d].join('|').toLowerCase();
-      var existing=log.filter(function(e){return e.id===id})[0];
-      if(existing){
-        if((s.phone||'').trim() && existing.phone!==s.phone.trim()){ existing.phone=s.phone.trim(); changed=true; }
+      var rec={name:s.name.trim(),cls:(s.cls||'').trim(),parent:(s.parent||'').trim(),reason:(s.reason||'').trim(),date:d,phone:phone};
+      /* 1) ro'yxatdan ochilgan xat tahrirlangan bo'lsa, o'sha yozuvning o'zi yangilanadi */
+      var src = s.srcId ? log.filter(function(e){return e.id===s.srcId})[0] : null;
+      if(src){
+        var before=JSON.stringify([src.name,src.cls,src.parent,src.reason,src.date,src.phone||'']);
+        /* shu mazmundagi boshqa (takroriy) yozuv bo'lsa, ikkitaga ko'paymasin */
+        log=log.filter(function(e){ return e===src || e.id!==id; });
+        src.name=rec.name; src.cls=rec.cls; src.parent=rec.parent; src.reason=rec.reason; src.date=rec.date; src.phone=rec.phone||src.phone||'';
+        src.id=id; s.srcId=id;
+        if(JSON.stringify([src.name,src.cls,src.parent,src.reason,src.date,src.phone||''])!==before){
+          updated++; changed=true;
+          logAudit('student_letter_edited', {name:rec.name, cls:rec.cls, date:d});
+        }
+        if(phone) forced.push([personKey(src),phone]);
         learnRosterFromStudent(s);
         return;
       }
-      log.push({id:id,name:s.name.trim(),cls:(s.cls||'').trim(),parent:(s.parent||'').trim(),reason:(s.reason||'').trim(),date:d,phone:(s.phone||'').trim(),at:Date.now()}); added++;
-      logAudit('student_letter_logged', {name:s.name.trim(), cls:(s.cls||'').trim(), date:d});
+      /* 2) xuddi shu xat avval yozilgan bo'lsa, faqat telefonni yangilaymiz */
+      var existing=log.filter(function(e){return e.id===id})[0];
+      if(existing){
+        if(phone && existing.phone!==phone){ existing.phone=phone; changed=true; }
+        if(phone) forced.push([personKey(existing),phone]);
+        s.srcId=id;
+        learnRosterFromStudent(s);
+        return;
+      }
+      /* 3) yangi xat */
+      log.push({id:id,name:rec.name,cls:rec.cls,parent:rec.parent,reason:rec.reason,date:d,phone:phone,at:Date.now()}); added++;
+      s.srcId=id;
+      if(phone) forced.push([personKey(rec),phone]);
+      logAudit('student_letter_logged', {name:rec.name, cls:rec.cls, date:d});
       learnRosterFromStudent(s);
     });
-    if(added||changed) saveLog(log);
-    return added;
+    /* telefonni o'quvchining barcha xatlariga tarqatish */
+    forced.forEach(function(f){ if(spreadPhones(log,f[0],f[1])) changed=true; });
+    if(spreadPhones(log)) changed=true;
+    lastLogStats={added:added,updated:updated};
+    if(added||updated||changed){ saveLog(log); saveSlots(); }
+    updEditNote();
+    return added+updated;
   }
-  function personKey(e){return (e.name+'|'+e.cls).toLowerCase().replace(/\s+/g,' ')}
+  /* O'quvchi kaliti: ism-familiya bo'yicha. Bir xil ismli ikki o'quvchini sinf bo'yicha ajratish kerak bo'lsa, quyidagini true qiling */
+  var COUNT_BY_CLASS=false;
+  function personKey(e){ var k=nameKey(e.name); return COUNT_BY_CLASS ? k+'|'+nameKey(normClass(e.cls)) : k }
+  /* ro'yxatda ko'rsatish uchun: telefon bo'sh bo'lsa, o'quvchining boshqa xatidan olinadi */
+  function phoneMap(all){
+    var m={};
+    all.forEach(function(e){ if(e.phone){ var k=personKey(e); if(!m[k]||(e.at||0)>(m[k].at||0)) m[k]=e; } });
+    return m;
+  }
+  function phoneOf(e,pm){ if(e.phone) return e.phone; var h=pm[personKey(e)]; if(h) return h.phone; var r=findRosterStudent(e.name); return (r&&r.phone)?formatPhoneDisplay(r.phone):''; }
   /* "9-a", "9-A", "9 a" kabi yozuvlarni bitta "9-A" ko'rinishiga keltiradi (statistika uchun) */
   function normClass(c){
     c=(c||'').trim(); if(!c) return c;
@@ -4258,14 +4356,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     classes.sort(function(a,b){return a.localeCompare(b,'uz',{numeric:true})});
     sel.innerHTML='<option value="">Barcha sinflar</option>'+classes.map(function(c){return '<option value="'+esc(c)+'"'+(c===keep?' selected':'')+'>'+esc(c)+'</option>'}).join('');
     var counts={}; all.forEach(function(e){var k=personKey(e);counts[k]=(counts[k]||0)+1});
+    var pm=phoneMap(all);
+    var ord={}, ordById={}; all.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:(a.at||0)-(b.at||0)}).forEach(function(e){var k=personKey(e);ord[k]=(ord[k]||0)+1;ordById[e.id]=ord[k]});
     var rows=filteredLog();
     $('#logCount').textContent = all.length? ("Jami: "+all.length+" ta xat"+(rows.length!==all.length?" · ko'rsatilgan: "+rows.length:"")) : '';
     $('#logBody').innerHTML = rows.length ? rows.map(function(e){
       var n=counts[personKey(e)];
       return '<tr class="rowlink" data-open="'+esc(e.id)+'"><td><input type="checkbox" data-sel="'+esc(e.id)+'"'+(selected[e.id]?' checked':'')+'></td>'+
              '<td>'+esc(fmtDate(e.date))+'</td><td><b class="lnk">'+esc(e.name)+'</b></td><td>'+esc(e.cls)+'</td><td>'+esc(e.parent)+'</td><td>'+esc(e.reason)+'</td>'+
-             '<td>'+(e.phone?esc(e.phone):'<span class="muted">—</span>')+'</td>'+
-             '<td><span class="badge'+(n>=3?' warn':'')+'">'+n+' marta</span></td>'+
+             '<td>'+(phoneOf(e,pm)?esc(phoneOf(e,pm)):'<span class="muted">—</span>')+'</td>'+
+             '<td><span class="badge'+(n>=3?' warn':'')+'" title="Bu — '+ordById[e.id]+'-xat">'+n+' marta</span></td>'+
              '<td><button class="mini" style="color:var(--danger)" data-rm="'+esc(e.id)+'">O\'chirish</button></td></tr>';
     }).join('') : '<tr><td colspan="9"><div class="empty">'+(all.length?"Hech narsa topilmadi.":"Hozircha xat yo'q. Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.")+'</div></td></tr>';
     $$('#logBody tr[data-open]').forEach(function(tr){tr.addEventListener('click',function(e){
@@ -4286,7 +4386,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   var selected={};
   function selCount(){return Object.keys(selected).length}
   function updSel(){var n=selCount(),b=$('#selLoad');b.disabled=!n;b.textContent="Tanlanganlarni xatga joylash ("+n+")"}
-  function toSlot(e){return {name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date,phone:e.phone||''}}
+  function toSlot(e){return {name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date,phone:e.phone||phoneForName(e.name),srcId:e.id}}
   function openEntries(ids){
     var log=loadLog(), es=ids.map(function(id){return log.filter(function(x){return x.id===id})[0]}).filter(Boolean);
     if(!es.length) return;
@@ -4303,6 +4403,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     saveSlots(); goTab('letter'); loadSlotToForm(); renderSlots(); renderSheet();
     setMsg('#letMsg', es.length===1 ? ((cur+1)+"-xatda ochildi") : (es.length+" ta xat A4 varaqqa joylandi"), 'ok');
   }
+  $('#editNew').addEventListener('click',function(){ delete slots[cur].srcId; saveSlots(); updEditNote(); checkRepeatWarn(); renderSlots(); setMsg('#letMsg',"Endi bu yangi xat sifatida yoziladi",'ok'); });
   $('#selLoad').addEventListener('click',function(){var ids=Object.keys(selected);selected={};openEntries(ids)});
   $('#q').addEventListener('input',renderLog); $('#qClass').addEventListener('change',renderLog);
   $('#qFrom').addEventListener('change',renderLog); $('#qTo').addEventListener('change',renderLog);
@@ -4317,8 +4418,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   $('#csvBtn').addEventListener('click',function(){
     var rows=filteredLog(); if(!rows.length) return setMsg('#logMsg',"Yuklab olish uchun ma'lumot yo'q",'err');
     var all=loadLog(), counts={}; all.forEach(function(e){var k=personKey(e);counts[k]=(counts[k]||0)+1});
+    var pm=phoneMap(all);
     var out=[["№","Sana","O'quvchi","Sinf","Ota-onasi","Telefon","Sababi","Necha marta"]];
-    rows.forEach(function(e,i){out.push([i+1,fmtDate(e.date),e.name,e.cls,e.parent,e.phone||'',e.reason,counts[personKey(e)]])});
+    rows.forEach(function(e,i){out.push([i+1,fmtDate(e.date),e.name,e.cls,e.parent,phoneOf(e,pm),e.reason,counts[personKey(e)]])});
     var csv='\ufeff'+out.map(function(r){return r.map(csvCell).join(';')}).join('\r\n');
     saveFile('ogohlantirish-xatlari-'+todayISO()+'.csv',csv).then(function(){setMsg('#logMsg','CSV saqlandi','ok')},function(e){setMsg('#logMsg',saveErr(e),'err')});
   });
@@ -4326,11 +4428,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   /* ---------- print / PDF ---------- */
   function autoLogIfOn(){
     if(!$('#autoLog').checked) return 0;
-    var n=logFilled(); if(n) renderLog(); return n;
+    var n=logFilled(); if(n){ renderLog(); renderSlots(); } return n;
   }
   $('#logBtn').addEventListener('click',function(){
-    var n=logFilled(); renderLog();
-    setMsg('#letMsg', n? (n+" ta xat ro'yxatga yozildi") : "Yangi xat yo'q (to'ldirilmagan yoki avval yozilgan)", n?'ok':'err');
+    var n=logFilled(); renderLog(); renderSlots(); renderSheet(); loadSlotToForm();
+    var st=lastLogStats, parts=[];
+    if(st.added) parts.push(st.added+" ta yangi xat ro'yxatga yozildi");
+    if(st.updated) parts.push(st.updated+" ta xat joyida yangilandi");
+    setMsg('#letMsg', parts.length? parts.join(', ') : (n? "Saqlandi" : "Yangi xat yo'q (to'ldirilmagan yoki avval yozilgan)"), (parts.length||n)?'ok':'err');
   });
   /* ---------- Telegram orqali ota-onaga xabar (Vercel /api orqali) ---------- */
   /* blob -> base64 matn (serverga PDF yuborish uchun) */
@@ -4408,7 +4513,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   });
 
   /* ---------- O'QITUVCHILAR ---------- */
-  var TEMPTY={name:'',subject:'',issue:'',date:'',signer:''};
+  var TEMPTY={name:'',subject:'',issue:'',date:'',signer:''}; /* srcId: ro'yxatdan ochilgan xat yozuvi */
   var tl=Object.assign({},TEMPTY,jparse(lget('m28_tl'),{}));
   function saveTl(){lset('m28_tl',JSON.stringify(tl))}
   var TF={t_name:'name',t_subject:'subject',t_issue:'issue',t_date:'date',t_signer:'signer'};
@@ -4418,7 +4523,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(tl.signer && !names.some(function(a){return a.name===tl.signer})) opts+='<option value="'+esc(tl.signer)+'">'+esc(tl.signer)+'</option>';
     sel.innerHTML=opts; sel.value=tl.signer||'';
   }
-  function loadTlToForm(){
+  function loadTlToForm(){ if(typeof updTEditNote==='function') updTEditNote();
     ['t_name','t_subject','t_issue','t_date'].forEach(function(id){document.getElementById(id).value=tl[TF[id]]||''});
     $('#t_signer').value=tl.signer||''; tCount();
   }
@@ -4467,17 +4572,33 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       saveTl(); renderTSheet(); if(id==='t_issue') tCount();
     });
   });
-  $('#tClearBtn').addEventListener('click',function(){tl=Object.assign({},TEMPTY);saveTl();loadTlToForm();fillSigner();renderTSheet()});
+  $('#tClearBtn').addEventListener('click',function(){tl=Object.assign({},TEMPTY);saveTl();loadTlToForm();fillSigner();renderTSheet();updTEditNote()});
+  $('#tEditNew').addEventListener('click',function(){ delete tl.srcId; saveTl(); updTEditNote(); setMsg('#tMsg',"Endi bu yangi xat sifatida yoziladi",'ok'); });
 
   /* o'qituvchilar ro'yxati (o'quvchilardan alohida) */
   function loadTLog(){var l=jparse(lget('m28_tlog'),[]);return Array.isArray(l)?l:[]}
   function saveTLog(l){lset('m28_tlog',JSON.stringify(l));cloudSave('tlog',l)}
+  function updTEditNote(){
+    var n=$('#tEditNote'); if(!n) return;
+    n.classList.toggle('hidden', !(tl.srcId && loadTLog().some(function(e){return e.id===tl.srcId})));
+  }
   function logTeacher(){
     if(!tl.name||!tl.name.trim()) return 0;
     var log=loadTLog(), d=tl.date||todayISO();
     var id=[tl.name,tl.subject,tl.issue,d].join('|').toLowerCase();
-    if(log.some(function(e){return e.id===id})) return 0;
+    var src = tl.srcId ? log.filter(function(e){return e.id===tl.srcId})[0] : null;
+    if(src){
+      var before=JSON.stringify([src.name,src.subject,src.issue,src.date,src.signer||'']);
+      log=log.filter(function(e){ return e===src || e.id!==id; });
+      src.name=tl.name.trim(); src.subject=(tl.subject||'').trim(); src.issue=(tl.issue||'').trim(); src.date=d; src.signer=tl.signer||''; src.id=id; tl.srcId=id;
+      saveTl(); updTEditNote();
+      if(JSON.stringify([src.name,src.subject,src.issue,src.date,src.signer||''])===before) return 0;
+      saveTLog(log); logAudit('teacher_letter_edited', {name:src.name, subject:src.subject, date:d});
+      return 1;
+    }
+    if(log.some(function(e){return e.id===id})) { tl.srcId=id; saveTl(); return 0; }
     log.push({id:id,name:tl.name.trim(),subject:(tl.subject||'').trim(),issue:(tl.issue||'').trim(),date:d,signer:tl.signer||'',at:Date.now()});
+    tl.srcId=id; saveTl();
     saveTLog(log);
     logAudit('teacher_letter_logged', {name:tl.name.trim(), subject:(tl.subject||'').trim(), date:d});
     return 1;
@@ -4511,8 +4632,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     $$('#tlogBody tr[data-topen]').forEach(function(tr){tr.addEventListener('click',function(e){
       if(e.target.closest('button')) return;
       var r=loadTLog().filter(function(x){return x.id===tr.dataset.topen})[0]; if(!r) return;
-      tl={name:r.name,subject:r.subject,issue:r.issue,date:r.date,signer:r.signer}; saveTl();
-      goTab('tletter'); loadTlToForm(); fillSigner(); renderTSheet(); setMsg('#tMsg',"Xat qayta ochildi",'ok');
+      tl={name:r.name,subject:r.subject,issue:r.issue,date:r.date,signer:r.signer,srcId:r.id}; saveTl();
+      goTab('tletter'); loadTlToForm(); updTEditNote(); fillSigner(); renderTSheet(); setMsg('#tMsg',"Xat qayta ochildi",'ok');
     })});
     $$('#tlogBody [data-trm]').forEach(function(b){b.addEventListener('click',function(){
       saveTLog(loadTLog().filter(function(x){return x.id!==b.dataset.trm})); renderTLog();
@@ -4539,8 +4660,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   /* o'qituvchi xatini chop etish / PDF */
   function tAutoLog(){ if(!$('#tAutoLog').checked) return 0; var n=logTeacher(); if(n) renderTLog(); return n }
   $('#tLogBtn').addEventListener('click',function(){
-    var n=logTeacher(); renderTLog();
-    setMsg('#tMsg', n ? "Xat ro'yxatga yozildi" : "Yangi xat yo'q (to'ldirilmagan yoki avval yozilgan)", n?'ok':'err');
+    var wasEdit=!!tl.srcId, n=logTeacher(); renderTLog(); updTEditNote();
+    setMsg('#tMsg', n ? (wasEdit ? "Xat joyida yangilandi" : "Xat ro'yxatga yozildi") : "Yangi xat yo'q (to'ldirilmagan yoki avval yozilgan)", n?'ok':'err');
   });
   $('#tPrintBtn').addEventListener('click',function(){
     renderTSheet(); var n=tAutoLog(); if(n) toast("Xat ro'yxatga yozildi");
