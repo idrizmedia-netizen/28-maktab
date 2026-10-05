@@ -311,6 +311,14 @@ img.logo{display:block;background:transparent;object-fit:contain;box-shadow:0 2p
 .inst-link{display:flex;gap:8px;align-items:center;margin-top:4px}
 .inst-link code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--brand-soft);color:var(--text);padding:8px 10px;border-radius:8px;font-size:12px}
 
+.card-sum{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.card-list{max-height:48vh;overflow:auto;border-top:1px solid var(--line)}
+.card-row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.card-n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--brand-soft);color:var(--brand);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.card-main{flex:1;min-width:0;font-size:14px}
+.card-reason{color:var(--muted);margin-top:2px;overflow-wrap:anywhere}
+.card-foot{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:14px}
+@media print{#cardModal{display:none!important}}
 /* ---- rejim tugmasi (Avto / Kun / Tun) ---- */
 #themeBtn{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:50;border:1px solid var(--line);background:var(--card);color:var(--text);box-shadow:var(--shadow);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
 #themeBtn:hover{border-color:var(--brand)}
@@ -4443,6 +4451,47 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       return (e.name+' '+e.cls+' '+e.parent+' '+e.reason).toLowerCase().indexOf(q)>=0;
     });
   }
+  /* ---------- O'quvchi kartochkasi: bitta o'quvchining barcha xatlari ---------- */
+  function openCard(id){
+    var all=loadLog(), e=all.filter(function(x){return x.id===id})[0];
+    if(!e) return;
+    var key=personKey(e), pm=phoneMap(all);
+    var list=all.filter(function(x){
+      if(personKey(x)!==key) return false;
+      if(isHomeroom() && myClasses.length && myClasses.indexOf(normClass(x.cls))<0) return false;
+      return true;
+    }).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:(a.at||0)-(b.at||0)});
+    var n=list.length, ph=phoneOf(e,pm);
+    var m=$('#cardModal');
+    if(!m){
+      m=document.createElement('div'); m.id='cardModal'; m.className='inst-modal hidden';
+      m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true');
+      document.body.appendChild(m);
+      m.addEventListener('click',function(ev){ if(ev.target===m||ev.target.closest('[data-cclose]')) m.classList.add('hidden'); });
+      document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') m.classList.add('hidden'); });
+    }
+    var rows=list.map(function(x,i){
+      return '<div class="card-row"><span class="card-n">'+(i+1)+'</span><div class="card-main"><b>'+esc(fmtDate(x.date))+'</b>'+
+             '<div class="card-reason">'+(esc(x.reason)||'<span class="muted">sabab ko\'rsatilmagan</span>')+'</div></div>'+
+             '<button type="button" class="mini" data-copen="'+esc(x.id)+'">Xatni ochish</button></div>';
+    }).join('');
+    m.innerHTML='<div class="inst-box"><button type="button" class="inst-x" data-cclose aria-label="Yopish">×</button>'+
+      '<h3>'+esc(e.name)+'</h3>'+
+      '<p>'+esc(e.cls||'sinf ko\'rsatilmagan')+(e.parent?' · Ota-onasi: '+esc(e.parent):'')+(ph?' · '+esc(ph):'')+'</p>'+
+      '<div class="card-sum"><span class="badge'+(n>=3?' warn':'')+'">'+n+' ta xat</span>'+
+      (n>=3?' <span class="badge warn">🔴 Direktor bilan suhbat tavsiya etiladi</span>':'')+'</div>'+
+      '<div class="card-list">'+rows+'</div>'+
+      '<div class="card-foot">'+(n>1?'<button type="button" class="btn line sm" data-call>Oxirgi '+Math.min(n,4)+' tasini A4 ga joylash</button>':'')+
+      '<button type="button" class="btn ghost sm" data-cclose>Yopish</button></div></div>';
+    $$('#cardModal [data-copen]').forEach(function(b){ b.addEventListener('click',function(){ m.classList.add('hidden'); openEntries([b.dataset.copen]); }); });
+    var ca=$('#cardModal [data-call]');
+    if(ca) ca.addEventListener('click',function(){ m.classList.add('hidden'); openEntries(list.slice(-4).map(function(x){return x.id})); });
+    m.classList.remove('hidden');
+  }
+  $('#logBody').addEventListener('click',function(ev){
+    var b=ev.target.closest('[data-card]');
+    if(b){ ev.stopPropagation(); openCard(b.dataset.card); }
+  });
   function renderLog(){
     var all=loadLog(), sel=$('#qClass'), keep=sel.value;
     var classes=[]; all.forEach(function(e){if(e.cls&&classes.indexOf(e.cls)<0)classes.push(e.cls)});
@@ -4457,7 +4506,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     $('#logBody').innerHTML = rows.length ? rows.map(function(e){
       var n=counts[personKey(e)];
       return '<tr class="rowlink'+(n>=3?' danger':'')+'" data-open="'+esc(e.id)+'"><td><input type="checkbox" data-sel="'+esc(e.id)+'"'+(selected[e.id]?' checked':'')+'></td>'+
-             '<td>'+esc(fmtDate(e.date))+'</td><td><b class="lnk">'+esc(e.name)+'</b></td><td>'+esc(e.cls)+'</td><td>'+esc(e.parent)+'</td><td>'+esc(e.reason)+'</td>'+
+             '<td>'+esc(fmtDate(e.date))+'</td><td><b class="lnk">'+esc(e.name)+'</b> <button type="button" class="mini" data-card="'+esc(e.id)+'" title="O\'quvchi kartochkasi">📋 Kartochka</button></td><td>'+esc(e.cls)+'</td><td>'+esc(e.parent)+'</td><td>'+esc(e.reason)+'</td>'+
              '<td>'+(phoneOf(e,pm)?esc(phoneOf(e,pm)):'<span class="muted">—</span>')+'</td>'+
              '<td><span class="badge'+(n>=3?' warn':'')+'" title="Bu — '+ordById[e.id]+'-xat">'+n+' marta</span>'+(n>=3?' <span class="badge warn" title="3 va undan ko\'p xat: direktor bilan suhbat tavsiya etiladi">🔴 Suhbat</span>':'')+'</td>'+
              '<td><button class="mini" style="color:var(--danger)" data-rm="'+esc(e.id)+'">O\'chirish</button></td></tr>';
