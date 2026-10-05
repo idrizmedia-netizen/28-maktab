@@ -6,7 +6,7 @@
  * bilan keladi, token Firebase Admin SDK orqali tekshiriladi, so'ng
  * foydalanuvchi admin ekanligi Firestore'dan tasdiqlanadi.
  */
-const { db, adminAuth, normPhone, isAdminEmail, tgApi } = require('./_lib');
+const { db, adminAuth, normPhone, isAdminEmail, tgApi, tgSendDocument } = require('./_lib');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') { res.status(405).json({ error: 'method-not-allowed' }); return; }
@@ -43,10 +43,31 @@ module.exports = async (req, res) => {
     if (reason) text += "Sababi: " + reason + "\n";
     if (infoUrl) text += "\nTafsilot: " + infoUrl;
 
-    await tgApi('sendMessage', { chat_id: chatId, text });
+    // "Tanishdim" tugmasi: ota-ona bossa, bot shu haqda faollik jurnaliga yozadi
+    const ackData = ('ack|' + phone + '|' + dateTxt).slice(0, 64);
+    await tgApi('sendMessage', {
+      chat_id: chatId,
+      text,
+      reply_markup: { inline_keyboard: [[{ text: '✅ Tanishdim', callback_data: ackData }]] },
+    });
     await db().collection('notify_log').add({ phone, name, cls, date: dateTxt, sentBy: email, sentAt: Date.now() });
 
-    res.status(200).json({ status: 'sent' });
+    // PDF nusxasi (ixtiyoriy) — admin brauzerda tayyorlab yuborgan bo'lsa,
+    // alohida xabar sifatida biriktiriladi. Bu muvaffaqiyatsiz bo'lsa ham,
+    // asosiy matnli xabar allaqachon yetib borgani uchun so'rovni xato
+    // deb hisoblamaymiz.
+    let pdfSent = false;
+    if (data.pdfBase64) {
+      try {
+        const fname = 'ogohlantirish-xati' + (dateTxt ? '-' + dateTxt : '') + '.pdf';
+        await tgSendDocument(chatId, data.pdfBase64, fname, 'Xat nusxasi (PDF)');
+        pdfSent = true;
+      } catch (e) {
+        console.warn("PDF yuborib bo'lmadi:", e);
+      }
+    }
+
+    res.status(200).json({ status: 'sent', pdfSent });
   } catch (e) {
     console.error('send-parent-notice xato:', e);
     res.status(500).json({ error: 'internal', message: e.message });
