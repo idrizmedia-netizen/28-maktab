@@ -225,6 +225,8 @@ table.log th{background:var(--brand-soft);color:var(--brand);font-size:12px;text
 table.log tr:last-child td{border-bottom:0}
 .badge{display:inline-block;background:var(--brand-soft);color:var(--brand);border-radius:999px;padding:2px 9px;font-weight:700;font-size:12px;white-space:nowrap}
 .badge.warn{background:rgba(180,35,24,.14);color:var(--danger)}
+tr.rowlink.danger td{background:rgba(180,35,24,.07)}
+tr.rowlink.danger td:first-child{box-shadow:inset 3px 0 0 var(--danger)}
 table.log tr.rowlink{cursor:pointer}
 table.log tr.rowlink:hover td{background:var(--brand-soft)}
 table.log .lnk{color:var(--brand)}
@@ -3619,8 +3621,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var el=$('#repeatWarn');
     if(!name){ el.classList.add('hidden'); return; }
     var n = priorCount(name, cls, slots[cur] && slots[cur].srcId);
-    if(n>=3){
-      el.textContent = "⚠️ Bu o'quvchiga oldin "+n+" marta ogohlantirish xati berilgan.";
+    if(n>=2){
+      el.textContent = "⚠️ Bu o'quvchiga oldin "+n+" marta ogohlantirish xati berilgan. Bu — "+(n+1)+"-xat: direktor (yoki o'rinbosar) bilan suhbat o'tkazish tavsiya etiladi.";
       el.style.background='#fff3cd'; el.style.color='#7a5b00';
     } else if(n>=1){
       el.textContent = "ℹ️ Bu o'quvchiga oldin "+n+" marta ogohlantirish xati berilgan.";
@@ -4454,10 +4456,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     $('#logCount').textContent = all.length? ("Jami: "+all.length+" ta xat"+(rows.length!==all.length?" · ko'rsatilgan: "+rows.length:"")) : '';
     $('#logBody').innerHTML = rows.length ? rows.map(function(e){
       var n=counts[personKey(e)];
-      return '<tr class="rowlink" data-open="'+esc(e.id)+'"><td><input type="checkbox" data-sel="'+esc(e.id)+'"'+(selected[e.id]?' checked':'')+'></td>'+
+      return '<tr class="rowlink'+(n>=3?' danger':'')+'" data-open="'+esc(e.id)+'"><td><input type="checkbox" data-sel="'+esc(e.id)+'"'+(selected[e.id]?' checked':'')+'></td>'+
              '<td>'+esc(fmtDate(e.date))+'</td><td><b class="lnk">'+esc(e.name)+'</b></td><td>'+esc(e.cls)+'</td><td>'+esc(e.parent)+'</td><td>'+esc(e.reason)+'</td>'+
              '<td>'+(phoneOf(e,pm)?esc(phoneOf(e,pm)):'<span class="muted">—</span>')+'</td>'+
-             '<td><span class="badge'+(n>=3?' warn':'')+'" title="Bu — '+ordById[e.id]+'-xat">'+n+' marta</span></td>'+
+             '<td><span class="badge'+(n>=3?' warn':'')+'" title="Bu — '+ordById[e.id]+'-xat">'+n+' marta</span>'+(n>=3?' <span class="badge warn" title="3 va undan ko\'p xat: direktor bilan suhbat tavsiya etiladi">🔴 Suhbat</span>':'')+'</td>'+
              '<td><button class="mini" style="color:var(--danger)" data-rm="'+esc(e.id)+'">O\'chirish</button></td></tr>';
     }).join('') : '<tr><td colspan="9"><div class="empty">'+(all.length?"Hech narsa topilmadi.":"Hozircha xat yo'q. Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.")+'</div></td></tr>';
     $$('#logBody tr[data-open]').forEach(function(tr){tr.addEventListener('click',function(e){
