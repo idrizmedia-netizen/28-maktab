@@ -312,6 +312,7 @@ img.logo{display:block;background:transparent;object-fit:contain;box-shadow:0 2p
 .inst-link{display:flex;gap:8px;align-items:center;margin-top:4px}
 .inst-link code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--brand-soft);color:var(--text);padding:8px 10px;border-radius:8px;font-size:12px}
 
+tr.rowlink.nolink{cursor:default}
 .card-sum{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
 .card-list{max-height:48vh;overflow:auto;border-top:1px solid var(--line)}
 .card-row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
@@ -3508,6 +3509,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   var myRole = 'full', myClasses = [];
   function isViewer(){ return myRole==='viewer' }
   function isHomeroom(){ return myRole==='homeroom' }
+  function inMyClasses(cls){ return !isHomeroom() || (myClasses.length>0 && myClasses.indexOf(normClass(cls))>=0); }
   function cloudDocId(key){ return 'm28_'+key; }
   function cloudSave(key, arr){
     if(!db || !curUser) return;
@@ -3555,7 +3557,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     return rosterRef().set({ data: JSON.parse(JSON.stringify(roster)), updatedAt: Date.now(), updatedBy: curUser.email });
   }
   function fillDatalists(){
-    $('#studentNames').innerHTML = roster.students.map(function(s){return '<option value="'+esc(s.name)+'">'}).join('');
+    $('#studentNames').innerHTML = roster.students.filter(function(s){return inMyClasses(s.cls)}).map(function(s){return '<option value="'+esc(s.name)+'">'}).join('');
     $('#teacherNames').innerHTML = roster.teachers.map(function(t){return '<option value="'+esc(t.name)+'">'}).join('');
   }
   /* "Ism, Sinf, Telefon, Ota-ona" qatorini yasaydi; oxiridagi bo'sh ustunlarni tashlab yuboradi */
@@ -3968,9 +3970,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var fClass = $('#f_class');
     if(homeroom && myClasses.length===1){
       fClass.value = myClasses[0]; fClass.readOnly = true;
+      try{
+        var chg=false;
+        slots.forEach(function(sl){ if(sl.name && sl.cls!==myClasses[0] && !sl.srcId){ sl.cls=myClasses[0]; chg=true; } });
+        if(chg){ saveSlots(); renderSheet(); loadSlotToForm(); }
+      }catch(e){}
     } else {
       fClass.readOnly = false;
     }
+    $('#wipeBtn').classList.toggle('hidden', homeroom || viewer);
+    $('#selLoad').classList.toggle('hidden', homeroom);
+    fillDatalists();
   }
   function unb64u(s){
     s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='=';
@@ -4142,7 +4152,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function renderStats(){
     var hr=isHomeroom();
     var log=loadLog(), tlog=hr?[]:loadTLog();
-    if(hr) log=log.filter(function(e){ return !myClasses.length || myClasses.indexOf(normClass(e.cls))>=0; });
+    if(hr) log=log.filter(function(e){ return inMyClasses(e.cls); });
     log=log.filter(isWarn);
     var people={}; log.forEach(function(e){people[personKey(e)]=1});
     var tpeople={}; tlog.forEach(function(e){tpeople[(e.name||'').toLowerCase().trim()]=1});
@@ -4342,6 +4352,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     document.getElementById(id).addEventListener('input',function(){
       slots[cur][FIELDS[id]]=this.value;
       if(id==='f_name' && this.value.trim() && !slots[cur].date){slots[cur].date=todayISO();document.getElementById('f_date').value=slots[cur].date}
+      if(id==='f_name' && isHomeroom() && myClasses.length===1 && this.value.trim() && !slots[cur].srcId && slots[cur].cls!==myClasses[0]){slots[cur].cls=myClasses[0];document.getElementById('f_class').value=myClasses[0]}
       saveSlots(); renderSheet();
       var sm=$('#slots .slot.on small'); if(sm) sm.textContent=slotLabel(slots[cur]);
     });
@@ -4454,16 +4465,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     return changed;
   }
   function logFilled(){
-    var log=loadLog(), added=0, updated=0, changed=false, forced=[], blockedDate=0;
+    var log=loadLog(), added=0, updated=0, changed=false, forced=[], blockedDate=0, blockedClass=0, blockedEdit=0;
     slots.forEach(function(s){
       if(!s.name||!s.name.trim()) return;
       var d=s.date||todayISO();
       if(!(s.phone||'').trim()){ var pf=phoneForName(s.name); if(pf) s.phone=pf; }
       var phone=(s.phone||'').trim() ? formatPhoneDisplay(s.phone) : '';
+      if(isHomeroom() && !inMyClasses(s.cls)){ blockedClass++; return; }
       var id=[s.name,s.cls,s.parent,s.reason,d].concat(s.kind?[s.kind]:[]).join('|').toLowerCase();
       var rec={name:s.name.trim(),cls:(s.cls||'').trim(),parent:(s.parent||'').trim(),reason:(s.reason||'').trim(),date:d,phone:phone,kind:s.kind||''};
       /* 1) ro'yxatdan ochilgan xat tahrirlangan bo'lsa, o'sha yozuvning o'zi yangilanadi */
       var src = s.srcId ? log.filter(function(e){return e.id===s.srcId})[0] : null;
+      if(src && isHomeroom()){
+        if(JSON.stringify([src.name,src.cls,src.parent,src.reason,src.date,src.kind||''])!==JSON.stringify([rec.name,rec.cls,rec.parent,rec.reason,rec.date,rec.kind||''])) blockedEdit++;
+        return;
+      }
       if(src){
         if(src.date!==d && !dateOK(d)){ blockedDate++; return; }
         var before=JSON.stringify([src.name,src.cls,src.parent,src.reason,src.date,src.phone||'',src.kind||'']);
@@ -4504,6 +4520,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(spreadPhones(log)) changed=true;
     lastLogStats={added:added,updated:updated,blocked:blockedDate};
     if(blockedDate) toast(blockedDate+" ta xat yozilmadi. "+dateLimitMsg());
+    else if(blockedClass) toast("Siz faqat o'z sinfingiz ("+(myClasses.join(', ')||"biriktirilmagan")+") uchun xat yoza olasiz");
+    else if(blockedEdit) toast("Yozilgan xatni o'zgartirib bo'lmaydi");
     if(added||updated||changed){ saveLog(log); saveSlots(); }
     updEditNote();
     return added+updated;
@@ -4540,7 +4558,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var from=$('#qFrom').value, to=$('#qTo').value;
     log.sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.at-a.at});
     return log.filter(function(e){
-      if(isHomeroom() && myClasses.length && myClasses.indexOf(normClass(e.cls))<0) return false;
+      if(!inMyClasses(e.cls)) return false;
       if(cl && e.cls!==cl) return false;
       if(from && e.date && e.date<from) return false;
       if(to && e.date && e.date>to) return false;
@@ -4655,7 +4673,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var log=loadLog(), n=0;
     log.forEach(function(e){
       if(!set[e.id]) return;
-      if(isHomeroom() && myClasses.length && myClasses.indexOf(normClass(e.cls))<0) return;
+      if(!inMyClasses(e.cls)) return;
       if(on){ if(e.sig!==me){ e.sig=me; e.sigAt=Date.now(); n++; } }
       else if(e.sig){ if(isHomeroom() && e.sig!==me) return; delete e.sig; delete e.sigAt; n++; }
     });
@@ -4697,7 +4715,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var key=personKey(e), pm=phoneMap(all);
     var list=all.filter(function(x){
       if(personKey(x)!==key) return false;
-      if(isHomeroom() && myClasses.length && myClasses.indexOf(normClass(x.cls))<0) return false;
+      if(!inMyClasses(x.cls)) return false;
       return true;
     }).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:(a.at||0)-(b.at||0)});
     var n=list.length, nw=list.filter(isWarn).length, ph=phoneOf(e,pm);
@@ -4712,7 +4730,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var rows=list.map(function(x,i){
       return '<div class="card-row"><span class="card-n">'+(i+1)+'</span><div class="card-main"><b>'+esc(fmtDate(x.date))+'</b>'+(x.kind?' <span class="badge">'+kindOf(x).icon+' '+kindOf(x).short+'</span>':'')+
              '<div class="card-reason">'+(esc(x.reason)||'<span class="muted">sabab ko\'rsatilmagan</span>')+'</div></div>'+
-             '<button type="button" class="mini" data-copen="'+esc(x.id)+'">Xatni ochish</button></div>';
+             (isHomeroom()?'':'<button type="button" class="mini" data-copen="'+esc(x.id)+'">Xatni ochish</button>')+'</div>';
     }).join('');
     m.innerHTML='<div class="inst-box"><button type="button" class="inst-x" data-cclose aria-label="Yopish">×</button>'+
       '<h3>'+esc(e.name)+'</h3>'+
@@ -4720,7 +4738,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       '<div class="card-sum"><span class="badge'+(nw>=3?' warn':'')+'">'+nw+' ta ogohlantirish</span>'+(n>nw?' <span class="badge">'+(n-nw)+' ta boshqa xat</span>':'')+
       (nw>=3?' <span class="badge warn">🔴 Direktor bilan suhbat tavsiya etiladi</span>':'')+'</div>'+
       '<div class="card-list">'+rows+'</div>'+
-      '<div class="card-foot">'+(n>1?'<button type="button" class="btn line sm" data-call>Oxirgi '+Math.min(n,4)+' tasini A4 ga joylash</button>':'')+
+      '<div class="card-foot">'+(n>1&&!isHomeroom()?'<button type="button" class="btn line sm" data-call>Oxirgi '+Math.min(n,4)+' tasini A4 ga joylash</button>':'')+
       '<button type="button" class="btn ghost sm" data-cclose>Yopish</button></div></div>';
     $$('#cardModal [data-copen]').forEach(function(b){ b.addEventListener('click',function(){ m.classList.add('hidden'); openEntries([b.dataset.copen]); }); });
     var ca=$('#cardModal [data-call]');
@@ -4741,21 +4759,22 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function renderLog(){
     var all=loadLog(), sel=$('#qClass'), keep=sel.value;
     var classes=[]; all.forEach(function(e){if(e.cls&&classes.indexOf(e.cls)<0)classes.push(e.cls)});
-    if(isHomeroom() && myClasses.length) classes=classes.filter(function(c){return myClasses.indexOf(normClass(c))>=0});
+    if(isHomeroom()) classes=classes.filter(inMyClasses);
     classes.sort(function(a,b){return a.localeCompare(b,'uz',{numeric:true})});
     sel.innerHTML='<option value="">Barcha sinflar</option>'+classes.map(function(c){return '<option value="'+esc(c)+'"'+(c===keep?' selected':'')+'>'+esc(c)+'</option>'}).join('');
     var counts={}; all.forEach(function(e){if(!isWarn(e))return;var k=personKey(e);counts[k]=(counts[k]||0)+1});
     var pm=phoneMap(all);
     var ord={}, ordById={}; all.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:(a.at||0)-(b.at||0)}).forEach(function(e){if(!isWarn(e))return;var k=personKey(e);ord[k]=(ord[k]||0)+1;ordById[e.id]=ord[k]});
     var rows=filteredLog();
-    $('#logCount').textContent = all.length? ("Jami: "+all.length+" ta xat"+(rows.length!==all.length?" · ko'rsatilgan: "+rows.length:"")) : '';
+    var tot = isHomeroom() ? all.filter(function(e){return inMyClasses(e.cls)}).length : all.length;
+    $('#logCount').textContent = tot? ("Jami: "+tot+" ta xat"+(rows.length!==tot?" · ko'rsatilgan: "+rows.length:"")) : '';
     $('#logBody').innerHTML = rows.length ? rows.map(function(e){
       var n=counts[personKey(e)]||0;
-      return '<tr class="rowlink'+(!e.kind&&n>=3?' danger':'')+'" data-open="'+esc(e.id)+'"><td><input type="checkbox" data-sel="'+esc(e.id)+'"'+(selected[e.id]?' checked':'')+'></td>'+
+      return '<tr class="rowlink'+(isHomeroom()?' nolink':'')+(!e.kind&&n>=3?' danger':'')+'" data-open="'+esc(e.id)+'"><td><input type="checkbox" data-sel="'+esc(e.id)+'"'+(selected[e.id]?' checked':'')+'></td>'+
              '<td>'+esc(fmtDate(e.date))+'</td><td><b class="lnk">'+esc(e.name)+'</b> <button type="button" class="mini" data-card="'+esc(e.id)+'" title="O\'quvchi kartochkasi">📋 Kartochka</button></td><td>'+esc(e.cls)+'</td><td>'+esc(e.parent)+'</td><td>'+esc(e.reason)+'</td>'+
              '<td>'+(phoneOf(e,pm)?esc(phoneOf(e,pm)):'<span class="muted">—</span>')+'</td>'+
              (e.kind ? '<td><span class="badge">'+kindOf(e).icon+' '+kindOf(e).short+'</span></td>' : '<td><span class="badge'+(n>=3?' warn':'')+'" title="Bu — '+ordById[e.id]+'-xat">'+n+' marta</span>'+(n>=3?' <span class="badge warn" title="3 va undan ko\'p xat: direktor bilan suhbat tavsiya etiladi">🔴 Suhbat</span>':'')+'</td>')+
-             '<td>'+(!isViewer()?'<button type="button" class="mini" data-sign="'+esc(e.id)+'">'+(e.sig?'✓ Imzolangan':'✍️ Imzolash')+'</button> ':'')+'<button class="mini" style="color:var(--danger)" data-rm="'+esc(e.id)+'">O\'chirish</button></td></tr>';
+             '<td>'+(!isViewer()?'<button type="button" class="mini" data-sign="'+esc(e.id)+'">'+(e.sig?'✓ Imzolangan':'✍️ Imzolash')+'</button> ':'')+(isViewer()||isHomeroom()?'':'<button class="mini" style="color:var(--danger)" data-rm="'+esc(e.id)+'">O\'chirish</button>')+'</td></tr>';
     }).join('') : '<tr><td colspan="9"><div class="empty">'+(all.length?"Hech narsa topilmadi.":"Hozircha xat yo'q. Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.")+'</div></td></tr>';
     $$('#logBody tr[data-open]').forEach(function(tr){tr.addEventListener('click',function(e){
       if(e.target.closest('input,button')) return; openEntries([tr.dataset.open]);
@@ -4768,6 +4787,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       updSel();
     })});
     $$('#logBody [data-rm]').forEach(function(b){b.addEventListener('click',function(){
+      if(isHomeroom()||isViewer()) return;
       delete selected[b.dataset.rm]; saveLog(loadLog().filter(function(x){return x.id!==b.dataset.rm})); renderLog();
     })});
     updSel();
@@ -4777,6 +4797,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function updSel(){var n=selCount(),b=$('#selLoad');b.disabled=!n;b.textContent="Tanlanganlarni xatga joylash ("+n+")";updSigSel()}
   function toSlot(e){return {name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date,phone:e.phone||phoneForName(e.name),kind:e.kind||'',srcId:e.id}}
   function openEntries(ids){
+    if(isHomeroom()) return;
     var log=loadLog(), es=ids.map(function(id){return log.filter(function(x){return x.id===id})[0]}).filter(Boolean);
     if(!es.length) return;
     if(es.length===1){
@@ -4800,6 +4821,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   var wipeArmed=false;
   $('#wipeBtn').addEventListener('click',function(){
     var b=this;
+    if(isHomeroom()||isViewer()) return;
     if(!wipeArmed){wipeArmed=true;b.textContent="Aniq o'chirilsinmi? Yana bosing";setTimeout(function(){wipeArmed=false;b.textContent="Hammasini o'chirish"},3500);return}
     wipeArmed=false;b.textContent="Hammasini o'chirish";saveLog([]);renderLog();setMsg('#logMsg',"Ro'yxat tozalandi",'ok');
   });
