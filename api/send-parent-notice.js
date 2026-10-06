@@ -23,6 +23,22 @@ module.exports = async (req, res) => {
     const email = (decoded.email || '').toLowerCase();
     if (!(await isAdminEmail(email))) { res.status(403).json({ error: 'permission-denied' }); return; }
 
+    // Rol tekshiruvi: "faqat ko'ruvchi" yubora olmaydi; sinf rahbari faqat o'z sinfi uchun.
+    // Asosiy admin admins to'plamida bo'lmasligi mumkin, u cheklanmaydi.
+    let adminRole = 'owner', adminClasses = [];
+    const adminSnap = await db().collection('admins').doc(email).get();
+    if (adminSnap.exists) {
+      adminRole = adminSnap.data().role || 'full';
+      adminClasses = Array.isArray(adminSnap.data().classes) ? adminSnap.data().classes : [];
+    }
+    if (adminRole === 'viewer') { res.status(403).json({ error: 'role-denied' }); return; }
+    // ilovadagi normClass bilan bir xil qoida: "9a", "9 - a" -> "9-A"
+    const normClass = (c) => {
+      c = String(c || '').trim();
+      const m = /^(\d{1,2})\s*-?\s*([A-Za-zА-Яа-яЎўҚқҒғҲҳ']+)$/.exec(c);
+      return m ? (m[1] + '-' + m[2].toUpperCase()) : c;
+    };
+
     const data = req.body || {};
     const phone = normPhone(data.phone);
     if (phone.length !== 12) { res.status(400).json({ error: 'invalid-phone' }); return; }
@@ -35,6 +51,10 @@ module.exports = async (req, res) => {
     const cls = (data.cls || '').trim();
     const dateTxt = (data.date || '').trim();
     const reason = (data.reason || '').trim();
+    if (adminRole === 'homeroom') {
+      const mine = adminClasses.map(normClass);
+      if (!mine.length || mine.indexOf(normClass(cls)) < 0) { res.status(403).json({ error: 'class-denied' }); return; }
+    }
     const infoUrl = (data.infoUrl || '').trim();
 
     // Xat turi: '' (ogohlantirish) | praise | invite | summon. Noma'lum qiymat ogohlantirish deb olinadi
