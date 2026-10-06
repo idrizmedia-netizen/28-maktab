@@ -312,6 +312,13 @@ img.logo{display:block;background:transparent;object-fit:contain;box-shadow:0 2p
 .inst-link{display:flex;gap:8px;align-items:center;margin-top:4px}
 .inst-link code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--brand-soft);color:var(--text);padding:8px 10px;border-radius:8px;font-size:12px}
 
+#printTmp{display:none}
+@media print{
+  body.print-tmp > *:not(#printTmp){display:none!important}
+  body.print-tmp #printTmp{display:block!important}
+  #printTmp .sheet-wrap{page-break-after:always;break-after:page}
+  #printTmp .sheet-wrap:last-child{page-break-after:auto;break-after:auto}
+}
 tr.rowlink.nolink{cursor:default}
 .card-sum{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
 .card-list{max-height:48vh;overflow:auto;border-top:1px solid var(--line)}
@@ -489,8 +496,10 @@ img.sig-img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:con
           </div>
         </div>
         <div class="stat"><span id="logCount"></span></div>
-        <div class="tbl-wrap"><table class="log"><thead><tr><th></th><th>Sana</th><th>O'quvchi</th><th>Sinf</th><th>Ota-onasi</th><th>Sababi</th><th>Telegram</th><th>Marta</th><th></th></tr></thead><tbody id="logBody"></tbody></table></div>
+        <div class="tbl-wrap"><table class="log"><thead><tr><th><input type="checkbox" id="selAllBox" title="Ko'rsatilganlarning hammasini belgilash"></th><th>Sana</th><th>O'quvchi</th><th>Sinf</th><th>Ota-onasi</th><th>Sababi</th><th>Telegram</th><th>Marta</th><th></th></tr></thead><tbody id="logBody"></tbody></table></div>
         <div class="actions">
+          <button class="btn" id="selPrint" type="button" disabled>🖨 Tanlanganlarni chop etish (0)</button>
+          <button class="btn line" id="selPdf" type="button" disabled>⬇ Tanlanganlarni PDF (0)</button>
           <button class="btn ghost" id="selLoad" type="button" disabled>Tanlanganlarni xatga joylash (0)</button>
           <button class="btn" id="csvBtn" type="button">CSV yuklab olish</button>
           <button class="btn line" id="wipeBtn" type="button">Hammasini o'chirish</button>
@@ -4781,7 +4790,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     })});
     $$('#logBody [data-sel]').forEach(function(cb){cb.addEventListener('change',function(){
       if(cb.checked){
-        if(selCount()>=4){cb.checked=false;return toast("Bir varaqda 4 tadan ortiq xat bo'lmaydi")}
+        if(selCount()>=60){cb.checked=false;return toast("Bir martada 60 tadan ko'p xat tanlab bo'lmaydi")}
         selected[cb.dataset.sel]=true;
       } else delete selected[cb.dataset.sel];
       updSel();
@@ -4794,7 +4803,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   var selected={};
   function selCount(){return Object.keys(selected).length}
-  function updSel(){var n=selCount(),b=$('#selLoad');b.disabled=!n;b.textContent="Tanlanganlarni xatga joylash ("+n+")";updSigSel()}
+  function updSel(){
+    var n=selCount(),b=$('#selLoad');b.disabled=!n||n>4;b.textContent="Tanlanganlarni xatga joylash ("+n+")";
+    var sp=$('#selPrint'), sd=$('#selPdf');
+    if(sp){ sp.disabled=!n||isViewer(); sp.textContent='🖨 Tanlanganlarni chop etish ('+n+')'; sd.disabled=!n||isViewer(); sd.textContent='⬇ Tanlanganlarni PDF ('+n+')'; }
+    var ab=$('#selAllBox'); if(ab){ var vis=filteredLog(); ab.checked = vis.length>0 && vis.every(function(e){return selected[e.id]}); }
+    updSigSel();
+  }
   function toSlot(e){return {name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date,phone:e.phone||phoneForName(e.name),kind:e.kind||'',srcId:e.id}}
   function openEntries(ids){
     if(isHomeroom()) return;
@@ -4814,7 +4829,70 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     setMsg('#letMsg', es.length===1 ? ((cur+1)+"-xatda ochildi") : (es.length+" ta xat A4 varaqqa joylandi"), 'ok');
   }
   $('#editNew').addEventListener('click',function(){ delete slots[cur].srcId; saveSlots(); updEditNote(); checkRepeatWarn(); renderSlots(); setMsg('#letMsg',"Endi bu yangi xat sifatida yoziladi",'ok'); });
-  $('#selLoad').addEventListener('click',function(){var ids=Object.keys(selected);selected={};openEntries(ids)});
+  /* ---------- Ro'yxatdan tanlangan xatlarni chop etish / PDF (formaga ochmasdan, tahrirsiz) ---------- */
+  function entriesByIds(ids){
+    var set={}; ids.forEach(function(i){set[i]=1});
+    return loadLog().filter(function(e){ return set[e.id] && inMyClasses(e.cls); })
+      .sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:(a.at||0)-(b.at||0)});
+  }
+  function chunk4(a){ var o=[]; for(var i=0;i<a.length;i+=4) o.push(a.slice(i,i+4)); return o; }
+  function entryLetter(e){ var f=toSlot(e); return letterHTML(f, qrSvg(letterQrUrl(f))); }
+  function sheetOf(chunk){ return chunk.map(entryLetter).join(''); }
+  function buildPdfFromChunks(chunks, onProgress){
+    var pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true}), i=0;
+    function next(){
+      if(i>=chunks.length) return Promise.resolve(pdf.output('blob'));
+      if(onProgress) onProgress(i+1, chunks.length);
+      var host=document.createElement('div');
+      host.style.cssText='position:fixed;left:-10000px;top:0;width:210mm;height:297mm;background:#fff';
+      var sh=document.createElement('div'); sh.className='sheet'; sh.style.cssText='position:static;transform:none;box-shadow:none';
+      sh.innerHTML=sheetOf(chunks[i]); host.appendChild(sh); document.body.appendChild(host);
+      return html2canvas(sh,{scale:3,backgroundColor:'#ffffff',logging:false}).then(function(cv){
+        host.remove();
+        if(i>0) pdf.addPage();
+        pdf.addImage(cv.toDataURL('image/png'),'PNG',0,0,210,297,undefined,'FAST');
+        i++; return next();
+      },function(e){ host.remove(); throw e; });
+    }
+    return next();
+  }
+  function printEntries(entries){
+    var host=document.getElementById('printTmp');
+    if(!host){ host=document.createElement('div'); host.id='printTmp'; document.body.appendChild(host); }
+    host.innerHTML=chunk4(entries).map(function(c){ return '<div class="sheet-wrap"><div class="sheet">'+sheetOf(c)+'</div></div>'; }).join('');
+    document.body.classList.add('print-tmp');
+    var done=function(){ document.body.classList.remove('print-tmp'); host.innerHTML=''; window.removeEventListener('afterprint',done); };
+    window.addEventListener('afterprint',done);
+    setTimeout(done,120000);
+    try{ window.print(); }catch(e){ done(); toast("Ctrl+P (yoki brauzer menyusi → Chop etish) ni bosing"); }
+  }
+  $('#selPrint').addEventListener('click',function(){
+    if(isViewer()) return;
+    var es=entriesByIds(Object.keys(selected)); if(!es.length) return toast("Avval xatlarni belgilang");
+    printEntries(es);
+  });
+  $('#selPdf').addEventListener('click',function(){
+    if(isViewer()) return;
+    var es=entriesByIds(Object.keys(selected)); if(!es.length) return toast("Avval xatlarni belgilang");
+    var b=this; b.disabled=true; b.textContent='Tayyorlanmoqda...';
+    buildPdfFromChunks(chunk4(es), function(i,n){ b.textContent='Tayyorlanmoqda ('+i+'/'+n+')...'; })
+      .then(function(blob){ return saveFile('xatlar-'+todayISO()+'.pdf',blob).then(function(){ setMsg('#logMsg',"PDF saqlandi ("+es.length+" ta xat)",'ok'); }); })
+      .catch(function(e){ setMsg('#logMsg',saveErr(e),'err'); })
+      .then(function(){ updSel(); });
+  });
+  $('#selAllBox').addEventListener('change',function(){
+    var vis=filteredLog();
+    if(this.checked){
+      if(vis.length>60){ this.checked=false; return toast("Bir martada 60 tadan ko'p xat tanlab bo'lmaydi"); }
+      vis.forEach(function(e){ selected[e.id]=true; });
+    } else vis.forEach(function(e){ delete selected[e.id]; });
+    renderLog();
+  });
+  $('#selLoad').addEventListener('click',function(){
+    var ids=Object.keys(selected);
+    if(ids.length>4) return toast("Xatga joylash uchun ko'pi bilan 4 ta xat tanlang");
+    selected={}; openEntries(ids);
+  });
   $('#q').addEventListener('input',renderLog); $('#qClass').addEventListener('change',renderLog);
   $('#qFrom').addEventListener('change',renderLog); $('#qTo').addEventListener('change',renderLog);
   $('#qClear').addEventListener('click',function(){$('#q').value='';$('#qClass').value='';$('#qFrom').value='';$('#qTo').value='';renderLog()});
