@@ -184,6 +184,7 @@ main{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
 .l-head{text-align:center;border-top:0.4mm solid #000;border-bottom:0.4mm solid #000;padding:1.6mm 0 1.4mm}
 .l-school{font-size:7.5pt;letter-spacing:.4mm;text-transform:uppercase}
 .l-title{font-size:14pt;font-weight:700;letter-spacing:.3mm}
+.l-title.long{font-size:12.5pt;letter-spacing:.1mm}
 .l-row{display:flex;align-items:flex-end;gap:2mm;margin-top:5mm;line-height:1.1}
 .l-row .lb{white-space:nowrap}
 .fill{flex:1;min-width:0;border-bottom:0.25mm solid #000;min-height:5mm;padding:0 1mm;font-size:10pt;line-height:1.15;overflow:hidden;white-space:nowrap;text-overflow:clip}
@@ -404,6 +405,13 @@ img.sig-img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:con
           <h2>O'quvchiga ogohlantirish xati</h2>
           <p class="hint">Har bir xat (1–4) alohida to'ldiriladi. Bo'sh qoldirsangiz, qo'lda yozish uchun blank chiqadi.</p>
           <div class="slots" id="slots"></div>
+          <label class="fl" for="f_kind">Xat turi</label>
+          <select class="inp" id="f_kind">
+            <option value="">⚠️ Ogohlantirish xati</option>
+            <option value="praise">🌟 Minnatdorchilik (maqtov) xati</option>
+            <option value="invite">📅 Ota-onalar yig'ilishi taklifnomasi</option>
+            <option value="summon">📞 Ota-onani maktabga chaqirish</option>
+          </select>
           <label class="fl" for="f_name">O'quvchi (F.I.Sh)</label>
           <input class="inp" id="f_name" list="studentNames" autocomplete="off">
           <div class="msg hidden" id="repeatWarn" style="margin:6px 0 0;padding:8px 12px;border-radius:10px;background:#fff3cd;color:#7a5b00;font-size:14px"></div>
@@ -3461,6 +3469,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   window.addEventListener('focus', applyDateLimits);
   document.addEventListener('visibilitychange', function(){ if(!document.hidden) applyDateLimits(); });
+
+  /* Xat turlari: '' = ogohlantirish (oddiy), boshqalari alohida belgi bilan yoziladi */
+  var KINDS={
+    '':{t:'OGOHLANTIRISH XATI',lb:'Sababi:',info:'Ogohlantirish xati',short:'Ogohlantirish',icon:'⚠️',ph:"Shablon tanlang yoki o'zingiz yozing"},
+    praise:{t:'MINNATDORCHILIK XATI',lb:'Minnatdorchilik sababi:',info:'Minnatdorchilik xati',short:'Minnatdorchilik',icon:'🌟',ph:"Masalan: tuman olimpiadasida 2-o'rinni egallagani uchun"},
+    invite:{t:'TAKLIFNOMA',lb:"Yig'ilish mavzusi va vaqti:",info:"Ota-onalar yig'ilishi taklifnomasi",short:'Taklifnoma',icon:'📅',ph:"Masalan: 28-oktabr, soat 17:00, ota-onalar yig'ilishi (2-chorak yakunlari)"},
+    summon:{t:'CHAQIRUV XATI',lb:'Chaqirish sababi va vaqti:',info:'Maktabga chaqiruv xati',short:'Chaqiruv',icon:'📞',ph:"Masalan: 8-oktabr, soat 15:00, direktor qabuliga (davomat masalasi)"}
+  };
+  function kindInfo(k){ return KINDS[k||'']||KINDS['']; }
+  function kindOf(x){ return kindInfo(x && x.kind); }
+  function isWarn(e){ return !e.kind; }
   function fmtDate(iso){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');return m?(m[3]+'.'+m[2]+'.'+m[1]):(iso||'')}
 
   /* ---------- Firebase: Google orqali kirish + Firestore sinxronizatsiya ----------
@@ -3668,12 +3687,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   /* o'quvchiga ilgari nechta xat berilganini tekshirib, 3+ bo'lsa ogohlantiradi */
   function priorCount(name,cls,skipId){
     var key=personKey({name:name,cls:cls});
-    return loadLog().filter(function(e){ return e.id!==skipId && personKey(e)===key; }).length;
+    return loadLog().filter(function(e){ return isWarn(e) && e.id!==skipId && personKey(e)===key; }).length;
   }
   function checkRepeatWarn(){
     var name=($('#f_name').value||'').trim(), cls=($('#f_class').value||'').trim();
     var el=$('#repeatWarn');
-    if(!name){ el.classList.add('hidden'); return; }
+    if(!name || (slots[cur] && slots[cur].kind)){ el.classList.add('hidden'); return; }
     var n = priorCount(name, cls, slots[cur] && slots[cur].srcId);
     if(n>=2){
       el.textContent = "⚠️ Bu o'quvchiga oldin "+n+" marta ogohlantirish xati berilgan. Bu — "+(n+1)+"-xat: direktor (yoki o'rinbosar) bilan suhbat o'tkazish tavsiya etiladi.";
@@ -3968,14 +3987,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(!typ) return null;
     try{
       var a=unb64u(h.slice(3)).split('\n');
-      if(typ==='s') return {type:'s',name:a[0]||'',cls:a[1]||'',parent:a[2]||'',reason:unpackReason(a[3]||''),date:a[4]||''};
+      if(typ==='s') return {type:'s',name:a[0]||'',cls:a[1]||'',parent:a[2]||'',reason:unpackReason(a[3]||''),date:a[4]||'',kind:a[5]||''};
       return {type:'t',name:a[0]||'',subject:a[1]||'',issue:a[2]||'',date:a[3]||'',signer:a[4]||''};
     }catch(e){return null}
   }
   function showInfo(){
     hideAll(); $('#infoView').classList.remove('hidden');
     var pl=readPayload();
-    $('#infoTitle').textContent = pl ? (pl.type==='t' ? "O'qituvchiga ogohlantirish xati" : 'Ogohlantirish xati') : settings.school;
+    $('#infoTitle').textContent = pl ? (pl.type==='t' ? "O'qituvchiga ogohlantirish xati" : kindInfo(pl.kind).info) : settings.school;
     $('#infoSub').textContent = pl ? settings.school : "Maktab ma'muriyati";
     function row(k,v){return v?'<div class="adm"><span>'+k+'</span><b>'+esc(String(v).slice(0,300))+'</b></div>':''}
     $('#infoData').innerHTML = !pl ? '' : (pl.type==='t' ? (row("O'qituvchi",pl.name)+row('Fani',pl.subject)+row('Aniqlangan holat',pl.issue)+row('Berilgan sana',fmtDate(pl.date))+row('Imzolagan',pl.signer)) : (row("O'quvchi",pl.name)+row('Sinf',pl.cls)+row('Ota-onasi',pl.parent)+row('Sababi',pl.reason)+row('Berilgan sana',fmtDate(pl.date))));
@@ -4124,6 +4143,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var hr=isHomeroom();
     var log=loadLog(), tlog=hr?[]:loadTLog();
     if(hr) log=log.filter(function(e){ return !myClasses.length || myClasses.indexOf(normClass(e.cls))>=0; });
+    log=log.filter(isWarn);
     var people={}; log.forEach(function(e){people[personKey(e)]=1});
     var tpeople={}; tlog.forEach(function(e){tpeople[(e.name||'').toLowerCase().trim()]=1});
     $('#statCards').innerHTML =
@@ -4231,7 +4251,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
   /* ---------- letters: 4 slots ---------- */
   var MONTHS=['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'];
-  function emptySlot(){return {name:'',cls:'',parent:'',reason:'',date:'',phone:''}}
+  function emptySlot(){return {name:'',cls:'',parent:'',reason:'',date:'',phone:'',kind:''}}
   /* Telegram uchun telefonni 998XXXXXXXXX ko'rinishiga keltiradi (faqat raqamlar, mamlakat kodi bilan) */
   function normPhone(p){
     p=(p||'').replace(/\D/g,'');
@@ -4262,15 +4282,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     return 'Sana: "'+bl(d)+'" '+bl(m,'m')+' '+year;
   }
   function letterHTML(f,qr){
-    var sg=sigFor(f);
+    var sg=sigFor(f), K=kindOf(f);
     var admins=settings.admins.filter(function(a){return a.name&&a.name.trim()}).map(function(a){
       return '<div class="a">'+(a.role?'<span class="r">'+esc(a.role)+'</span>':'')+'<span class="n">'+esc(a.name)+'</span></div>';
     }).join('');
     return '<div class="letter">'+
-      '<div class="l-head"><div class="l-school">'+esc(settings.school)+'</div><div class="l-title">OGOHLANTIRISH XATI</div></div>'+
+      '<div class="l-head"><div class="l-school">'+esc(settings.school)+'</div><div class="l-title'+(K.t.length>19?' long':'')+'">'+K.t+'</div></div>'+
       '<div class="l-row"><span class="lb">O\'quvchi:</span><span class="fill">'+esc(f.name)+'</span><span class="lb">Sinf:</span><span class="fill w-sm">'+esc(f.cls)+'</span></div>'+
       '<div class="l-row"><span class="lb">Ota-onasi (F.I.Sh):</span><span class="fill">'+esc(f.parent)+'</span></div>'+
-      '<div class="l-row" style="margin-bottom:0"><span class="lb">Sababi:</span></div>'+
+      '<div class="l-row" style="margin-bottom:0"><span class="lb">'+K.lb+'</span></div>'+
       '<div class="l-lines"><i></i><i></i><i></i><div class="tx'+(f.reason.length>165?' s8':(f.reason.length>130?' s9':''))+'">'+esc(f.reason)+'</div></div>'+
       '<div class="l-row">'+dateHTML(f.date)+'</div>'+
       '<div class="l-sign'+(sg?' signed':'')+'"><span class="lb">Sinf rahbari imzosi:</span><span class="fill">'+(sg?'<img class="sig-img" alt="" src="'+sg+'">':'')+'</span></div>'+
@@ -4296,7 +4316,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var base=platformUrl().split('#')[0];
     /* maxfiylik: QR ga faqat o'quvchi ismi va sana joylanadi (sinf, ota-ona va sabab yo'q) */
     if(!f.name) return platformUrl();
-    return base+'#x='+b64u([f.name,'','','',f.date].join('\n'));
+    return base+'#x='+b64u([f.name,'','','',f.date].concat(f.kind?[f.kind]:[]).join('\n'));
   }
   function sheetInner(){return slots.map(function(s){return letterHTML(s,qrSvg(letterQrUrl(s)))}).join('')}
   function renderSheet(){
@@ -4305,6 +4325,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   function slotLabel(s){
     if(!s.name||!s.name.trim()) return "bo'sh";
+    if(s.kind) return s.name.trim()+' · '+kindOf(s).short;
     var n=priorCount(s.name,s.cls,s.srcId);
     return s.name.trim()+(n?' · '+n+' marta':'');
   }
@@ -4314,8 +4335,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     }).join('');
     $$('#slots .slot').forEach(function(b){b.addEventListener('click',function(){selectSlot(+b.dataset.slot)})});
   }
-  var FIELDS={f_name:'name',f_class:'cls',f_parent:'parent',f_reason:'reason',f_date:'date',f_phone:'phone'};
-  function loadSlotToForm(){updEditNote(); Object.keys(FIELDS).forEach(function(id){document.getElementById(id).value=slots[cur][FIELDS[id]]||''}); if(window.__syncChips) window.__syncChips(); checkRepeatWarn();}
+  var FIELDS={f_name:'name',f_class:'cls',f_parent:'parent',f_reason:'reason',f_date:'date',f_phone:'phone',f_kind:'kind'};
+  function loadSlotToForm(){updEditNote(); Object.keys(FIELDS).forEach(function(id){document.getElementById(id).value=slots[cur][FIELDS[id]]||''}); if(window.__syncChips) window.__syncChips(); applyKindUI(); checkRepeatWarn();}
   function selectSlot(i){cur=i;loadSlotToForm();renderSlots();renderSheet()}
   Object.keys(FIELDS).forEach(function(id){
     document.getElementById(id).addEventListener('input',function(){
@@ -4325,6 +4346,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var sm=$('#slots .slot.on small'); if(sm) sm.textContent=slotLabel(slots[cur]);
     });
   });
+  function applyKindUI(){
+    var k=slots[cur].kind||'', K=kindInfo(k);
+    $('#f_reason').placeholder=K.ph;
+    var lab=document.querySelector('label[for="f_reason"]'); if(lab) lab.textContent = k ? K.lb.replace(/:$/,'') : 'Sababi';
+    var tp=document.querySelector('details.tpl'); if(tp) tp.classList.toggle('hidden', !!k);
+  }
+  document.getElementById('f_kind').addEventListener('input',function(){ applyKindUI(); checkRepeatWarn(); renderSlots(); });
   applyDateLimits();
   document.getElementById('f_date').addEventListener('blur',function(){
     var v=this.value; if(!v || dateOK(v)) return;
@@ -4432,18 +4460,19 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var d=s.date||todayISO();
       if(!(s.phone||'').trim()){ var pf=phoneForName(s.name); if(pf) s.phone=pf; }
       var phone=(s.phone||'').trim() ? formatPhoneDisplay(s.phone) : '';
-      var id=[s.name,s.cls,s.parent,s.reason,d].join('|').toLowerCase();
-      var rec={name:s.name.trim(),cls:(s.cls||'').trim(),parent:(s.parent||'').trim(),reason:(s.reason||'').trim(),date:d,phone:phone};
+      var id=[s.name,s.cls,s.parent,s.reason,d].concat(s.kind?[s.kind]:[]).join('|').toLowerCase();
+      var rec={name:s.name.trim(),cls:(s.cls||'').trim(),parent:(s.parent||'').trim(),reason:(s.reason||'').trim(),date:d,phone:phone,kind:s.kind||''};
       /* 1) ro'yxatdan ochilgan xat tahrirlangan bo'lsa, o'sha yozuvning o'zi yangilanadi */
       var src = s.srcId ? log.filter(function(e){return e.id===s.srcId})[0] : null;
       if(src){
         if(src.date!==d && !dateOK(d)){ blockedDate++; return; }
-        var before=JSON.stringify([src.name,src.cls,src.parent,src.reason,src.date,src.phone||'']);
+        var before=JSON.stringify([src.name,src.cls,src.parent,src.reason,src.date,src.phone||'',src.kind||'']);
         /* shu mazmundagi boshqa (takroriy) yozuv bo'lsa, ikkitaga ko'paymasin */
         log=log.filter(function(e){ return e===src || e.id!==id; });
         src.name=rec.name; src.cls=rec.cls; src.parent=rec.parent; src.reason=rec.reason; src.date=rec.date; src.phone=rec.phone||src.phone||'';
+        if(rec.kind) src.kind=rec.kind; else delete src.kind;
         src.id=id; s.srcId=id;
-        if(JSON.stringify([src.name,src.cls,src.parent,src.reason,src.date,src.phone||''])!==before){
+        if(JSON.stringify([src.name,src.cls,src.parent,src.reason,src.date,src.phone||'',src.kind||''])!==before){
           updated++; changed=true;
           logAudit('student_letter_edited', {name:rec.name, cls:rec.cls, date:d});
         }
@@ -4462,7 +4491,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       }
       /* 3) yangi xat */
       if(!dateOK(d)){ blockedDate++; return; }
-      log.push({id:id,name:rec.name,cls:rec.cls,parent:rec.parent,reason:rec.reason,date:d,phone:phone,at:Date.now()}); added++;
+      var ne={id:id,name:rec.name,cls:rec.cls,parent:rec.parent,reason:rec.reason,date:d,phone:phone,at:Date.now()};
+      if(rec.kind) ne.kind=rec.kind;
+      log.push(ne); added++;
       s.srcId=id;
       if(phone) forced.push([personKey(rec),phone]);
       logAudit('student_letter_logged', {name:rec.name, cls:rec.cls, date:d});
@@ -4669,7 +4700,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       if(isHomeroom() && myClasses.length && myClasses.indexOf(normClass(x.cls))<0) return false;
       return true;
     }).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:(a.at||0)-(b.at||0)});
-    var n=list.length, ph=phoneOf(e,pm);
+    var n=list.length, nw=list.filter(isWarn).length, ph=phoneOf(e,pm);
     var m=$('#cardModal');
     if(!m){
       m=document.createElement('div'); m.id='cardModal'; m.className='inst-modal hidden';
@@ -4679,15 +4710,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') m.classList.add('hidden'); });
     }
     var rows=list.map(function(x,i){
-      return '<div class="card-row"><span class="card-n">'+(i+1)+'</span><div class="card-main"><b>'+esc(fmtDate(x.date))+'</b>'+
+      return '<div class="card-row"><span class="card-n">'+(i+1)+'</span><div class="card-main"><b>'+esc(fmtDate(x.date))+'</b>'+(x.kind?' <span class="badge">'+kindOf(x).icon+' '+kindOf(x).short+'</span>':'')+
              '<div class="card-reason">'+(esc(x.reason)||'<span class="muted">sabab ko\'rsatilmagan</span>')+'</div></div>'+
              '<button type="button" class="mini" data-copen="'+esc(x.id)+'">Xatni ochish</button></div>';
     }).join('');
     m.innerHTML='<div class="inst-box"><button type="button" class="inst-x" data-cclose aria-label="Yopish">×</button>'+
       '<h3>'+esc(e.name)+'</h3>'+
       '<p>'+esc(e.cls||'sinf ko\'rsatilmagan')+(e.parent?' · Ota-onasi: '+esc(e.parent):'')+(ph?' · '+esc(ph):'')+'</p>'+
-      '<div class="card-sum"><span class="badge'+(n>=3?' warn':'')+'">'+n+' ta xat</span>'+
-      (n>=3?' <span class="badge warn">🔴 Direktor bilan suhbat tavsiya etiladi</span>':'')+'</div>'+
+      '<div class="card-sum"><span class="badge'+(nw>=3?' warn':'')+'">'+nw+' ta ogohlantirish</span>'+(n>nw?' <span class="badge">'+(n-nw)+' ta boshqa xat</span>':'')+
+      (nw>=3?' <span class="badge warn">🔴 Direktor bilan suhbat tavsiya etiladi</span>':'')+'</div>'+
       '<div class="card-list">'+rows+'</div>'+
       '<div class="card-foot">'+(n>1?'<button type="button" class="btn line sm" data-call>Oxirgi '+Math.min(n,4)+' tasini A4 ga joylash</button>':'')+
       '<button type="button" class="btn ghost sm" data-cclose>Yopish</button></div></div>';
@@ -4713,17 +4744,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(isHomeroom() && myClasses.length) classes=classes.filter(function(c){return myClasses.indexOf(normClass(c))>=0});
     classes.sort(function(a,b){return a.localeCompare(b,'uz',{numeric:true})});
     sel.innerHTML='<option value="">Barcha sinflar</option>'+classes.map(function(c){return '<option value="'+esc(c)+'"'+(c===keep?' selected':'')+'>'+esc(c)+'</option>'}).join('');
-    var counts={}; all.forEach(function(e){var k=personKey(e);counts[k]=(counts[k]||0)+1});
+    var counts={}; all.forEach(function(e){if(!isWarn(e))return;var k=personKey(e);counts[k]=(counts[k]||0)+1});
     var pm=phoneMap(all);
-    var ord={}, ordById={}; all.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:(a.at||0)-(b.at||0)}).forEach(function(e){var k=personKey(e);ord[k]=(ord[k]||0)+1;ordById[e.id]=ord[k]});
+    var ord={}, ordById={}; all.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:(a.at||0)-(b.at||0)}).forEach(function(e){if(!isWarn(e))return;var k=personKey(e);ord[k]=(ord[k]||0)+1;ordById[e.id]=ord[k]});
     var rows=filteredLog();
     $('#logCount').textContent = all.length? ("Jami: "+all.length+" ta xat"+(rows.length!==all.length?" · ko'rsatilgan: "+rows.length:"")) : '';
     $('#logBody').innerHTML = rows.length ? rows.map(function(e){
-      var n=counts[personKey(e)];
-      return '<tr class="rowlink'+(n>=3?' danger':'')+'" data-open="'+esc(e.id)+'"><td><input type="checkbox" data-sel="'+esc(e.id)+'"'+(selected[e.id]?' checked':'')+'></td>'+
+      var n=counts[personKey(e)]||0;
+      return '<tr class="rowlink'+(!e.kind&&n>=3?' danger':'')+'" data-open="'+esc(e.id)+'"><td><input type="checkbox" data-sel="'+esc(e.id)+'"'+(selected[e.id]?' checked':'')+'></td>'+
              '<td>'+esc(fmtDate(e.date))+'</td><td><b class="lnk">'+esc(e.name)+'</b> <button type="button" class="mini" data-card="'+esc(e.id)+'" title="O\'quvchi kartochkasi">📋 Kartochka</button></td><td>'+esc(e.cls)+'</td><td>'+esc(e.parent)+'</td><td>'+esc(e.reason)+'</td>'+
              '<td>'+(phoneOf(e,pm)?esc(phoneOf(e,pm)):'<span class="muted">—</span>')+'</td>'+
-             '<td><span class="badge'+(n>=3?' warn':'')+'" title="Bu — '+ordById[e.id]+'-xat">'+n+' marta</span>'+(n>=3?' <span class="badge warn" title="3 va undan ko\'p xat: direktor bilan suhbat tavsiya etiladi">🔴 Suhbat</span>':'')+'</td>'+
+             (e.kind ? '<td><span class="badge">'+kindOf(e).icon+' '+kindOf(e).short+'</span></td>' : '<td><span class="badge'+(n>=3?' warn':'')+'" title="Bu — '+ordById[e.id]+'-xat">'+n+' marta</span>'+(n>=3?' <span class="badge warn" title="3 va undan ko\'p xat: direktor bilan suhbat tavsiya etiladi">🔴 Suhbat</span>':'')+'</td>')+
              '<td>'+(!isViewer()?'<button type="button" class="mini" data-sign="'+esc(e.id)+'">'+(e.sig?'✓ Imzolangan':'✍️ Imzolash')+'</button> ':'')+'<button class="mini" style="color:var(--danger)" data-rm="'+esc(e.id)+'">O\'chirish</button></td></tr>';
     }).join('') : '<tr><td colspan="9"><div class="empty">'+(all.length?"Hech narsa topilmadi.":"Hozircha xat yo'q. Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.")+'</div></td></tr>';
     $$('#logBody tr[data-open]').forEach(function(tr){tr.addEventListener('click',function(e){
@@ -4744,7 +4775,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   var selected={};
   function selCount(){return Object.keys(selected).length}
   function updSel(){var n=selCount(),b=$('#selLoad');b.disabled=!n;b.textContent="Tanlanganlarni xatga joylash ("+n+")";updSigSel()}
-  function toSlot(e){return {name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date,phone:e.phone||phoneForName(e.name),srcId:e.id}}
+  function toSlot(e){return {name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date,phone:e.phone||phoneForName(e.name),kind:e.kind||'',srcId:e.id}}
   function openEntries(ids){
     var log=loadLog(), es=ids.map(function(id){return log.filter(function(x){return x.id===id})[0]}).filter(Boolean);
     if(!es.length) return;
@@ -4775,10 +4806,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function csvCell(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'}
   $('#csvBtn').addEventListener('click',function(){
     var rows=filteredLog(); if(!rows.length) return setMsg('#logMsg',"Yuklab olish uchun ma'lumot yo'q",'err');
-    var all=loadLog(), counts={}; all.forEach(function(e){var k=personKey(e);counts[k]=(counts[k]||0)+1});
+    var all=loadLog(), counts={}; all.forEach(function(e){if(!isWarn(e))return;var k=personKey(e);counts[k]=(counts[k]||0)+1});
     var pm=phoneMap(all);
-    var out=[["№","Sana","O'quvchi","Sinf","Ota-onasi","Telefon","Sababi","Necha marta"]];
-    rows.forEach(function(e,i){out.push([i+1,fmtDate(e.date),e.name,e.cls,e.parent,phoneOf(e,pm),e.reason,counts[personKey(e)]])});
+    var out=[["№","Sana","Turi","O'quvchi","Sinf","Ota-onasi","Telefon","Sababi","Necha marta"]];
+    rows.forEach(function(e,i){out.push([i+1,fmtDate(e.date),kindOf(e).short,e.name,e.cls,e.parent,phoneOf(e,pm),e.reason,isWarn(e)?counts[personKey(e)]:''])});
     var csv='\ufeff'+out.map(function(r){return r.map(csvCell).join(';')}).join('\r\n');
     saveFile('ogohlantirish-xatlari-'+todayISO()+'.csv',csv).then(function(){setMsg('#logMsg','CSV saqlandi','ok')},function(e){setMsg('#logMsg',saveErr(e),'err')});
   });
@@ -4806,6 +4837,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     });
   }
   function sendTelegramNotice(f, btn, msgSel){
+    if(f.kind) return setMsg(msgSel, "Telegram orqali hozircha faqat ogohlantirish xati yuboriladi. Bu xatni chop eting yoki PDF qiling", 'err');
     var phone=normPhone(f.phone);
     if(!phone) return setMsg(msgSel, "Avval ota-ona Telegram raqamini kiriting", 'err');
     if(phone.length!==12) return setMsg(msgSel, "Telefon raqami to'liq emas (masalan: +998 90 123 45 67)", 'err');
