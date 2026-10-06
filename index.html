@@ -339,6 +339,10 @@ img.logo{display:block;background:transparent;object-fit:contain;box-shadow:0 2p
   #printTmp .sheet-wrap{page-break-after:always;break-after:page}
   #printTmp .sheet-wrap:last-child{page-break-after:auto;break-after:auto}
 }
+.dv{display:block;font-size:12px;margin-top:4px;color:var(--muted)}
+.dv.ok{color:#1f9d6b;font-weight:600}
+.dv.bad{color:var(--danger);font-weight:700}
+.card-dv{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 tr.rowlink.nolink{cursor:default}
 .card-sum{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
 .card-list{max-height:48vh;overflow:auto;border-top:1px solid var(--line)}
@@ -653,6 +657,7 @@ img.sig-img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:con
             <option value="student_letter_signed">O'quvchi xati imzolandi</option>
             <option value="teacher_letter_logged">O'qituvchi xati yozildi</option>
             <option value="telegram_sent">Telegram xabari</option>
+            <option value="parent_ack">Ota-ona tanishdi</option>
             <option value="admin_added">Admin qo'shildi</option>
             <option value="admin_removed">Admin olib tashlandi</option>
             <option value="settings_changed">Sozlamalar o'zgartirildi</option>
@@ -3607,6 +3612,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     cloudSync('sigs', function(){ renderSigPanel(); renderSheet(); renderLog(); });
     ensureSettingsDoc();
     watchRoster();
+    watchNotices();
   }
   /* ---------- O'quvchilar/o'qituvchilar bazasi (ism tanlab kiritish uchun) ---------- */
   var roster = {students:[], teachers:[]};
@@ -3842,6 +3848,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     student_letter_signed: "O'quvchi xatlari imzolandi",
     teacher_letter_logged: "O'qituvchi xati ro'yxatga yozildi",
     telegram_sent: "Telegram orqali ota-onaga xabar yuborildi",
+    parent_ack: "Ota-ona xat bilan tanishdi (Telegram)",
     admin_added: "Admin qo'shildi",
     admin_removed: "Admin olib tashlandi",
     settings_changed: "Sozlamalar o'zgartirildi",
@@ -3853,6 +3860,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       case 'student_letter_signed': return (d.count||0)+" ta xat"+(d.off?" (imzo olib tashlandi)":"");
       case 'student_letter_logged': return (d.name||'')+(d.cls?' ('+d.cls+')':'')+(d.date?' — '+fmtDate(d.date):'');
       case 'teacher_letter_logged': return (d.name||'')+(d.subject?' ('+d.subject+')':'')+(d.date?' — '+fmtDate(d.date):'');
+      case 'parent_ack':
       case 'telegram_sent': return (d.name||'')+(d.cls?' ('+d.cls+')':'')+(d.date?' — '+fmtDate(d.date):'');
       case 'admin_added': case 'admin_removed': return d.email||'';
       case 'parent_acknowledged': return (d.phone||'')+(d.date?' — '+fmtDate(d.date):'');
@@ -4756,6 +4764,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         src.name=rec.name; src.cls=rec.cls; src.parent=rec.parent; src.reason=rec.reason; src.date=rec.date; src.phone=rec.phone||src.phone||'';
         if(rec.kind) src.kind=rec.kind; else delete src.kind;
         src.id=id; s.srcId=id;
+        if(s.tgId){ src.tg=s.tgId; delete s.tgId; changed=true; }
         if(JSON.stringify([src.name,src.cls,src.parent,src.reason,src.date,src.phone||'',src.kind||''])!==before){
           updated++; changed=true;
           logAudit('student_letter_edited', {name:rec.name, cls:rec.cls, date:d});
@@ -4770,6 +4779,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         if(phone && existing.phone!==phone){ existing.phone=phone; changed=true; }
         if(phone) forced.push([personKey(existing),phone]);
         s.srcId=id;
+        if(s.tgId){ existing.tg=s.tgId; delete s.tgId; changed=true; }
         learnRosterFromStudent(s);
         return;
       }
@@ -4777,6 +4787,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       if(!dateOK(d)){ blockedDate++; return; }
       var ne={id:id,name:rec.name,cls:rec.cls,parent:rec.parent,reason:rec.reason,date:d,phone:phone,at:Date.now()};
       if(rec.kind) ne.kind=rec.kind;
+      if(s.tgId){ ne.tg=s.tgId; delete s.tgId; }
       log.push(ne); added++;
       s.srcId=id;
       if(phone) forced.push([personKey(rec),phone]);
@@ -5024,6 +5035,38 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   $('#bkDown').addEventListener('click',bkDownload);
   $('#bkUp').addEventListener('click',function(){ $('#bkFile').value=''; $('#bkFile').click(); });
   $('#bkFile').addEventListener('change',function(){ bkRestore(this.files && this.files[0]); });
+  /* ---------- Ota-onaga yetkazish holati ---------- */
+  var notices={};
+  function watchNotices(){
+    if(!db||!curUser) return;
+    var q=db.collection('notify_log');
+    if(isHomeroom()){
+      if(!myClasses.length) return;
+      q=q.where('clsKey','in',myClasses.slice(0,10)).limit(500);
+    } else q=q.orderBy('sentAt','desc').limit(500);
+    unsubs.push(q.onSnapshot(function(snap){
+      var m={}; snap.forEach(function(d){ m[d.id]=d.data(); });
+      notices=m; renderLog();
+    },function(err){ console.warn('notify_log:', err && err.code); }));
+  }
+  function tsDate(ms){ return fmtDate(dateISO(new Date(ms))); }
+  function deliveryHTML(e){
+    var out='', n=(e.tg && notices) ? notices[e.tg] : null;
+    if(e.tg){
+      if(n && n.ackAt) out+='<span class="dv ok">✅ Tanishdi · '+tsDate(n.ackAt)+'</span>';
+      else if(n && n.sentAt && (Date.now()-n.sentAt)>=3*864e5) out+='<span class="dv bad">🔴 3 kundan beri tasdiqlanmagan</span>';
+      else out+='<span class="dv">📨 Telegramga yuborildi'+(n&&n.sentAt?' · '+tsDate(n.sentAt):'')+'</span>';
+    }
+    if(e.deliv) out+='<span class="dv ok">'+(e.deliv.t==='hand'?"✋ Qo'lda topshirildi":"📞 Qo'ng'iroq qilindi")+(e.deliv.at?' · '+tsDate(e.deliv.at):'')+'</span>';
+    return out;
+  }
+  function setDeliv(id,t){
+    if(isViewer()) return;
+    var lg=loadLog(), e=lg.filter(function(x){return x.id===id})[0];
+    if(!e || !inMyClasses(e.cls)) return;
+    if(e.deliv && e.deliv.t===t) delete e.deliv; else e.deliv={t:t,at:Date.now(),by:myEmail()};
+    saveLog(lg); renderLog();
+  }
   /* ---------- O'quvchi kartochkasi: bitta o'quvchining barcha xatlari ---------- */
   function openCard(id){
     var all=loadLog(), e=all.filter(function(x){return x.id===id})[0];
@@ -5045,7 +5088,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     }
     var rows=list.map(function(x,i){
       return '<div class="card-row"><span class="card-n">'+(i+1)+'</span><div class="card-main"><b>'+esc(fmtDate(x.date))+'</b>'+(x.kind?' <span class="badge">'+kindOf(x).icon+' '+kindOf(x).short+'</span>':'')+
-             '<div class="card-reason">'+(esc(x.reason)||'<span class="muted">sabab ko\'rsatilmagan</span>')+'</div></div>'+
+             '<div class="card-reason">'+(esc(x.reason)||'<span class="muted">sabab ko\'rsatilmagan</span>')+'</div>'+'<div>'+deliveryHTML(x)+'</div>'+(isViewer()?'':'<div class="card-dv"><button type="button" class="mini" data-dh="'+esc(x.id)+'">'+(x.deliv&&x.deliv.t==='hand'?"✋ Topshirildi ✓":"✋ Qo'lda topshirildi")+'</button><button type="button" class="mini" data-dc="'+esc(x.id)+'">'+(x.deliv&&x.deliv.t==='call'?"📞 Qo'ng'iroq ✓":"📞 Qo'ng'iroq qildim")+'</button></div>')+'</div>'+
              (isHomeroom()?'':'<button type="button" class="mini" data-copen="'+esc(x.id)+'">Xatni ochish</button>')+'</div>';
     }).join('');
     m.innerHTML='<div class="inst-box"><button type="button" class="inst-x" data-cclose aria-label="Yopish">×</button>'+
@@ -5056,6 +5099,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       '<div class="card-list">'+rows+'</div>'+
       '<div class="card-foot">'+(n>1&&!isHomeroom()?'<button type="button" class="btn line sm" data-call>Oxirgi '+Math.min(n,4)+' tasini A4 ga joylash</button>':'')+
       '<button type="button" class="btn ghost sm" data-cclose>Yopish</button></div></div>';
+    $$('#cardModal [data-dh]').forEach(function(b){ b.addEventListener('click',function(){ setDeliv(b.dataset.dh,'hand'); openCard(id); }); });
+    $$('#cardModal [data-dc]').forEach(function(b){ b.addEventListener('click',function(){ setDeliv(b.dataset.dc,'call'); openCard(id); }); });
     $$('#cardModal [data-copen]').forEach(function(b){ b.addEventListener('click',function(){ m.classList.add('hidden'); openEntries([b.dataset.copen]); }); });
     var ca=$('#cardModal [data-call]');
     if(ca) ca.addEventListener('click',function(){ m.classList.add('hidden'); openEntries(list.slice(-4).map(function(x){return x.id})); });
@@ -5088,7 +5133,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var n=counts[personKey(e)]||0;
       return '<tr class="rowlink'+(isHomeroom()?' nolink':'')+(!e.kind&&n>=3?' danger':'')+'" data-open="'+esc(e.id)+'"><td><input type="checkbox" data-sel="'+esc(e.id)+'"'+(selected[e.id]?' checked':'')+'></td>'+
              '<td>'+esc(fmtDate(e.date))+'</td><td><b class="lnk">'+esc(e.name)+'</b> <button type="button" class="mini" data-card="'+esc(e.id)+'" title="O\'quvchi kartochkasi">📋 Kartochka</button></td><td>'+esc(e.cls)+'</td><td>'+esc(e.parent)+'</td><td>'+esc(e.reason)+'</td>'+
-             '<td>'+(phoneOf(e,pm)?esc(phoneOf(e,pm)):'<span class="muted">—</span>')+'</td>'+
+             '<td>'+(phoneOf(e,pm)?esc(phoneOf(e,pm)):'<span class="muted">—</span>')+deliveryHTML(e)+'</td>'+
              (e.kind ? '<td><span class="badge">'+kindOf(e).icon+' '+kindOf(e).short+'</span></td>' : '<td><span class="badge'+(n>=3?' warn':'')+'" title="Bu — '+ordById[e.id]+'-xat">'+n+' marta</span>'+(n>=3?' <span class="badge warn" title="3 va undan ko\'p xat: direktor bilan suhbat tavsiya etiladi">🔴 Suhbat</span>':'')+'</td>')+
              '<td>'+(!isViewer()?'<button type="button" class="mini" data-sign="'+esc(e.id)+'">'+(e.sig?'✓ Imzolangan':'✍️ Imzolash')+'</button> ':'')+(isViewer()||isHomeroom()?'':'<button class="mini" style="color:var(--danger)" data-rm="'+esc(e.id)+'">O\'chirish</button>')+'</td></tr>';
     }).join('') : '<tr><td colspan="9"><div class="empty">'+(all.length?"Hech narsa topilmadi.":"Hozircha xat yo'q. Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.")+'</div></td></tr>';
@@ -5266,6 +5311,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       var st = res.body && res.body.status;
       if(st==='sent'){
         var pdfTxt = (res.body && res.body.pdfSent) ? " (PDF bilan)" : '';
+        try{
+          var lid=res.body && res.body.logId;
+          if(lid){
+            var lg=loadLog(), ent=f.srcId ? lg.filter(function(x){return x.id===f.srcId})[0] : null;
+            if(ent){ ent.tg=lid; saveLog(lg); renderLog(); } else { f.tgId=lid; saveSlots(); }
+          }
+        }catch(e){ console.warn("Holatni bog'lashda xato:", e); }
         setMsg(msgSel, "Ota-onaga Telegram xabari yuborildi"+pdfTxt, 'ok');
         /* xabar allaqachon yuborilgan — endigi ikkala amal (jurnalga yozish,
            bazani yangilash) muvaffaqiyatsiz bo'lsa ham "yuborildi" xabari
