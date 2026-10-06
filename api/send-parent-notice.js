@@ -73,14 +73,18 @@ module.exports = async (req, res) => {
     if (reason) text += K.reasonLb + reason + "\n";
     if (infoUrl) text += "\nTafsilot: " + infoUrl;
 
-    // "Tanishdim" tugmasi: ota-ona bossa, bot shu haqda faollik jurnaliga yozadi
-    const ackData = ('ack|' + phone + '|' + dateTxt).slice(0, 64);
-    await tgApi('sendMessage', {
+    // "Tanishdim" tugmasi: ota-ona bossa, telegram-webhook.js shu yozuvga ackAt qo'shadi
+    const logRef = db().collection('notify_log').doc();
+    const sent = await tgApi('sendMessage', {
       chat_id: chatId,
       text,
-      reply_markup: { inline_keyboard: [[{ text: '✅ Tanishdim', callback_data: ackData }]] },
+      reply_markup: { inline_keyboard: [[{ text: '✅ Tanishdim', callback_data: 'ack|' + logRef.id }]] },
     });
-    await db().collection('notify_log').add({ phone, name, cls, date: dateTxt, kind, sentBy: email, sentAt: Date.now() });
+    if (sent && sent.ok === false) {
+      res.status(502).json({ error: 'telegram-failed', message: sent.description || '' });
+      return;
+    }
+    await logRef.set({ phone, name, cls, clsKey: normClass(cls), date: dateTxt, kind, sentBy: email, sentAt: Date.now() });
 
     // PDF nusxasi (ixtiyoriy) — admin brauzerda tayyorlab yuborgan bo'lsa,
     // alohida xabar sifatida biriktiriladi. Bu muvaffaqiyatsiz bo'lsa ham,
@@ -97,7 +101,7 @@ module.exports = async (req, res) => {
       }
     }
 
-    res.status(200).json({ status: 'sent', pdfSent });
+    res.status(200).json({ status: 'sent', pdfSent, logId: logRef.id });
   } catch (e) {
     console.error('send-parent-notice xato:', e);
     res.status(500).json({ error: 'internal', message: e.message });
