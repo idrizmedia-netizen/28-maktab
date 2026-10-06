@@ -4837,7 +4837,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     });
   }
   function sendTelegramNotice(f, btn, msgSel){
-    if(f.kind) return setMsg(msgSel, "Telegram orqali hozircha faqat ogohlantirish xati yuboriladi. Bu xatni chop eting yoki PDF qiling", 'err');
     var phone=normPhone(f.phone);
     if(!phone) return setMsg(msgSel, "Avval ota-ona Telegram raqamini kiriting", 'err');
     if(phone.length!==12) return setMsg(msgSel, "Telefon raqami to'liq emas (masalan: +998 90 123 45 67)", 'err');
@@ -4853,7 +4852,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       return fetch('/api/send-parent-notice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+idToken },
-        body: JSON.stringify({ phone: phone, name: f.name||'', cls: f.cls||'', date: f.date||'', reason: f.reason||'', infoUrl: platformUrl(), pdfBase64: pdfBase64||null })
+        body: JSON.stringify({ phone: phone, name: f.name||'', cls: f.cls||'', date: f.date||'', kind: f.kind||'', reason: f.reason||'', infoUrl: platformUrl(), pdfBase64: pdfBase64||null })
       });
     }).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, body:j}; }) })
     .then(function(res){
