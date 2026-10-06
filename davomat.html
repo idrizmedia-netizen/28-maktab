@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="uz"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>28-maktab · Davomat</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#0f1420;--card:#171e30;--line:#2a3350;--tx:#e8ecf6;--mu:#8e9ab8;--ac:#4f8cff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px system-ui,Segoe UI,Arial,sans-serif;padding:12px;max-width:1400px;margin:auto}
+h1{font-size:18px;margin:4px 0 10px}h2{font-size:15px;margin:16px 0 8px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.tabs button,.btn,select,input{background:var(--card);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font:inherit}
+.tabs button.on,.btn.p{background:var(--ac);border-color:var(--ac);color:#fff}
+.btn{cursor:pointer}.btn.r{color:#ff7b7b}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+.pal{display:flex;flex-wrap:wrap;gap:6px}.pal button{border:2px solid transparent;border-radius:8px;padding:6px 10px;cursor:pointer;font-weight:600}
+.pal button.on{border-color:#fff}
+.wrap{overflow:auto;max-height:70vh;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--line);padding:4px 6px;text-align:center;white-space:nowrap}
+th{background:#1d2640;position:sticky;top:0;z-index:2;font-size:12px}
+td.nm,th.nm{text-align:left;position:sticky;left:0;background:#171e30;z-index:1;min-width:190px}th.nm{z-index:3;background:#1d2640}
+td.c{min-width:30px;height:30px;cursor:pointer;font-size:12px;font-weight:700}td.c:hover{outline:2px solid var(--ac);outline-offset:-2px}
+.off{background:#222a40!important;color:#555;cursor:default!important}th.dh{cursor:pointer}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.k{background:#1d2640;border-radius:10px;padding:10px}.k b{display:block;font-size:22px}.k span{color:var(--mu);font-size:12px}
+.ch{display:flex;align-items:flex-end;gap:3px;height:140px;border-bottom:1px solid var(--line);padding-top:8px}
+.ch div{flex:1;background:var(--ac);border-radius:3px 3px 0 0;min-width:6px;position:relative}
+.ch div i{position:absolute;top:-15px;left:0;right:0;text-align:center;font-size:10px;font-style:normal;color:var(--mu)}
+.lb{display:flex;gap:3px;font-size:10px;color:var(--mu)}.lb span{flex:1;text-align:center;min-width:6px}
+.mu{color:var(--mu);font-size:12px}.hide{display:none}
+@media print{.bar,.pal,.tabs,.noprint{display:none!important}body{background:#fff;color:#000}th,td{border-color:#999;color:#000;background:#fff!important}.wrap{max-height:none;overflow:visible}}
+</style></head><body>
+<h1>📋 28-maktab · Davomat</h1>
+<div class="bar tabs">
+ <button data-t="grid" class="on">Davomat jadvali</button>
+ <button data-t="stu">O'quvchilar</button>
+ <button data-t="st">Statistika</button>
+</div>
+<div class="bar noprint">
+ <select id="cls"></select>
+ <input type="month" id="mon">
+</div>
+
+<section id="t-grid">
+ <div class="card noprint">
+  <div class="mu" style="margin-bottom:6px">Belgini tanlang va katakni bosing. Kelgan o'quvchi katagi <b>bo'sh</b> qoladi. Kun sarlavhasini bossangiz, shu kun dars yo'q (dam/bayram) deb belgilanadi.</div>
+  <div class="pal" id="pal"></div>
+ </div>
+ <div class="wrap"><table id="tbl"></table></div>
+ <div class="bar noprint" style="margin-top:10px"><button class="btn" onclick="print()">🖨 Chop etish</button><button class="btn" onclick="csvGrid()">CSV yuklab olish</button></div>
+</section>
+
+<section id="t-stu" class="hide">
+ <div class="card">
+  <h2>Fayldan yuklash</h2>
+  <div class="mu">Excel (.xlsx, .xls), CSV yoki TXT. Ustunlar tartibi, sarlavhalar yoki varaqlar soni muhim emas: ism-familiya va sinf avtomatik topiladi. Sinf "9-A", "9a", "9-A sinf" ko'rinishlarida, alohida ustunda yoki sarlavha qatorida ("9-A sinf o'quvchilari") bo'lishi mumkin.</div>
+  <div class="bar" style="margin-top:8px"><input type="file" id="file" accept=".xlsx,.xls,.csv,.txt,.ods"><input id="defc" placeholder="Sinf topilmasa (masalan 9-A)" size="22"></div>
+  <div id="prev"></div>
+ </div>
+ <div class="card">
+  <h2>Qo'lda qo'shish</h2>
+  <div class="bar"><input id="mn" placeholder="Familiya Ism" size="26"><input id="mc" placeholder="Sinf" size="8"><button class="btn p" onclick="addOne()">Qo'shish</button></div>
+ </div>
+ <div class="card"><h2>Ro'yxat</h2><div id="list"></div>
+  <div class="bar" style="margin-top:10px"><button class="btn" onclick="expJ()">⬇ Zaxira nusxa</button><label class="btn">⬆ Tiklash<input type="file" id="imp" accept=".json" hidden></label></div>
+ </div>
+</section>
+
+<section id="t-st" class="hide">
+ <div class="bar noprint"><select id="scope"><option value="m">Tanlangan oy</option><option value="a">Barcha oylar</option></select></div>
+ <div id="stOut"></div>
+</section>
+
+<script>
+const CODES={Sz:['Sababsiz','#ef4444'],Kas:['Kasal','#f59e0b'],Sb:['Sababli','#3b82f6'],Tad:['Tadbir','#a855f7'],Kch:['Kechikdi','#14b8a6']};
+const ABS=['Sz','Kas','Sb','Tad'],MONTHS=['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentyabr','Oktyabr','Noyabr','Dekabr'],WD=['Ya','Du','Se','Ch','Pa','Ju','Sh'];
+const LS='m28_davomat';let S={students:[],att:{},off:{}},cur='Sz',pending=[];
+try{S=Object.assign(S,JSON.parse(localStorage.getItem(LS)||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){alert('Saqlab bo\'lmadi')}};
+const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const now=new Date();$('mon').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+const mk=()=>$('mon').value,ym=k=>k.split('-').map(Number);
+const classes=()=>[...new Set(S.students.map(s=>s.cls||'—'))].sort((a,b)=>(parseInt(a)||99)-(parseInt(b)||99)||a.localeCompare(b));
+function fillCls(){const c=classes(),v=$('cls').value;const star=$('t-st').classList.contains('hide')?'':'<option value="*">Barcha sinflar</option>';
+ $('cls').innerHTML=star+c.map(x=>`<option>${esc(x)}</option>`).join('');if([...$('cls').options].some(o=>o.value===v))$('cls').value=v}
+const isOff=(k,d)=>{const o=(S.off[k]||{})[d];if(o!==undefined)return o;const[y,m]=ym(k);return new Date(y,m-1,d).getDay()===0};
+const getC=(k,sid,d)=>((S.att[k]||{})[sid]||{})[d]||'';
+
+/* tabs */
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+ ['grid','stu','st'].forEach(t=>$('t-'+t).classList.toggle('hide',t!==b.dataset.t));$('cls').parentElement.classList.toggle('hide',b.dataset.t==='stu');fillCls();render()});
+$('cls').onchange=$('mon').onchange=$('scope').onchange=render;
+
+/* grid */
+$('pal').innerHTML=Object.entries(CODES).map(([c,[n,col]])=>`<button data-c="${c}" style="background:${col}33;color:${col}">${c} · ${n}</button>`).join('')+'<button data-c="" style="background:#2a3350;color:#fff">⌫ Tozalash</button>';
+$('pal').onclick=e=>{const b=e.target.closest('button');if(!b)return;cur=b.dataset.c;pal()};
+function pal(){document.querySelectorAll('#pal button').forEach(b=>b.classList.toggle('on',b.dataset.c===cur))}
+function grid(){const k=mk();if(!k){return}const[y,m]=ym(k),dim=new Date(y,m,0).getDate();let cl=$('cls').value;if(cl==='*'||!cl)cl=classes()[0];
+ const st=S.students.filter(s=>(s.cls||'—')===cl).sort((a,b)=>a.name.localeCompare(b.name));
+ if(!st.length){$('tbl').innerHTML='<tr><td style="padding:20px">Bu sinfda o\'quvchi yo\'q. «O\'quvchilar» bo\'limidan fayl yuklang.</td></tr>';return}
+ let h=`<tr><th>№</th><th class="nm">F.I.Sh · ${esc(cl)} · ${MONTHS[m-1]} ${y}</th>`;
+ for(let d=1;d<=dim;d++)h+=`<th class="dh ${isOff(k,d)?'off':''}" data-d="${d}">${d}<br>${WD[new Date(y,m-1,d).getDay()]}</th>`;
+ h+='<th>Jami</th><th>Sz</th></tr>';
+ st.forEach((s,i)=>{let tot=0,sz=0;let r='';
+  for(let d=1;d<=dim;d++){const o=isOff(k,d),c=o?'':getC(k,s.id,d);if(ABS.includes(c))tot++;if(c==='Sz')sz++;
+   r+=o?`<td class="c off"></td>`:`<td class="c" data-s="${s.id}" data-d="${d}" ${c?`style="background:${CODES[c][1]}33;color:${CODES[c][1]}"`:''}>${c}</td>`}
+  h+=`<tr><td>${i+1}</td><td class="nm">${esc(s.name)}</td>${r}<td><b>${tot||''}</b></td><td>${sz||''}</td></tr>`});
+ $('tbl').innerHTML=h}
+$('tbl').onclick=e=>{const k=mk(),t=e.target.closest('td.c[data-s],th.dh');if(!t)return;const d=t.dataset.d;
+ if(t.tagName==='TH'){(S.off[k]=S.off[k]||{})[d]=!isOff(k,+d);save();return grid()}
+ const a=(S.att[k]=S.att[k]||{}),r=(a[t.dataset.s]=a[t.dataset.s]||{});
+ if(!cur||r[d]===cur)delete r[d];else r[d]=cur;save();grid()};
+function csvGrid(){const k=mk(),[y,m]=ym(k),dim=new Date(y,m,0).getDate();let cl=$('cls').value;if(cl==='*')cl=classes()[0];
+ let o=['№,F.I.Sh,'+Array.from({length:dim},(_,i)=>i+1).join(',')+',Jami'];
+ S.students.filter(s=>(s.cls||'—')===cl).forEach((s,i)=>{let t=0,r=[];for(let d=1;d<=dim;d++){const c=isOff(k,d)?'':getC(k,s.id,d);if(ABS.includes(c))t++;r.push(c)}o.push([i+1,'"'+s.name+'"',...r,t].join(','))});
+ dl('davomat_'+cl+'_'+k+'.csv','\ufeff'+o.join('\n'),'text/csv')}
+function dl(n,t,ty){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:ty}));a.download=n;a.click()}
+
+/* file parsing: ism-familiya va sinfni avtomatik aniqlash */
+const HDR=/^(t\/?r|№|n|ism|ismi|familiya|familiyasi|sharif|sharifi|f\.?\s?i\.?\s?(sh|o)\.?|fish|o.?quvchi.*|sinf|class|name|raqam|telefon|izoh|jinsi|erkak|ayol|qiz|o.?g.?il)$/i;
+const CLSX=/^(\d{1,2})\s*[-–.]?\s*([\p{L}])\s*(-?\s*sinf)?$/iu,CLSI=/(?:^|[\s,;(])(\d{1,2})\s*[-–]\s*([\p{L}])(?![\p{L}])(\s*sinf)?/iu,NAME=/^[\p{L}'ʻ’`.\- ]{3,}$/u,HEAD=/sinf|ro.?yxat|jadval|davomat|maktab|o.?quvchilar/i;
+const nc=(n,l)=>l?n+'-'+l.toUpperCase():String(n);
+function parseRows(rows,sheet){const out=[];let cur='',cc=-1;const sm=String(sheet||'').trim().match(CLSX);if(sm)cur=nc(sm[1],sm[2]);
+ for(const r of rows){const cells=r.map(c=>String(c==null?'':c).trim());if(cells.every(c=>!c))continue;
+  const hi=cells.findIndex(c=>/^sinf$/i.test(c));if(hi>=0){cc=hi;continue}
+  let cls='',names=[],singles=[],heading=false;
+  cells.forEach((c,i)=>{if(!c)return;let m=c.match(CLSX);if(m){cls=nc(m[1],m[2]);return}
+   if(i===cc&&/^\d{1,2}$/.test(c)){cls=c;return}
+   let t=c.replace(/^\d+\s*[.)]\s*/,'').replace(/\s+/g,' ');
+   if(HEAD.test(t)){const e=t.match(CLSI);if(e){cur=nc(e[1],e[2]);}heading=true;return}
+   const e=t.match(CLSI);if(e&&/\p{L}{2,}/u.test(t.replace(CLSI,''))){cls=cls||nc(e[1],e[2]);t=t.replace(CLSI,'').replace(/[,;\-\s]+$/,'').trim()}
+   if(!NAME.test(t)||HDR.test(t))return;t.split(' ').length>1?names.push(t):singles.push(t)});
+  if(heading&&!names.length)continue;
+  if(cls&&!names.length&&singles.length<2){cur=cls;continue}
+  let name=names.sort((a,b)=>b.length-a.length)[0];
+  if(!name&&singles.length>=2&&singles.length<=3)name=singles.join(' ');
+  if(name)out.push({name,cls:cls||cur})}
+ return out}
+$('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+ try{const isT=/\.(txt|csv)$/i.test(f.name);const wb=isT?XLSX.read(await f.text(),{type:'string'}):XLSX.read(await f.arrayBuffer(),{type:'array'});
+  pending=[];wb.SheetNames.forEach(sn=>pending.push(...parseRows(XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''}),sn)));
+  prev()}catch(x){$('prev').innerHTML='<p class="mu">Faylni o\'qib bo\'lmadi. Excel, CSV yoki TXT yuklang (Word/PDF hozircha qo\'llanmaydi).</p>'}
+ e.target.value=''};
+function prev(){if(!pending.length){$('prev').innerHTML='<p class="mu">Ism-familiya topilmadi.</p>';return}
+ const ns=pending.filter(p=>!p.cls).length;
+ $('prev').innerHTML=`<p><b>${pending.length}</b> ta o'quvchi topildi${ns?`, <span style="color:#f59e0b">${ns} tasida sinf yo'q (yuqoridagi maydonga sinf yozing)</span>`:''}.</p>
+ <div class="wrap" style="max-height:240px"><table><tr><th>№</th><th class="nm">F.I.Sh</th><th>Sinf</th></tr>${pending.slice(0,300).map((p,i)=>`<tr><td>${i+1}</td><td class="nm">${esc(p.name)}</td><td>${esc(p.cls||'?')}</td></tr>`).join('')}</table></div>
+ <div class="bar" style="margin-top:8px"><button class="btn p" onclick="commit()">Davomatga qo'shish</button><button class="btn" onclick="pending=[];prev2()">Bekor</button></div>`}
+function prev2(){$('prev').innerHTML=''}
+function commit(){const dc=$('defc').value.trim().match(CLSX);const d=dc?nc(dc[1],dc[2]):$('defc').value.trim();let n=0;
+ const key=s=>s.name.toLowerCase()+'|'+s.cls;const have=new Set(S.students.map(key));
+ pending.forEach(p=>{const s={id:uid(),name:p.name,cls:p.cls||d};if(!have.has(key(s))){S.students.push(s);have.add(key(s));n++}});
+ save();pending=[];prev2();alert(n+' ta yangi o\'quvchi qo\'shildi');fillCls();render()}
+function addOne(){const n=$('mn').value.trim(),c=$('mc').value.trim().match(CLSX);if(!n)return;S.students.push({id:uid(),name:n,cls:c?nc(c[1],c[2]):$('mc').value.trim()});$('mn').value='';save();fillCls();list()}
+function list(){const cs=classes();$('list').innerHTML=cs.length?cs.map(c=>{const st=S.students.filter(s=>(s.cls||'—')===c);
+ return `<details><summary><b>${esc(c)}</b> · ${st.length} ta <button class="btn r" onclick="delCls('${esc(c)}')" style="padding:2px 8px;margin-left:8px">sinfni o'chirish</button></summary>${st.map(s=>`<div style="padding:3px 0">${esc(s.name)} <a href="#" onclick="delS('${s.id}');return false" style="color:#ff7b7b">✕</a></div>`).join('')}</details>`}).join(''):'<span class="mu">Hozircha bo\'sh</span>'}
+function delS(id){S.students=S.students.filter(s=>s.id!==id);save();fillCls();list()}
+function delCls(c){if(confirm(c+' sinfi va uning davomati o\'chiriladi. Davom etasizmi?')){const ids=new Set(S.students.filter(s=>(s.cls||'—')===c).map(s=>s.id));S.students=S.students.filter(s=>!ids.has(s.id));Object.values(S.att).forEach(a=>ids.forEach(i=>delete a[i]));save();fillCls();list()}}
+function expJ(){dl('davomat_zaxira.json',JSON.stringify(S),'application/json')}
+$('imp').onchange=async e=>{try{const j=JSON.parse(await e.target.files[0].text());if(!Array.isArray(j.students))throw 0;S=Object.assign({students:[],att:{},off:{}},j);save();fillCls();render()}catch(x){alert('Fayl noto\'g\'ri')}};
+
+/* statistika */
+function stats(){const cl=$('cls').value||'*',all=$('scope').value==='a';
+ const keys=all?[...new Set([...Object.keys(S.att),mk()])].filter(Boolean).sort():[mk()];
+ const st=S.students.filter(s=>cl==='*'||(s.cls||'—')===cl);
+ if(!st.length){$('stOut').innerHTML='<div class="card mu">Ma\'lumot yo\'q</div>';return}
+ const by={},pc={},ps=st.map(s=>({s,abs:0,sz:0,kch:0})),perP=[];Object.keys(CODES).forEach(c=>by[c]=0);let days=0,abs=0;
+ st.forEach(s=>{const c=s.cls||'—';pc[c]=pc[c]||{n:0,abs:0,sz:0,days:0};pc[c].n++});
+ keys.forEach(k=>{const[y,m]=ym(k),dim=new Date(y,m,0).getDate();const ds=[];
+  for(let d=1;d<=dim;d++)if(!isOff(k,d)&&new Date(y,m-1,d)<=now)ds.push(d);
+  days+=ds.length;const per=new Array(dim+1).fill(0);let ma=0;
+  ps.forEach(p=>{const c=p.s.cls||'—';pc[c].days+=ds.length;ds.forEach(d=>{const x=getC(k,p.s.id,d);if(!x)return;by[x]++;
+   if(ABS.includes(x)){abs++;p.abs++;pc[c].abs++;per[d]++;ma++;if(x==='Sz'){p.sz++;pc[c].sz++}}if(x==='Kch')p.kch++})});
+  perP.push(all?{l:MONTHS[m-1].slice(0,3),v:ma}:per.slice(1).map((v,i)=>({l:i+1,v,off:isOff(k,i+1)})))});
+ const exp=st.length*days,pct=exp?(100*(1-abs/exp)).toFixed(1):'—',pd=all?perP:perP[0];
+ const mx=Math.max(1,...pd.map(x=>x.v));
+ $('stOut').innerHTML=`<div class="cards"><div class="k"><b>${st.length}</b><span>O'quvchilar</span></div><div class="k"><b>${days}</b><span>Dars kunlari</span></div><div class="k"><b>${pct}${exp?'%':''}</b><span>Davomat foizi</span></div><div class="k"><b>${abs}</b><span>Jami qoldirilgan kun</span></div>
+ ${Object.entries(CODES).map(([c,[n,col]])=>`<div class="k"><b style="color:${col}">${by[c]}</b><span>${c} · ${n}</span></div>`).join('')}</div>
+ <div class="card" style="margin-top:12px"><h2>${all?'Oylar bo\'yicha':'Kunlar bo\'yicha'} qoldirilganlar</h2><div class="ch">${pd.map(x=>`<div style="height:${x.v/mx*100}%;${x.off?'opacity:.25':''}"><i>${x.v||''}</i></div>`).join('')}</div><div class="lb">${pd.map(x=>`<span>${x.l}</span>`).join('')}</div></div>
+ <div class="card"><h2>Sinflar kesimida</h2><div class="wrap"><table><tr><th>Sinf</th><th>O'quvchi</th><th>Qoldirilgan kun</th><th>Sababsiz</th><th>Davomat %</th></tr>${Object.keys(pc).sort((a,b)=>(parseInt(a)||99)-(parseInt(b)||99)||a.localeCompare(b)).map(c=>{const p=pc[c],e=p.n*p.days;return `<tr><td>${esc(c)}</td><td>${p.n}</td><td>${p.abs}</td><td>${p.sz}</td><td>${e?(100*(1-p.abs/e)).toFixed(1)+'%':'—'}</td></tr>`}).join('')}</table></div></div>
+ <div class="card"><h2>Eng ko'p qoldirgan o'quvchilar (top 10)</h2><div class="wrap"><table><tr><th>№</th><th class="nm">F.I.Sh</th><th>Sinf</th><th>Jami</th><th>Sababsiz</th><th>Kechikdi</th></tr>${ps.filter(p=>p.abs||p.kch).sort((a,b)=>b.abs-a.abs||b.sz-a.sz).slice(0,10).map((p,i)=>`<tr><td>${i+1}</td><td class="nm">${esc(p.s.name)}</td><td>${esc(p.s.cls||'—')}</td><td>${p.abs}</td><td>${p.sz}</td><td>${p.kch}</td></tr>`).join('')||'<tr><td colspan=6 class="mu">Hali qoldirgan yo\'q</td></tr>'}</table></div></div>
+ <div class="mu">Eslatma: belgi qo'yilmagan katak «keldi» hisoblanadi. Faqat o'tgan va bugungi dars kunlari hisobga olinadi. Kechikish qoldirilgan kunga kirmaydi.</div>`}
+function render(){if(!$('t-grid').classList.contains('hide'))grid();else if(!$('t-stu').classList.contains('hide'))list();else stats()}
+fillCls();pal();render();
+</script></body></html>
