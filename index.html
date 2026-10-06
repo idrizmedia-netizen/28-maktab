@@ -670,6 +670,16 @@ img.sig-img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:con
     <section id="tab-settings" class="hidden">
       <div class="settings-grid">
         <div>
+          <div class="card" id="backupCard">
+            <h2>Zaxira nusxa</h2>
+            <p class="hint">Barcha o'quvchi va o'qituvchi xatlari, ismlar bazasi va imzolarni bitta faylga saqlaydi. Muhim o'zgarishlardan oldin zaxira oling. «Tiklash» mavjud ma'lumotni o'chirmaydi, faqat yo'qlarini qo'shadi.</p>
+            <div class="actions">
+              <button class="btn" id="bkDown" type="button">⬇ Zaxira nusxani yuklab olish</button>
+              <button class="btn line" id="bkUp" type="button">⬆ Zaxiradan qo'shib tiklash</button>
+              <input type="file" id="bkFile" accept=".json,application/json" class="hidden">
+            </div>
+            <div id="bkMsg" class="msg"></div>
+          </div>
           <div class="card" id="adminCard">
             <h2>Platforma adminlari</h2>
             <p class="hint">Faqat shu ro'yxatdagi Google hisoblari platformaga kira oladi.</p>
@@ -4035,6 +4045,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       fClass.readOnly = false;
     }
     $('#wipeBtn').classList.toggle('hidden', homeroom || viewer);
+    $('#backupCard').classList.toggle('hidden', homeroom || viewer);
     $('#selLoad').classList.toggle('hidden', homeroom);
     fillDatalists();
   }
@@ -4965,6 +4976,54 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     });
   }
   bindSig();
+  /* ---------- Zaxira nusxa ---------- */
+  function bkDownload(){
+    if(isHomeroom()||isViewer()) return;
+    var d={app:'28-maktab',version:1,at:new Date().toISOString(),by:curUser?curUser.email:'',log:loadLog(),tlog:loadTLog(),roster:roster,sigs:loadSigs()};
+    var blob=new Blob([JSON.stringify(d)],{type:'application/json'});
+    saveFile('28-maktab-zaxira-'+todayISO()+'.json',blob).then(function(){
+      setMsg('#bkMsg',"Zaxira saqlandi: "+d.log.length+" ta o'quvchi xati, "+d.tlog.length+" ta o'qituvchi xati, "+roster.students.length+" ta o'quvchi bazada",'ok');
+    }).catch(function(e){ setMsg('#bkMsg',saveErr(e),'err'); });
+  }
+  function bkRestore(file){
+    if(isHomeroom()||isViewer()||!file) return;
+    if(file.size>25*1024*1024) return setMsg('#bkMsg',"Fayl juda katta",'err');
+    var fr=new FileReader();
+    fr.onerror=function(){ setMsg('#bkMsg',"Faylni o'qib bo'lmadi",'err'); };
+    fr.onload=function(){
+      var d; try{ d=JSON.parse(fr.result); }catch(e){ return setMsg('#bkMsg',"Bu zaxira fayli emas (JSON o'qilmadi)",'err'); }
+      if(!d || d.app!=='28-maktab') return setMsg('#bkMsg',"Bu 28-maktab zaxira fayli emas",'err');
+      var arr=function(x){ return Array.isArray(x)?x:[]; };
+      var log=loadLog(), tl=loadTLog(), sg=loadSigs(), have={}, haveT={}, haveS={}, rs={}, rt={};
+      log.forEach(function(e){have[e.id]=1}); tl.forEach(function(e){haveT[e.id]=1});
+      sg.forEach(function(x){haveS[(x.email||'').toLowerCase()]=1});
+      roster.students.forEach(function(x){rs[(x.name||'').toLowerCase().trim()]=1});
+      roster.teachers.forEach(function(x){rt[(x.name||'').toLowerCase().trim()]=1});
+      var addL=arr(d.log).filter(function(e){return e && typeof e.id==='string' && e.id && !have[e.id]});
+      var addT=arr(d.tlog).filter(function(e){return e && typeof e.id==='string' && e.id && !haveT[e.id]});
+      var rd=d.roster||{};
+      var addS=arr(rd.students).filter(function(x){return x && x.name && !rs[String(x.name).toLowerCase().trim()]});
+      var addR=arr(rd.teachers).filter(function(x){return x && x.name && !rt[String(x.name).toLowerCase().trim()]});
+      var addG=arr(d.sigs).filter(function(x){return x && x.email && /^data:image\/png;base64,/.test(x.png||'') && !haveS[String(x.email).toLowerCase()]});
+      var total=addL.length+addT.length+addS.length+addR.length+addG.length;
+      if(!total) return setMsg('#bkMsg',"Yangi ma'lumot yo'q: hammasi allaqachon mavjud",'ok');
+      var txt="Qo'shiladi: "+addL.length+" ta o'quvchi xati, "+addT.length+" ta o'qituvchi xati, "+addS.length+" ta o'quvchi va "+addR.length+" ta o'qituvchi (bazaga), "+addG.length+" ta imzo.\nMavjud ma'lumotlar o'chirilmaydi. Davom etamizmi?";
+      if(!confirm(txt)) return;
+      if(addL.length) saveLog(log.concat(addL));
+      if(addT.length) saveTLog(tl.concat(addT));
+      if(addS.length||addR.length){
+        roster.students=roster.students.concat(addS); roster.teachers=roster.teachers.concat(addR);
+        cloudSaveRoster().catch(function(){ toast("Bazani bulutga saqlab bo'lmadi"); }); fillDatalists();
+      }
+      if(addG.length){ var m=sg.concat(addG); lset('m28_sigs',JSON.stringify(m)); cloudSave('sigs',m); }
+      renderLog(); renderSigPanel(); renderSheet();
+      setMsg('#bkMsg',"Tiklandi: "+total+" ta yozuv qo'shildi",'ok');
+    };
+    fr.readAsText(file);
+  }
+  $('#bkDown').addEventListener('click',bkDownload);
+  $('#bkUp').addEventListener('click',function(){ $('#bkFile').value=''; $('#bkFile').click(); });
+  $('#bkFile').addEventListener('change',function(){ bkRestore(this.files && this.files[0]); });
   /* ---------- O'quvchi kartochkasi: bitta o'quvchining barcha xatlari ---------- */
   function openCard(id){
     var all=loadLog(), e=all.filter(function(x){return x.id===id})[0];
