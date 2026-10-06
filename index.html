@@ -312,6 +312,26 @@ img.logo{display:block;background:transparent;object-fit:contain;box-shadow:0 2p
 .inst-link{display:flex;gap:8px;align-items:center;margin-top:4px}
 .inst-link code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--brand-soft);color:var(--text);padding:8px 10px;border-radius:8px;font-size:12px}
 
+.ch-head{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.ch-head h2{margin:0}
+.ch-act{display:flex;gap:6px;flex-wrap:wrap}
+.ch-row{display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.ch-lb{font-size:13px;color:var(--muted);min-width:132px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 13px;font:inherit;font-size:14px;cursor:pointer}
+.seg button:hover{border-color:var(--brand)}
+.seg button.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
+.ch-sel{width:auto;min-width:0;max-width:100%}
+.ch-chk{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--ink);cursor:pointer}
+#chartBox{margin-top:8px}
+.ch-scroll{overflow-x:auto;padding-bottom:4px}
+.ch-t{fill:var(--ink)}
+.ch-m{fill:var(--muted)}
+.ch-g{stroke:var(--line);fill:none}
+.ch-det{margin-top:12px}
+.ch-det summary{cursor:pointer;font-weight:700;color:var(--brand);padding:6px 0}
+#chCard.ch-full{position:fixed;inset:0;z-index:70;margin:0;border-radius:0;overflow:auto;padding:16px max(16px,env(safe-area-inset-right,0px)) 24px}
+@media print{#chCard .ch-act{display:none!important}}
 #printTmp{display:none}
 @media print{
   body.print-tmp > *:not(#printTmp){display:none!important}
@@ -575,21 +595,48 @@ img.sig-img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:con
         <p class="hint">O'quvchilar va o'qituvchilar ro'yxatidagi ma'lumotlar asosida avtomatik hisoblanadi.</p>
         <div class="stat-cards" id="statCards"></div>
       </div>
-      <div class="card">
-        <h2>Sinflar bo'yicha (o'quvchilar)</h2>
-        <div id="statByClass"></div>
-      </div>
-      <div class="card">
-        <h2>Oyma-oy dinamika</h2>
-        <div id="statByMonth"></div>
-      </div>
-      <div class="card">
-        <h2>Eng ko'p uchraydigan sabablar (o'quvchilar)</h2>
-        <div id="statByReason"></div>
-      </div>
-      <div class="card">
-        <h2>Fanlar bo'yicha (o'qituvchilar)</h2>
-        <div id="statBySubject"></div>
+      <div class="card" id="chCard">
+        <div class="ch-head">
+          <h2 id="chTitle">Diagrammalar</h2>
+          <div class="ch-act">
+            <button class="btn line sm" id="chPng" type="button">⬇ PNG</button>
+            <button class="btn line sm" id="chFull" type="button">⛶ Katta ko'rish</button>
+          </div>
+        </div>
+        <div class="ch-row"><span class="ch-lb">Nimani ko'rsatamiz</span>
+          <div class="seg" id="chData">
+            <button type="button" data-chd="class">Sinflar</button>
+            <button type="button" data-chd="month">Oylar</button>
+            <button type="button" data-chd="reason">Sabablar</button>
+            <button type="button" data-chd="weekday">Hafta kunlari</button>
+            <button type="button" data-chd="student">O'quvchilar (top 10)</button>
+            <button type="button" data-chd="kind">Xat turlari</button>
+            <button type="button" data-chd="subject">Fanlar (o'qituvchilar)</button>
+          </div>
+        </div>
+        <div class="ch-row"><span class="ch-lb">Diagramma turi</span>
+          <div class="seg" id="chType">
+            <button type="button" data-cht="column">📊 Ustunli</button>
+            <button type="button" data-cht="bar">📶 Gorizontal</button>
+            <button type="button" data-cht="line">📈 Chiziqli</button>
+            <button type="button" data-cht="donut">🍩 Doira</button>
+          </div>
+        </div>
+        <div class="ch-row"><span class="ch-lb">Davr</span>
+          <select class="inp ch-sel" id="chPeriod">
+            <option value="all">Hammasi</option>
+            <option value="7">Oxirgi 7 kun</option>
+            <option value="30">Oxirgi 30 kun</option>
+            <option value="month">Shu oy</option>
+            <option value="year">Shu o'quv yili (1-sentyabrdan)</option>
+            <option value="custom">Sanani o'zim tanlayman</option>
+          </select>
+          <span id="chCustom" class="hidden"><input type="date" class="inp ch-sel" id="chFrom"> – <input type="date" class="inp ch-sel" id="chTo"></span>
+          <label class="ch-chk"><input type="checkbox" id="chVals"> Raqamlarni ko'rsatish</label>
+        </div>
+        <div id="chSum" class="hint"></div>
+        <div id="chartBox"></div>
+        <details class="ch-det"><summary>Ma'lumotlar jadvali</summary><div id="chTable"></div></details>
       </div>
     </section>
 
@@ -4158,11 +4205,231 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
              '<div class="bar-wrap"><div class="bar" style="width:'+w+'%"></div></div><div class="n">'+e.n+'</div></div>';
     }).join('');
   }
+  /* ---------- Diagrammalar ---------- */
+  var CH_COLORS=['#2f6bff','#12b886','#f59f00','#e8590c','#9c36b5','#e03131','#1098ad','#74b816','#d6336c','#7950f2','#868e96'];
+  var CH_DAYS=['Yakshanba','Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba'];
+  var CH_DATA={
+    'class':  {t:"Sinflar bo'yicha (o'quvchi xatlari)"},
+    month:    {t:"Oyma-oy dinamika (o'quvchi xatlari)"},
+    reason:   {t:"Eng ko'p uchraydigan sabablar"},
+    weekday:  {t:"Hafta kunlari bo'yicha"},
+    student:  {t:"Eng ko'p xat olgan o'quvchilar (top 10)"},
+    kind:     {t:"Xat turlari bo'yicha"},
+    subject:  {t:"Fanlar bo'yicha (o'qituvchi xatlari)"}
+  };
+  var chP=jparse(lget('m28_chpref'),null)||{};
+  var CH_PREF={data:CH_DATA[chP.data]?chP.data:'class', type:({column:1,bar:1,line:1,donut:1})[chP.type]?chP.type:'column', period:chP.period||'all', vals:chP.vals!==false, from:chP.from||'', to:chP.to||''};
+  var statCtx={log:[],logAll:[],tlog:[]};
+  function saveChPref(){ lset('m28_chpref', JSON.stringify(CH_PREF)); }
+  function chTrunc(t,n){ t=String(t); return t.length>n ? t.slice(0,n-1)+'…' : t; }
+  function chNice(max){
+    if(max<=0) return {step:1,top:4};
+    var raw=max/4, p=Math.pow(10,Math.floor(Math.log(raw)/Math.LN10)), f=raw/p;
+    var st=f<=1?1:f<=2?2:f<=5?5:10, step=Math.max(1,st*p);
+    return {step:step, top:Math.ceil(max/step)*step};
+  }
+  function chRange(){
+    var t=todayISO(), p=CH_PREF.period, d;
+    if(p==='month') return [t.slice(0,8)+'01',''];
+    if(p==='7'||p==='30'){ d=new Date(); d.setDate(d.getDate()-(+p-1)); return [dateISO(d),'']; }
+    if(p==='year'){ d=new Date(); return [(d.getMonth()>=8?d.getFullYear():d.getFullYear()-1)+'-09-01','']; }
+    if(p==='custom') return [CH_PREF.from||'', CH_PREF.to||''];
+    return ['',''];
+  }
+  function chIn(e,r){ var d=e.date||''; if(!d) return !r[0]&&!r[1]; if(r[0]&&d<r[0]) return false; if(r[1]&&d>r[1]) return false; return true; }
+  function chPeriodText(){
+    var p=CH_PREF.period, r=chRange();
+    if(p==='all') return 'barcha davr';
+    if(p==='custom') return (r[0]?fmtDate(r[0]):'…')+' – '+(r[1]?fmtDate(r[1]):'…');
+    return ({'7':'oxirgi 7 kun','30':'oxirgi 30 kun',month:'shu oy',year:"shu o'quv yili"})[p]||'';
+  }
+  function chItems(id){
+    var r=chRange(), f=function(e){return chIn(e,r)};
+    var L=statCtx.log.filter(f), A=statCtx.logAll.filter(f), T=statCtx.tlog.filter(f), o={}, items=[];
+    if(id==='class'){
+      L.forEach(function(e){var k=normClass(e.cls)||'(sinfsiz)'; o[k]=(o[k]||0)+1});
+      items=topEntries(o).sort(function(a,b){return a.k.localeCompare(b.k,'uz',{numeric:true})});
+    } else if(id==='month'){
+      L.forEach(function(e){var m=/^(\d{4})-(\d{2})/.exec(e.date||''); if(m) o[m[1]+'-'+m[2]]=(o[m[1]+'-'+m[2]]||0)+1});
+      var ks=Object.keys(o).sort();
+      if(ks.length){
+        var p0=ks[0].split('-'), p1=ks[ks.length-1].split('-'), y=+p0[0], m=+p0[1], guard=0;
+        while((y<+p1[0]||(y===+p1[0]&&m<=+p1[1])) && guard++<120){
+          var key=y+'-'+(m<10?'0'+m:m);
+          items.push({k:(MONTHS[m-1]||m)+' '+y, n:o[key]||0});
+          if(++m>12){m=1;y++}
+        }
+      }
+    } else if(id==='reason'){
+      L.forEach(function(e){var x=canonReason(e.reason); if(!x) return; x=chTrunc(x,60); o[x]=(o[x]||0)+1});
+      items=topEntries(o,10);
+    } else if(id==='weekday'){
+      var c=[0,0,0,0,0,0,0];
+      L.forEach(function(e){ var d=new Date((e.date||'')+'T00:00:00'); if(!isNaN(d)) c[d.getDay()]++; });
+      [1,2,3,4,5,6,0].forEach(function(i){ items.push({k:CH_DAYS[i], n:c[i]}); });
+    } else if(id==='student'){
+      var g={};
+      L.forEach(function(e){ var k=personKey(e); if(!g[k]) g[k]={k:(e.name||'').trim()+(e.cls?' ('+normClass(e.cls)+')':''), n:0}; g[k].n++; });
+      items=Object.keys(g).map(function(k){return g[k]}).sort(function(a,b){return b.n-a.n}).slice(0,10);
+    } else if(id==='kind'){
+      Object.keys(KINDS).forEach(function(k){ items.push({k:KINDS[k].icon+' '+KINDS[k].short, n:A.filter(function(e){return (e.kind||'')===k}).length}); });
+    } else if(id==='subject'){
+      T.forEach(function(e){var k=e.subject||'(fansiz)'; o[k]=(o[k]||0)+1});
+      items=topEntries(o);
+    }
+    var total=items.reduce(function(a,b){return a+b.n},0);
+    return {items:items,total:total};
+  }
+  function chAxis(W,H,padL,padR,padT,padB,nt){
+    var out='', plotH=H-padT-padB;
+    for(var t=0;t<=nt.top;t+=nt.step){
+      var y=padT+plotH-(t/nt.top)*plotH;
+      out+='<line class="ch-g" x1="'+padL+'" x2="'+(W-padR)+'" y1="'+y+'" y2="'+y+'" stroke-width="1"/><text class="ch-m" x="'+(padL-6)+'" y="'+(y+4)+'" font-size="11" text-anchor="end">'+t+'</text>';
+    }
+    return out;
+  }
+  function svgColumn(items,W0,vals,isLine){
+    var n=items.length, longest=Math.max.apply(null,items.map(function(i){return i.k.length}));
+    var rot=(n>5||longest>9), padL=38, padR=12, padT=vals?28:14, padB=rot?84:30;
+    var W=Math.max(W0, padL+padR+n*(isLine?44:46)), H=310, plotH=H-padT-padB;
+    var nt=chNice(Math.max.apply(null,items.map(function(i){return i.n})));
+    var slot=(W-padL-padR)/n, out=chAxis(W,H,padL,padR,padT,padB,nt), pts=[];
+    items.forEach(function(it,i){
+      var cx=padL+slot*(i+.5), y=padT+plotH-(it.n/nt.top)*plotH;
+      pts.push([cx,y]);
+      if(!isLine && it.n>0){
+        var bw=Math.min(56,slot*.72);
+        out+='<rect x="'+(cx-bw/2)+'" y="'+y+'" width="'+bw+'" height="'+(padT+plotH-y)+'" rx="4" fill="'+CH_COLORS[0]+'"><title>'+esc(it.k)+': '+it.n+'</title></rect>';
+      }
+      if(vals && (!isLine || true)) out+='<text class="ch-t" x="'+cx+'" y="'+(y-(isLine?9:6))+'" font-size="12" font-weight="700" text-anchor="middle">'+it.n+'</text>';
+      var ly=padT+plotH+16, lab=esc(chTrunc(it.k,14));
+      out+= rot ? '<text class="ch-m" font-size="11" text-anchor="end" x="'+cx+'" y="'+ly+'" transform="rotate(-35 '+cx+' '+ly+')">'+lab+'</text>'
+                : '<text class="ch-m" font-size="11" text-anchor="middle" x="'+cx+'" y="'+ly+'">'+lab+'</text>';
+    });
+    if(isLine){
+      var d=pts.map(function(p,i){return (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)}).join(' ');
+      var base=padT+plotH;
+      out+='<path d="'+d+' L'+pts[pts.length-1][0].toFixed(1)+' '+base+' L'+pts[0][0].toFixed(1)+' '+base+' Z" fill="'+CH_COLORS[0]+'" opacity=".13"/>'+
+           '<path d="'+d+'" fill="none" stroke="'+CH_COLORS[0]+'" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';
+      pts.forEach(function(p,i){ out+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4.5" fill="'+CH_COLORS[0]+'"><title>'+esc(items[i].k)+': '+items[i].n+'</title></circle>'; });
+    }
+    return '<svg viewBox="0 0 '+W+' '+H+'" font-family="system-ui,Segoe UI,Arial,sans-serif" style="width:'+W+'px;max-width:none;height:auto">'+out+'</svg>';
+  }
+  function svgBars(items,W,vals){
+    var n=items.length, longest=Math.max.apply(null,items.map(function(i){return Math.min(i.k.length,28)}));
+    var padL=Math.min(Math.round(W*.42), Math.max(70,longest*6.6+12)), rowH=30, H=n*rowH+14, padR=vals?44:12;
+    var mx=Math.max.apply(null,items.map(function(i){return i.n}))||1, maxW=W-padL-padR-6, out='';
+    items.forEach(function(it,i){
+      var y=8+i*rowH, w=Math.max(it.n>0?3:0, it.n/mx*maxW);
+      out+='<text class="ch-t" x="'+(padL-8)+'" y="'+(y+18)+'" font-size="12" text-anchor="end">'+esc(chTrunc(it.k,Math.floor((padL-10)/6.6)))+'<title>'+esc(it.k)+'</title></text>'+
+           '<rect x="'+padL+'" y="'+(y+3)+'" width="'+w+'" height="20" rx="5" fill="'+CH_COLORS[0]+'"><title>'+esc(it.k)+': '+it.n+'</title></rect>';
+      if(vals) out+='<text class="ch-t" x="'+(padL+w+6)+'" y="'+(y+18)+'" font-size="12" font-weight="700">'+it.n+'</text>';
+    });
+    return '<svg viewBox="0 0 '+W+' '+H+'" font-family="system-ui,Segoe UI,Arial,sans-serif" style="width:100%;height:auto">'+out+'</svg>';
+  }
+  function svgDonut(items,W,vals,total){
+    var sl=items.filter(function(i){return i.n>0}).slice(), top=sl.slice(0,8), rest=sl.slice(8);
+    if(rest.length) top.push({k:'Boshqalar',n:rest.reduce(function(a,b){return a+b.n},0)});
+    var side=W>=560, R=side?118:100, r=R*.58, cx=side?R+14:W/2, cy=R+14;
+    var H=side?Math.max(2*R+28, top.length*26+24) : (2*R+28+top.length*26+10), out='', a0=-Math.PI/2;
+    function pt(a,rad){return (cx+rad*Math.cos(a)).toFixed(2)+' '+(cy+rad*Math.sin(a)).toFixed(2)}
+    top.forEach(function(it,i){
+      var col=CH_COLORS[i%CH_COLORS.length], frac=it.n/total, a1=a0+frac*Math.PI*2;
+      if(frac>=.9999){
+        out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+((R+r)/2)+'" fill="none" stroke="'+col+'" stroke-width="'+(R-r)+'"><title>'+esc(it.k)+': '+it.n+'</title></circle>';
+      } else {
+        var big=(a1-a0)>Math.PI?1:0;
+        out+='<path d="M'+pt(a0,R)+' A'+R+' '+R+' 0 '+big+' 1 '+pt(a1,R)+' L'+pt(a1,r)+' A'+r+' '+r+' 0 '+big+' 0 '+pt(a0,r)+' Z" fill="'+col+'"><title>'+esc(it.k)+': '+it.n+' ('+Math.round(frac*100)+'%)</title></path>';
+      }
+      a0=a1;
+    });
+    out+='<text class="ch-m" x="'+cx+'" y="'+(cy-4)+'" font-size="12" text-anchor="middle">Jami</text><text class="ch-t" x="'+cx+'" y="'+(cy+20)+'" font-size="26" font-weight="700" text-anchor="middle">'+total+'</text>';
+    var lx=side?(2*R+44):16, ly0=side?18:(2*R+36), maxc=side?Math.floor((W-lx-80)/6.8):Math.floor((W-60)/6.8);
+    top.forEach(function(it,i){
+      var y=ly0+i*26, pc=Math.round(it.n/total*100);
+      out+='<rect x="'+lx+'" y="'+(y-11)+'" width="14" height="14" rx="3" fill="'+CH_COLORS[i%CH_COLORS.length]+'"/>'+
+           '<text class="ch-t" x="'+(lx+22)+'" y="'+y+'" font-size="12">'+esc(chTrunc(it.k,Math.max(8,maxc)))+'<title>'+esc(it.k)+'</title></text>'+
+           '<text class="ch-t" x="'+(W-12)+'" y="'+y+'" font-size="12" font-weight="700" text-anchor="end">'+it.n+(vals?' · '+pc+'%':'')+'</text>';
+    });
+    return '<svg viewBox="0 0 '+W+' '+H+'" font-family="system-ui,Segoe UI,Arial,sans-serif" style="width:100%;height:auto">'+out+'</svg>';
+  }
+  function renderCharts(){
+    var card=$('#chCard'); if(!card) return;
+    var hr=isHomeroom();
+    $$('#chData [data-chd]').forEach(function(b){
+      var hide = hr && b.dataset.chd==='subject';
+      b.classList.toggle('hidden',hide);
+      b.classList.toggle('on', b.dataset.chd===CH_PREF.data);
+    });
+    if(hr && CH_PREF.data==='subject') CH_PREF.data='class';
+    $$('#chType [data-cht]').forEach(function(b){ b.classList.toggle('on', b.dataset.cht===CH_PREF.type); });
+    $('#chPeriod').value=CH_PREF.period;
+    $('#chCustom').classList.toggle('hidden', CH_PREF.period!=='custom');
+    $('#chFrom').value=CH_PREF.from; $('#chTo').value=CH_PREF.to;
+    $('#chVals').checked=CH_PREF.vals;
+    var res=chItems(CH_PREF.data), items=res.items, box=$('#chartBox');
+    $('#chTitle').textContent=CH_DATA[CH_PREF.data].t;
+    $('#chSum').textContent='Davr: '+chPeriodText()+' · jami: '+res.total+' ta';
+    if(!res.total){
+      box.innerHTML='<div class="stat-empty">Tanlangan davr uchun ma\'lumot yo\'q.</div>';
+      $('#chTable').innerHTML=''; return;
+    }
+    var W=Math.max(300, Math.min(1000, box.clientWidth||700)), svg;
+    if(CH_PREF.type==='donut') svg=svgDonut(items,W,CH_PREF.vals,res.total);
+    else if(CH_PREF.type==='bar') svg=svgBars(items,W,CH_PREF.vals);
+    else svg=svgColumn(items,W,CH_PREF.vals,CH_PREF.type==='line');
+    box.innerHTML='<div class="ch-scroll">'+svg+'</div>';
+    $('#chTable').innerHTML='<table class="log"><thead><tr><th>Nomi</th><th>Soni</th><th>Ulushi</th></tr></thead><tbody>'+
+      items.map(function(it){ return '<tr><td>'+esc(it.k)+'</td><td><b>'+it.n+'</b></td><td>'+Math.round(it.n/res.total*100)+'%</td></tr>'; }).join('')+'</tbody></table>';
+  }
+  function chPng(){
+    var svg=document.querySelector('#chartBox svg'); if(!svg) return toast("Diagramma yo'q");
+    var cs=getComputedStyle(document.documentElement), g=function(n,d){ return (cs.getPropertyValue(n)||'').trim()||d; };
+    var vb=svg.viewBox.baseVal, w=vb.width, h=vb.height;
+    var str=new XMLSerializer().serializeToString(svg)
+      .replace(/class="ch-t"/g,'fill="'+g('--ink','#1b2330')+'"').replace(/class="ch-m"/g,'fill="'+g('--muted','#667085')+'"')
+      .replace(/class="ch-g"/g,'stroke="'+g('--line','#e2e6ee')+'" fill="none"')
+      .replace(/style="[^"]*"/,'width="'+w+'" height="'+h+'"');
+    var im=new Image();
+    im.onload=function(){
+      var c=document.createElement('canvas'); c.width=w*2; c.height=h*2; var x=c.getContext('2d');
+      x.fillStyle=g('--card','#ffffff'); x.fillRect(0,0,c.width,c.height); x.drawImage(im,0,0,c.width,c.height);
+      c.toBlob(function(b){
+        if(!b) return toast("PNG tayyorlab bo'lmadi");
+        saveFile('diagramma-'+CH_PREF.data+'-'+todayISO()+'.png',b).catch(function(e){ toast(saveErr(e)); });
+      },'image/png');
+    };
+    im.onerror=function(){ toast("PNG tayyorlab bo'lmadi"); };
+    im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(str);
+  }
+  function chFull(on){
+    var c=$('#chCard'); if(!c) return;
+    if(on===undefined) on=!c.classList.contains('ch-full');
+    c.classList.toggle('ch-full',on); document.body.style.overflow=on?'hidden':'';
+    $('#chFull').textContent=on?'✕ Yopish':"⛶ Katta ko'rish";
+    renderCharts();
+  }
+  (function bindCharts(){
+    var card=$('#chCard'); if(!card) return;
+    card.addEventListener('click',function(e){
+      var d=e.target.closest('[data-chd]'), t=e.target.closest('[data-cht]');
+      if(d){ CH_PREF.data=d.dataset.chd; saveChPref(); renderCharts(); }
+      else if(t){ CH_PREF.type=t.dataset.cht; saveChPref(); renderCharts(); }
+    });
+    $('#chPeriod').addEventListener('change',function(){ CH_PREF.period=this.value; saveChPref(); renderCharts(); });
+    $('#chFrom').addEventListener('change',function(){ CH_PREF.from=this.value; saveChPref(); renderCharts(); });
+    $('#chTo').addEventListener('change',function(){ CH_PREF.to=this.value; saveChPref(); renderCharts(); });
+    $('#chVals').addEventListener('change',function(){ CH_PREF.vals=this.checked; saveChPref(); renderCharts(); });
+    $('#chPng').addEventListener('click',chPng);
+    $('#chFull').addEventListener('click',function(){ chFull(); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape' && card.classList.contains('ch-full')) chFull(false); });
+    var rt=0; window.addEventListener('resize',function(){ clearTimeout(rt); rt=setTimeout(function(){ if(!$('#tab-stats').classList.contains('hidden')) renderCharts(); },200); });
+  })();
   function renderStats(){
     var hr=isHomeroom();
     var log=loadLog(), tlog=hr?[]:loadTLog();
     if(hr) log=log.filter(function(e){ return inMyClasses(e.cls); });
-    log=log.filter(isWarn);
+    var logAll=log.slice(); log=log.filter(isWarn);
     var people={}; log.forEach(function(e){people[personKey(e)]=1});
     var tpeople={}; tlog.forEach(function(e){tpeople[(e.name||'').toLowerCase().trim()]=1});
     $('#statCards').innerHTML =
@@ -4171,27 +4438,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       (hr?'':'<div class="stat-card"><b>'+tlog.length+"</b><span>O'qituvchi xatlari</span></div>"+
       '<div class="stat-card"><b>'+Object.keys(tpeople).length+"</b><span>Noyob o'qituvchi</span></div>");
 
-    var byClass={}; log.forEach(function(e){var k=normClass(e.cls)||'(sinfsiz)';byClass[k]=(byClass[k]||0)+1});
-    var clsTop=topEntries(byClass).sort(function(a,b){return a.k.localeCompare(b.k,'uz',{numeric:true})});
-    var clsMax=Math.max.apply(null,[0].concat(clsTop.map(function(e){return e.n})));
-    $('#statByClass').innerHTML = barList(clsTop, clsMax, "Hali o'quvchilar ro'yxatida xat yo'q.");
-
-    var byMonth={}; log.forEach(function(e){if(!e.date)return; var m=/^(\d{4})-(\d{2})/.exec(e.date); if(!m)return; var k=m[1]+'-'+m[2]; byMonth[k]=(byMonth[k]||0)+1});
-    var monthKeys=Object.keys(byMonth).sort();
-    var monthEntries=monthKeys.map(function(k){var p=k.split('-');return {k:(MONTHS[+p[1]-1]||p[1])+' '+p[0], n:byMonth[k]}});
-    var monMax=Math.max.apply(null,[0].concat(monthEntries.map(function(e){return e.n})));
-    $('#statByMonth').innerHTML = barList(monthEntries, monMax, "Hali sana bo'yicha ma'lumot yo'q.");
-
-    var byReason={}; log.forEach(function(e){var r=canonReason(e.reason); if(!r)return; if(r.length>60)r=r.slice(0,58)+'…'; byReason[r]=(byReason[r]||0)+1});
-    var reasonTop=topEntries(byReason,8);
-    var reasMax=Math.max.apply(null,[0].concat(reasonTop.map(function(e){return e.n})));
-    $('#statByReason').innerHTML = barList(reasonTop, reasMax, "Hali sabab kiritilgan xat yo'q.");
-
-    var bySubj={}; tlog.forEach(function(e){var k=e.subject||'(fansiz)';bySubj[k]=(bySubj[k]||0)+1});
-    var subjTop=topEntries(bySubj).sort(function(a,b){return b.n-a.n});
-    var subjMax=Math.max.apply(null,[0].concat(subjTop.map(function(e){return e.n})));
-    $('#statBySubject').innerHTML = barList(subjTop, subjMax, "Hali o'qituvchilar ro'yxatida xat yo'q.");
-    var sc2=$('#statBySubject').closest('.card'); if(sc2) sc2.classList.toggle('hidden', hr);
+    statCtx={log:log, logAll:logAll, tlog:tlog};
+    renderCharts();
   }
   $$('nav.tabs [data-tab]').forEach(function(b){b.addEventListener('click',function(){goTab(b.getAttribute('data-tab'))})});
 
