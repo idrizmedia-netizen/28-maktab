@@ -37,10 +37,20 @@ module.exports = async (req, res) => {
     const reason = (data.reason || '').trim();
     const infoUrl = (data.infoUrl || '').trim();
 
-    let text = "📩 Ogohlantirish xati haqida xabar\n\n";
-    text += "Farzandingiz" + (name ? " (" + name + (cls ? ", " + cls + "-sinf" : "") + ")" : "") + " uchun ogohlantirish xati berildi.\n";
+    // Xat turi: '' (ogohlantirish) | praise | invite | summon. Noma'lum qiymat ogohlantirish deb olinadi
+    const KINDS = {
+      '':      { head: "📩 Ogohlantirish xati haqida xabar", line: (c) => c + " uchun ogohlantirish xati berildi.", reasonLb: "Sababi: ", file: 'ogohlantirish-xati', cap: 'Xat nusxasi (PDF)' },
+      praise:  { head: "🌟 Minnatdorchilik xati haqida xabar", line: (c) => c + " uchun minnatdorchilik xati berildi.", reasonLb: "Sababi: ", file: 'minnatdorchilik-xati', cap: 'Xat nusxasi (PDF)' },
+      invite:  { head: "📅 Ota-onalar yig'ilishiga taklifnoma", line: (c) => "Hurmatli ota-ona! Sizni maktabda o'tadigan ota-onalar yig'ilishiga taklif qilamiz. " + c + ".", reasonLb: "Mavzu va vaqt: ", file: 'taklifnoma', cap: 'Taklifnoma nusxasi (PDF)' },
+      summon:  { head: "📞 Maktabga chaqiruv xati", line: (c) => "Hurmatli ota-ona! " + c + " bo'yicha sizni maktabga chaqiramiz.", reasonLb: "Sabab va vaqt: ", file: 'chaqiruv-xati', cap: 'Xat nusxasi (PDF)' },
+    };
+    const kind = Object.prototype.hasOwnProperty.call(KINDS, data.kind) ? data.kind : '';
+    const K = KINDS[kind];
+
+    let text = K.head + "\n\n";
+    text += K.line("Farzandingiz" + (name ? " (" + name + (cls ? ", " + cls + "-sinf" : "") + ")" : "")) + "\n";
     if (dateTxt) text += "Sana: " + dateTxt + "\n";
-    if (reason) text += "Sababi: " + reason + "\n";
+    if (reason) text += K.reasonLb + reason + "\n";
     if (infoUrl) text += "\nTafsilot: " + infoUrl;
 
     // "Tanishdim" tugmasi: ota-ona bossa, bot shu haqda faollik jurnaliga yozadi
@@ -50,7 +60,7 @@ module.exports = async (req, res) => {
       text,
       reply_markup: { inline_keyboard: [[{ text: '✅ Tanishdim', callback_data: ackData }]] },
     });
-    await db().collection('notify_log').add({ phone, name, cls, date: dateTxt, sentBy: email, sentAt: Date.now() });
+    await db().collection('notify_log').add({ phone, name, cls, date: dateTxt, kind, sentBy: email, sentAt: Date.now() });
 
     // PDF nusxasi (ixtiyoriy) — admin brauzerda tayyorlab yuborgan bo'lsa,
     // alohida xabar sifatida biriktiriladi. Bu muvaffaqiyatsiz bo'lsa ham,
@@ -59,8 +69,8 @@ module.exports = async (req, res) => {
     let pdfSent = false;
     if (data.pdfBase64) {
       try {
-        const fname = 'ogohlantirish-xati' + (dateTxt ? '-' + dateTxt : '') + '.pdf';
-        await tgSendDocument(chatId, data.pdfBase64, fname, 'Xat nusxasi (PDF)');
+        const fname = K.file + (dateTxt ? '-' + dateTxt : '') + '.pdf';
+        await tgSendDocument(chatId, data.pdfBase64, fname, K.cap);
         pdfSent = true;
       } catch (e) {
         console.warn("PDF yuborib bo'lmadi:", e);
