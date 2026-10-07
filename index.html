@@ -387,6 +387,14 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
 .att-t td.c:hover{box-shadow:inset 0 0 0 2px var(--brand)}
 .att-t .off{background:var(--line)!important;cursor:default!important;opacity:.55}
 .att-t th.dh{cursor:pointer}
+.att-warn{color:var(--danger);font-weight:700}
+.att-row{padding:12px 4px;border-bottom:1px solid var(--line)}
+.att-row .n{font-size:18px;font-weight:700;margin-bottom:8px}
+.att-chips{display:flex;flex-wrap:wrap;gap:8px}
+.att-chips button{min-height:46px;min-width:58px;border:2px solid transparent;border-radius:10px;font-weight:700;font-size:15px;color:var(--text);background:var(--brand-soft);cursor:pointer}
+.att-chips button.on{border-color:var(--text)}
+.att-sign{display:none}
+@media print{#tab-att .att-sign{display:flex;justify-content:space-between;margin-top:26px;color:#000;font-size:14px}}
 .att-in{width:100%;min-width:34px;max-width:46px;text-align:center;border:1px solid var(--brand);border-radius:6px;background:var(--input);color:var(--text);font:inherit;font-weight:700;padding:2px;outline:none}
 .ac-x{background:var(--brand-soft)}
 .ac-Sz{background:rgba(224,49,49,.32)}.ac-Kas{background:rgba(232,137,12,.32)}.ac-Sb{background:rgba(47,107,255,.32)}.ac-Tad{background:rgba(156,54,181,.32)}.ac-Kch{background:rgba(12,133,153,.32)}
@@ -632,6 +640,7 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
         <h2>Davomat</h2>
         <p class="hint att-np">Kelgan o'quvchining katagi bo'sh qoladi, kelmaganlarga qisqartma qo'yiladi. Ma'lumot bulutga saqlanadi va barcha qurilmalarda bir xil ko'rinadi.</p>
         <div class="att-sub" id="attSub">
+          <button type="button" data-as="today">Bugun</button>
           <button type="button" data-as="grid" class="on">Jadval</button>
           <button type="button" data-as="stu">O'quvchilar</button>
           <button type="button" data-as="st">Davomat statistikasi</button>
@@ -639,15 +648,20 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
         <div class="att-ctl att-np" id="attCtl">
           <select class="inp" id="attCls"></select>
           <input class="inp" type="month" id="attMon">
+          <input class="inp hidden" type="date" id="attDay">
           <span id="attScopeBox" class="hidden"><select class="inp" id="attScope"><option value="m">Tanlangan oy</option><option value="a">Barcha oylar</option></select></span>
         </div>
+
+        <div id="att-today" class="hidden"><div id="attTodayBox"></div></div>
 
         <div id="att-grid">
           <div class="att-pal att-np" id="attPal"></div>
           <div class="hint att-np">«✎ Qo'lda yozish» rejimida katakni bosib, istalgan qisqartmani yozing (Sz, Kas, Sb, Tad, Kch yoki o'zingiznikini) va Enter bosing; strelkalar va Tab bilan katakdan katakka o'tiladi, bo'sh qoldirsangiz o'chadi. Yoki belgini tanlab katakni bosing (qayta bossangiz o'chadi). Kun sarlavhasini bossangiz, shu kun dars yo'q deb belgilanadi (yakshanba o'zi shunday).</div>
           <div class="att-wrap"><table class="att-t" id="attTbl"></table></div>
+          <div class="att-sign"><span>Sinf rahbari: ______________ (imzo)</span><span>Direktor: ______________ (imzo)</span><span>Sana: ____________</span></div>
           <div class="actions att-np">
-            <button class="btn" id="attPrintBtn" type="button">🖨 Chop etish</button>
+            <button class="btn" id="attPrintBtn" type="button">🖨 Chop etish / PDF</button>
+            <button class="btn ghost" id="attXlsBtn" type="button">📊 Oylik hisobot (Excel)</button>
             <button class="btn line" id="attCsvBtn" type="button">CSV yuklab olish</button>
           </div>
         </div>
@@ -3953,6 +3967,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       case 'teacher_letter_logged': return (d.name||'')+(d.subject?' ('+d.subject+')':'')+(d.date?' — '+fmtDate(d.date):'');
       case 'parent_ack':
       case 'telegram_sent': return (d.name||'')+(d.cls?' ('+d.cls+')':'')+(d.date?' — '+fmtDate(d.date):'');
+      case 'att_changed': return (d.name||'')+(d.cls?' ('+d.cls+')':'')+' — '+(d.date?fmtDate(d.date):'')+': '+(d.from||'—')+' → '+(d.to||'—');
       case 'admin_added': case 'admin_removed': return d.email||'';
       case 'parent_acknowledged': return (d.phone||'')+(d.date?' — '+fmtDate(d.date):'');
       default: return '';
@@ -5651,14 +5666,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   var ATT_MONTHS=['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentyabr','Oktyabr','Noyabr','Dekabr'];
   var ATT_WD=['Ya','Du','Se','Ch','Pa','Ju','Sh'];
   var ATT={}, attCur='*', attSubTab='grid', attPending=[];
-  try{ AUDIT_LABELS.att_students_added="Davomat: o'quvchilar qo'shildi"; AUDIT_LABELS.att_students_removed="Davomat: o'quvchi/sinf o'chirildi"; }catch(e){}
+  try{ AUDIT_LABELS.att_changed="Davomat o'zgartirildi"; AUDIT_LABELS.att_students_added="Davomat: o'quvchilar qo'shildi"; AUDIT_LABELS.att_students_removed="Davomat: o'quvchi/sinf o'chirildi"; }catch(e){}
 
   function attStu(){var a=jparse(lget('m28_attst'),[]);return Array.isArray(a)?a:[]}
   function attSaveStu(a){lset('m28_attst',JSON.stringify(a)); cloudSave('attst',a)}
   function attMine(cls){ if(!isAttStaff()) return inMyClasses(cls); return myClasses.length===0 || myClasses.indexOf(normClass(cls))>=0 }
   function attCanEdit(cls){return !isViewer() && attMine(cls)}
   function attCanManage(){return !isViewer() && !isHomeroom() && !isAttStaff()}
-  function attVisible(){return attStu().filter(function(s){return attMine(s.cls)})}
+  var ATT_TCLS="O'qituvchilar", ATT_WDF=['Yakshanba','Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba'];
+  function attHash(t){var h=5381,i;for(i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return (h>>>0).toString(36)}
+  function attTeachers(){return (roster.teachers||[]).map(function(t){return {id:'t'+attHash(t.name),name:t.name,cls:ATT_TCLS}})}
+  function attVisible(){return attStu().concat(attTeachers()).filter(function(s){return attMine(s.cls)})}
   function attClasses(){
     var m={}; attVisible().forEach(function(s){m[s.cls||'—']=1});
     return Object.keys(m).sort(function(a,b){return (parseInt(a)||99)-(parseInt(b)||99)||a.localeCompare(b)});
@@ -5694,6 +5712,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function attSet(m,cls,sid,d,code){
     var r=attRec(m,cls); r.a[sid]=r.a[sid]||{};
     var inner={}, a={};
+    var was=(r.a[sid]&&r.a[sid][d])||'', who=attVisible().filter(function(x){return x.id===sid})[0];
+    logAudit('att_changed',{name:who?who.name:sid,cls:cls,date:m+'-'+pad(d),from:was,to:code||''});
     if(code){ r.a[sid][d]=code; inner[d]=code; } else { delete r.a[sid][d]; inner[d]=firebase.firestore.FieldValue.delete(); }
     a[sid]=inner; lset('m28_attdata',JSON.stringify(ATT));
     attCloud(m,cls,{a:a});
@@ -5826,6 +5846,23 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     });
     inp.addEventListener('blur',function(){ fin(null) });
   }
+  function attStreak(m,cl,sid){
+    var dim=new Date(+m.split('-')[0],+m.split('-')[1],0).getDate(), run=0, a=0, best={n:0,a:0,b:0}, d;
+    for(d=1;d<=dim;d++){ if(attOff(m,cl,d)) continue;
+      if(attCode(m,cl,sid,d)==='Sz'){ if(!run) a=d; run++; if(run>=best.n) best={n:run,a:a,b:d} } else run=0 }
+    return best;
+  }
+  function attWarnOk(s){ return s.cls!==ATT_TCLS && !isViewer() && !isAttStaff() }
+  function attWarnLetter(sid){
+    var m=attMonth(), s=attVisible().filter(function(x){return x.id===sid})[0]; if(!s) return;
+    var st=attStreak(m,s.cls||'—',sid), mo=+m.split('-')[1], rs=null;
+    try{ rs=findRosterStudent(s.name) }catch(e){}
+    var t={name:s.name,cls:s.cls==='—'?'':s.cls,parent:(rs&&rs.parent)||'',phone:(rs&&rs.phone)||phoneForName(s.name)||'',kind:'',date:todayISO(),
+      reason:'Ketma-ket '+st.n+' kun uzrsiz darsga kelmadi ('+st.a+(st.b!==st.a?'–'+st.b:'')+'-'+ATT_MONTHS[mo-1].toLowerCase()+')'}, i=-1, k;
+    for(k=0;k<4;k++){ if(!slots[k].name){ i=k; break } } if(i<0) i=cur;
+    slots[i]=t; cur=i; saveSlots(); goTab('letter'); loadSlotToForm(); renderSlots(); renderSheet();
+    setMsg('#letMsg',"Ogohlantirish xati tayyorlandi — tekshirib, chop eting",'ok');
+  }
   function attGrid(){
     var m=attMonth(), cl=$('#attCls').value, tb=$('#attTbl');
     if(!m||!cl){ tb.innerHTML='<tr><td style="padding:18px;text-align:left">'+(attVisible().length?'Oy va sinfni tanlang.':"Hali o'quvchi yo'q. «O'quvchilar» bo'limidan fayl yuklang.")+'</td></tr>'; return }
@@ -5841,9 +5878,25 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         var c=attCode(m,cl,s.id,d); if(attIsAbs(c)) tot++; if(c==='Sz') sz++;
         r+='<td class="c'+(c?' '+attCls(c):'')+'" data-s="'+s.id+'" data-d="'+d+'">'+c+'</td>';
       }
-      h+='<tr data-sid="'+s.id+'"><td>'+(idx+1)+'</td><td class="nm">'+esc(s.name)+'</td>'+r+'<td><b>'+(tot||'')+'</b></td><td>'+(sz||'')+'</td></tr>';
+      var wn=attWarnOk(s)&&attStreak(m,cl,s.id).n>=3;
+      h+='<tr data-sid="'+s.id+'"><td>'+(idx+1)+'</td><td class="nm'+(wn?' att-warn':'')+'">'+esc(s.name)+(wn?' <a href="#" class="att-x" data-warn="'+s.id+'">⚠ xat</a>':'')+'</td>'+r+'<td><b>'+(tot||'')+'</b></td><td>'+(sz||'')+'</td></tr>';
     });
     tb.innerHTML=h+'</tbody>';
+  }
+  function attToday(){
+    var cl=$('#attCls').value, date=$('#attDay').value||todayISO(), m=date.slice(0,7), d=+date.slice(8,10), box=$('#attTodayBox');
+    if(!cl){ box.innerHTML='<div class="stat-empty">'+(attVisible().length?'Sinfni tanlang.':"Hali o'quvchi yo'q.")+'</div>'; return }
+    if(attOff(m,cl,d)){ box.innerHTML='<div class="stat-empty">Bu kun dars kuni emas (dam olish/bayram).</div>'+(attCanEdit(cl)?'<div class="actions"><button class="btn line" data-offtoggle="1" type="button">Dars kuni deb belgilash</button></div>':''); return }
+    var st=attVisible().filter(function(s){return (s.cls||'—')===cl}).sort(function(a,b){return a.name.localeCompare(b.name)}), can=attCanEdit(cl), nAbs=0;
+    var rows=st.map(function(s){
+      var c=attCode(m,cl,s.id,d); if(attIsAbs(c)) nAbs++;
+      var wn=attWarnOk(s)&&attStreak(m,cl,s.id).n>=3;
+      return '<div class="att-row" data-sid="'+s.id+'"><div class="n'+(wn?' att-warn':'')+'">'+esc(s.name)+(wn?' <a href="#" class="att-x" data-warn="'+s.id+'">⚠ xat</a>':'')+'</div><div class="att-chips">'+
+        '<button type="button" data-code=""'+(!c?' class="on"':'')+(can?'':' disabled')+'>✓ Keldi</button>'+
+        Object.keys(ATT_CODES).map(function(k){return '<button type="button" class="'+attCls(k)+(c===k?' on':'')+'" data-code="'+k+'"'+(can?'':' disabled')+'>'+k+'</button>'}).join('')+
+        (c&&!ATT_CODES[c]?'<button type="button" class="ac-x on" data-code="'+esc(c)+'">'+esc(c)+'</button>':'')+'</div></div>';
+    }).join('');
+    box.innerHTML='<div class="stat" style="margin:0 0 6px"><b>'+fmtDate(date)+'</b> · '+esc(cl)+" · kelmaganlar: "+nAbs+' / '+st.length+'</div>'+(rows||'<div class="stat-empty">Bu sinfda o\'quvchi yo\'q</div>');
   }
   function attPalette(){
     $('#attPal').innerHTML='<button type="button" style="background:var(--brand-soft)"'+(attCur==='*'?' class="on"':'')+' data-c="*">✎ Qo\'lda yozish</button>'+Object.keys(ATT_CODES).map(function(c){return '<button type="button" class="ac-'+c+(c===attCur?' on':'')+'" data-c="'+c+'">'+c+' · '+ATT_CODES[c][0]+'</button>'}).join('')+
@@ -5854,7 +5907,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   /* ----- o'quvchilar ro'yxati ----- */
   function attList(){
     $('#attUpBox').classList.toggle('hidden',!attCanManage());
-    var cl=attClasses(), all=attVisible();
+    var all=attVisible().filter(function(s){return s.cls!==ATT_TCLS}), cl=attClasses().filter(function(c){return c!==ATT_TCLS});
     $('#attList').innerHTML=cl.length?cl.map(function(c){
       var st=all.filter(function(s){return (s.cls||'—')===c}).sort(function(a,b){return a.name.localeCompare(b.name)});
       return '<details><summary>'+esc(c)+' · '+st.length+" ta"+(attCanManage()?' <a href="#" class="att-x" data-delc="'+esc(c)+'" style="margin-left:10px;font-weight:400">sinfni o\'chirish</a>':'')+'</summary>'+
@@ -5863,16 +5916,29 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
 
   /* ----- statistika ----- */
+  function attPctMap(k,st){
+    var p=k.split('-'), y=+p[0], mo=+p[1], dim=new Date(y,mo,0).getDate(), now=new Date(), r={}, ds={}, d;
+    st.forEach(function(s){ var c=s.cls||'—'; r[c]=r[c]||{n:0,a:0};
+      if(!ds[c]){ ds[c]=[]; for(d=1;d<=dim;d++) if(!attOff(k,c,d)&&new Date(y,mo-1,d)<=now) ds[c].push(d) }
+      r[c].n++; ds[c].forEach(function(dd){ if(attIsAbs(attCode(k,c,s.id,dd))) r[c].a++ }); });
+    var o={}; Object.keys(r).forEach(function(c){ var e=r[c].n*ds[c].length; o[c]=e?100*(1-r[c].a/e):null }); return o;
+  }
+  function attRankRows(pc,prev){
+    return Object.keys(pc).map(function(c){var q=pc[c], e=q.n*q.days; return {c:c,q:q,p:e?100*(1-q.abs/e):-1}}).sort(function(a,b){return b.p-a.p}).map(function(o,i){
+      var t='', pv=prev?prev[o.c]:null; if(pv!=null&&o.p>=0){ var x=o.p-pv; t=(x>0?'▲ +':x<0?'▼ ':'= ')+x.toFixed(1)+'%' }
+      return '<tr><td>'+(i+1)+'</td><td>'+esc(o.c)+'</td><td>'+o.q.n+'</td><td>'+o.q.abs+'</td><td>'+o.q.sz+'</td><td>'+(o.p>=0?o.p.toFixed(1)+'%':'—')+'</td><td>'+t+'</td></tr>';
+    }).join('');
+  }
   function attStats(){
     var cl=$('#attCls').value||'*', all=$('#attScope').value==='a', sel=attMonth(), now=new Date();
     var months={}; if(all){ Object.keys(ATT).forEach(function(k){months[k.split('|')[0]]=1}) } if(sel) months[sel]=1;
     var keys=Object.keys(months).sort();
-    var st=attVisible().filter(function(s){return cl==='*'||(s.cls||'—')===cl}), box=$('#att-st');
+    var st=attVisible().filter(function(s){return cl==='*'?s.cls!==ATT_TCLS:(s.cls||'—')===cl}), box=$('#att-st');
     if(!st.length){ box.innerHTML='<div class="stat-empty">Ma\'lumot yo\'q</div>'; return }
     var by={}, pc={}, ps=st.map(function(s){return {s:s,abs:0,sz:0,kch:0}}), pd=[], days=0, abs=0, i;
     Object.keys(ATT_CODES).forEach(function(c){by[c]=0});
     st.forEach(function(s){var c=s.cls||'—'; pc[c]=pc[c]||{n:0,abs:0,sz:0,days:0}; pc[c].n++});
-    var perMonthMax=[];
+    var perMonthMax=[], wd=[0,0,0,0,0,0,0];
     var single=!all; var dayArr=[];
     keys.forEach(function(k){
       var p=k.split('-'), y=+p[0], mo=+p[1], dim=new Date(y,mo,0).getDate(), per=[], ma=0, d;
@@ -5885,7 +5951,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       ps.forEach(function(q){
         var c=q.s.cls||'—'; clsDays[c].forEach(function(d){
           var x=attCode(k,c,q.s.id,d); if(!x) return; by[x]=(by[x]||0)+1;
-          if(attIsAbs(x)){ abs++; q.abs++; pc[c].abs++; per[d]++; ma++; if(x==='Sz'){q.sz++; pc[c].sz++} }
+          if(attIsAbs(x)){ abs++; q.abs++; pc[c].abs++; per[d]++; ma++; wd[new Date(y,mo-1,d).getDay()]++; if(x==='Sz'){q.sz++; pc[c].sz++} }
           if(x==='Kch') q.kch++;
         });
       });
@@ -5899,12 +5965,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var mx=Math.max.apply(null,pd.map(function(x){return x.v}).concat([1]));
     var codeEntries=Object.keys(by).sort(function(a,b){var ia=ATT_CODES[a]?Object.keys(ATT_CODES).indexOf(a):99, ib=ATT_CODES[b]?Object.keys(ATT_CODES).indexOf(b):99; return ia-ib||a.localeCompare(b)}).map(function(c){return {k:ATT_CODES[c]?c+' · '+ATT_CODES[c][0]:c,n:by[c]}});
     var top=ps.filter(function(p){return p.abs||p.kch}).sort(function(a,b){return b.abs-a.abs||b.sz-a.sz}).slice(0,10);
+    var prev=null; if(!all&&sel){ var pp=sel.split('-'), pm=+pp[1]-1, py=+pp[0]; if(pm<1){pm=12;py--} prev=attPctMap(py+'-'+pad(pm),st) }
     box.innerHTML=
       '<div class="stat-cards"><div class="stat-card"><b>'+st.length+"</b><span>O'quvchilar</span></div><div class=\"stat-card\"><b>"+days+'</b><span>Dars kunlari</span></div><div class="stat-card"><b>'+pct+'</b><span>Davomat foizi</span></div><div class="stat-card"><b>'+abs+'</b><span>Qoldirilgan kunlar</span></div></div>'+
       '<div class="att-sec"><h3>Qisqartmalar bo\'yicha</h3>'+barList(codeEntries,Math.max.apply(null,codeEntries.map(function(e){return e.n}).concat([1])),"Ma'lumot yo'q")+'</div>'+
       '<div class="att-sec"><h3>'+(all?'Oylar':'Kunlar')+' bo\'yicha qoldirilganlar</h3><div class="att-ch">'+pd.map(function(x){return '<div style="height:'+(x.v/mx*100)+'%;'+(x.off?'opacity:.25':'')+'"><i>'+(x.v||'')+'</i></div>'}).join('')+'</div><div class="att-lb">'+pd.map(function(x){return '<span>'+x.l+'</span>'}).join('')+'</div></div>'+
-      '<div class="att-sec"><h3>Sinflar kesimida</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>Sinf</th><th>O\'quvchi</th><th>Qoldirilgan</th><th>Sababsiz</th><th>Davomat</th></tr></thead><tbody>'+
-      Object.keys(pc).sort(function(a,b){return (parseInt(a)||99)-(parseInt(b)||99)||a.localeCompare(b)}).map(function(c){var q=pc[c], e=q.n*q.days; return '<tr><td>'+esc(c)+'</td><td>'+q.n+'</td><td>'+q.abs+'</td><td>'+q.sz+'</td><td>'+(e?(100*(1-q.abs/e)).toFixed(1)+'%':'—')+'</td></tr>'}).join('')+'</tbody></table></div></div>'+
+      '<div class="att-sec"><h3>Hafta kunlari bo\'yicha qoldirilganlar</h3>'+barList([1,2,3,4,5,6,0].map(function(i){return {k:ATT_WDF[i],n:wd[i]}}),Math.max.apply(null,wd.concat([1])),"Ma'lumot yo'q")+'</div>'+
+      '<div class="att-sec"><h3>Sinflar reytingi</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>Sinf</th><th>O\'quvchi</th><th>Qoldirilgan</th><th>Sababsiz</th><th>Davomat</th><th>'+(prev?"O'tgan oyga nisbatan":'')+'</th></tr></thead><tbody>'+attRankRows(pc,prev)+'</tbody></table></div></div>'+
       '<div class="att-sec"><h3>Eng ko\'p qoldirgan o\'quvchilar (top 10)</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>F.I.Sh</th><th>Sinf</th><th>Jami</th><th>Sababsiz</th><th>Kechikdi</th></tr></thead><tbody>'+
       (top.length?top.map(function(p,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(p.s.name)+'</td><td>'+esc(p.s.cls||'—')+'</td><td>'+p.abs+'</td><td>'+p.sz+'</td><td>'+p.kch+'</td></tr>'}).join(''):'<tr><td colspan="6" class="stat-empty">Hali qoldirgan yo\'q</td></tr>')+'</tbody></table></div></div>'+
       '<p class="hint att-sec">Eslatma: belgi qo\'yilmagan katak «keldi» hisoblanadi. Faqat o\'tgan va bugungi dars kunlari olinadi, kechikish qoldirilgan kunga kirmaydi.</p>';
@@ -5912,15 +5979,46 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
   function attRender(){
     $$('#attSub [data-as]').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-as')===attSubTab)});
-    ['grid','stu','st'].forEach(function(n){$('#att-'+n).classList.toggle('hidden',n!==attSubTab)});
+    ['today','grid','stu','st'].forEach(function(n){$('#att-'+n).classList.toggle('hidden',n!==attSubTab)});
     $('#attCtl').classList.toggle('hidden',attSubTab==='stu');
+    $('#attMon').classList.toggle('hidden',attSubTab==='today'); $('#attDay').classList.toggle('hidden',attSubTab!=='today');
     $('#attScopeBox').classList.toggle('hidden',attSubTab!=='st');
     attFillCls(); attPalette();
-    if(attSubTab==='grid') attGrid(); else if(attSubTab==='stu') attList(); else attStats();
+    if(attSubTab==='today') attToday(); else if(attSubTab==='grid') attGrid(); else if(attSubTab==='stu') attList(); else attStats();
+  }
+  function attXlsx(){
+    var m=attMonth(), cl=$('#attCls').value; if(!m||!cl) return;
+    if(!window.XLSX) return setMsg('#attMsg',"Excel kutubxonasi yuklanmadi (internetni tekshiring)",'err');
+    var p=m.split('-'), dim=new Date(+p[0],+p[1],0).getDate(), d, codes=Object.keys(ATT_CODES), sc='';
+    try{ sc=settings.school||'' }catch(e){}
+    var rows=[[(sc||'28-maktab')+' — davomat hisoboti'],[cl+' · '+ATT_MONTHS[+p[1]-1]+' '+p[0]],[]], head=['№','F.I.Sh'];
+    for(d=1;d<=dim;d++) head.push(d); head=head.concat(['Jami qoldirilgan'],codes,['Boshqa']); rows.push(head);
+    attVisible().filter(function(s){return (s.cls||'—')===cl}).sort(function(a,b){return a.name.localeCompare(b.name)}).forEach(function(s,i){
+      var r=[i+1,s.name], cnt={}, tot=0, oth=0;
+      for(d=1;d<=dim;d++){ var c=attOff(m,cl,d)?'':attCode(m,cl,s.id,d); r.push(c); if(c){ cnt[c]=(cnt[c]||0)+1; if(attIsAbs(c)) tot++; if(!ATT_CODES[c]) oth++ } }
+      r.push(tot); codes.forEach(function(k){r.push(cnt[k]||0)}); r.push(oth); rows.push(r);
+    });
+    rows.push([],['Sinf rahbari: ______________________ (imzo)'],['Direktor: ______________________ (imzo)'],['Sana: '+todayISO()]);
+    var ws=XLSX.utils.aoa_to_sheet(rows), wb=XLSX.utils.book_new();
+    ws['!cols']=[{wch:4},{wch:30}].concat(Array.apply(null,Array(dim)).map(function(){return {wch:4}}),[{wch:16}],codes.map(function(){return {wch:6}}),[{wch:8}]);
+    XLSX.utils.book_append_sheet(wb,ws,String(cl).replace(/[\\\/?*\[\]:]/g,'_').slice(0,30)); XLSX.writeFile(wb,'davomat_'+cl+'_'+m+'.xlsx');
   }
   function attDl(name,text,type){var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:type})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(a.href); a.remove()},500)}
 
   $('#attMon').value=(function(){var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)})();
+  $('#attDay').value=todayISO(); if(window.innerWidth<700) attSubTab='today';
+  $('#attDay').addEventListener('change',attRender);
+  $('#attTodayBox').addEventListener('click',function(e){
+    var cl=$('#attCls').value, date=$('#attDay').value||todayISO(), m=date.slice(0,7), d=+date.slice(8,10), w=e.target.closest('a[data-warn]');
+    if(w){ e.preventDefault(); return attWarnLetter(w.getAttribute('data-warn')) }
+    if(e.target.closest('[data-offtoggle]')){ if(attCanEdit(cl)){ attToggleOff(m,cl,d); attToday() } return }
+    var b=e.target.closest('button[data-code]'), row=e.target.closest('.att-row'); if(!b||!row||b.disabled) return;
+    if(!attCanEdit(cl)) return toast("Sizda bu sinfni o'zgartirish huquqi yo'q");
+    var sid=row.getAttribute('data-sid'), c=b.getAttribute('data-code');
+    if(attCode(m,cl,sid,d)!==c) attSet(m,cl,sid,d,c); attToday();
+  });
+  $('#attTbl').addEventListener('click',function(e){ var w=e.target.closest('a[data-warn]'); if(w){ e.preventDefault(); attWarnLetter(w.getAttribute('data-warn')) } });
+  $('#attXlsBtn').addEventListener('click',attXlsx);
   $('#attSub').addEventListener('click',function(e){var b=e.target.closest('[data-as]'); if(!b) return; attSubTab=b.getAttribute('data-as'); attRender()});
   ['#attCls','#attMon','#attScope'].forEach(function(s){$(s).addEventListener('change',attRender)});
   $('#attPal').addEventListener('click',function(e){var b=e.target.closest('button[data-c]'); if(!b||b.disabled) return; attCur=b.getAttribute('data-c'); attPalette()});
