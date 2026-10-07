@@ -782,10 +782,11 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
               <select class="inp" id="newAdminRole">
                 <option value="full">To'liq — hamma narsani qila oladi</option>
                 <option value="homeroom">Sinf rahbari — faqat o'z sinfi, faqat o'quvchi xatlari</option>
+                <option value="attendance">Davomat xodimi — faqat davomat belgilaydi (sinf biriktirish shart emas)</option>
                 <option value="viewer">Faqat ko'ruvchi — hech narsa yoza/yubora olmaydi</option>
               </select>
               <div id="newAdminClassBox" class="hidden">
-                <label class="fl" for="newAdminClass" style="margin-top:8px">Sinfi (bir nechta bo'lsa, vergul bilan: 9-A, 9-B)</label>
+                <label class="fl" for="newAdminClass" id="newAdminClassLbl" style="margin-top:8px">Sinfi (bir nechta bo'lsa, vergul bilan: 9-A, 9-B)</label>
                 <input class="inp" id="newAdminClass" placeholder="9-A">
               </div>
               <div class="actions" style="margin-top:8px"><button class="btn" id="addAdminBtn" type="button">Qo'shish</button></div>
@@ -3665,6 +3666,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   var myRole = 'full', myClasses = [];
   function isViewer(){ return myRole==='viewer' }
   function isHomeroom(){ return myRole==='homeroom' }
+  function isAttStaff(){ return myRole==='attendance' }
   function inMyClasses(cls){ return !isHomeroom() || (myClasses.length>0 && myClasses.indexOf(normClass(cls))>=0); }
   function cloudDocId(key){ return 'm28_'+key; }
   function cloudSave(key, arr){
@@ -3692,12 +3694,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   function startCloud(){
     stopCloud(true);
+    if(!isAttStaff()){
     cloudSync('log', function(){ renderLog() });
     cloudSync('tlog', function(){ renderTLog() });
     cloudSync('sigs', function(){ renderSigPanel(); renderSheet(); renderLog(); });
+    }
     ensureSettingsDoc();
-    watchRoster();
-    watchNotices();
+    if(!isAttStaff()){ watchRoster(); watchNotices(); }
     attStart();
   }
   /* ---------- O'quvchilar/o'qituvchilar bazasi (ism tanlab kiritish uchun) ---------- */
@@ -4121,11 +4124,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       ? "Siz \"faqat ko'ruvchi\" sifatida kirgansiz — xat yoza, chop eta yoki yubora olmaysiz, faqat ko'rishingiz mumkin."
       : (homeroom ? "Siz \"sinf rahbari\" sifatida kirgansiz — faqat "+homeroomClassTxt+" uchun o'quvchi xatlari ko'rsatiladi." : '');
     $('#roleNote').classList.toggle('hidden', !(viewer||homeroom));
+    if(isAttStaff()){ $('#roleNote').textContent = "Siz \"davomat xodimi\" sifatida kirgansiz — faqat davomat bo'limi ochiq"+(myClasses.length?' ('+myClasses.join(', ')+')':' (barcha sinflar)')+'.'; $('#roleNote').classList.remove('hidden'); }
     renderSigPanel();
 
     // Sinf rahbari: faqat o'quvchi bo'limlari, o'qituvchi bo'limlari yashiriladi
     $$('nav.tabs [data-tab="tletter"], nav.tabs [data-tab="tlog"], nav.tabs [data-tab="settings"], nav.tabs [data-tab="audit"]').forEach(function(b){ b.classList.toggle('hidden', homeroom); });
     if(homeroom && ['settings','tletter','tlog','audit'].some(function(n){ var el=$('#tab-'+n); return el && !el.classList.contains('hidden'); })) goTab('letter');
+
+    // Davomat xodimi: faqat "Davomat" bo'limi ko'rinadi
+    $$('nav.tabs [data-tab]').forEach(function(b){ var n=b.getAttribute('data-tab'); if(isAttStaff()) b.classList.toggle('hidden', n!=='att'); else if(n==='att') b.classList.remove('hidden'); });
+    if(isAttStaff()) goTab('att');
 
     // Sinf rahbari uchun "Sinf" maydoni: bitta sinf bo'lsa qulflanadi, bir nechta bo'lsa tanlovga aylanadi
     var fClass = $('#f_class');
@@ -4235,7 +4243,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
   /* ---------- adminlar boshqaruvi ---------- */
   var adminsList = [];
-  var ROLE_LABELS = { full:"To'liq", viewer:"Faqat ko'ruvchi", homeroom:"Sinf rahbari" };
+  var ROLE_LABELS = { full:"To'liq", viewer:"Faqat ko'ruvchi", homeroom:"Sinf rahbari", attendance:"Davomat xodimi" };
   function renderAdminCard(){
     $('#meEmail').textContent = curUser ? curUser.email : '—';
     $('#adminAddBox').classList.toggle('hidden', !isOwner);
@@ -4243,7 +4251,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var html = '<div class="adm-line"><div class="who"><b>'+esc(OWNER_EMAIL)+"</b><small>Asosiy admin · To'liq</small></div></div>";
     adminsList.forEach(function(a){
       var roleTxt = ROLE_LABELS[a.role] || "To'liq";
-      if(a.role==='homeroom' && a.classes && a.classes.length) roleTxt += ' ('+a.classes.join(', ')+')';
+      if((a.role==='homeroom'||a.role==='attendance') && a.classes && a.classes.length) roleTxt += ' ('+a.classes.join(', ')+')';
+      else if(a.role==='attendance') roleTxt += ' (barcha sinflar)';
       html += '<div class="adm-line"><div class="who"><b>'+esc(a.email)+'</b><small>'+esc(roleTxt)+(a.addedBy?' · qo\'shgan: '+esc(a.addedBy):'')+'</small></div>'+
               (isOwner?'<button class="rm" type="button" data-rm="'+esc(a.email)+'">O\'chirish</button>':'')+'</div>';
     });
@@ -4269,7 +4278,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     },function(e){ console.warn('Adminlar ro\'yxatini olib bo\'lmadi:',e); });
   }
   $('#newAdminRole').addEventListener('change',function(){
-    $('#newAdminClassBox').classList.toggle('hidden', this.value!=='homeroom');
+    var r=this.value; $('#newAdminClassBox').classList.toggle('hidden', r!=='homeroom' && r!=='attendance');
+    $('#newAdminClassLbl').textContent = r==='attendance' ? "Sinflar (ixtiyoriy — bo'sh qoldirsangiz, barcha sinflar. Bir nechta bo'lsa vergul bilan)" : "Sinfi (bir nechta bo'lsa, vergul bilan: 9-A, 9-B)";
   });
   $('#addAdminBtn').addEventListener('click',function(){
     if(!isOwner || !db) return;
@@ -4279,12 +4289,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(em === OWNER_EMAIL) return setMsg('#adminMsg',"Bu asosiy admin, allaqachon qo'shilgan",'err');
     if(adminsList.some(function(a){return a.email===em})) return setMsg('#adminMsg',"Bu admin allaqachon ro'yxatda",'err');
     var classes = [];
-    if(role==='homeroom'){
+    if(role==='homeroom' || role==='attendance'){
       classes = $('#newAdminClass').value.split(',').map(function(c){return normClass(c.trim())}).filter(Boolean);
-      if(!classes.length) return setMsg('#adminMsg',"Sinf rahbari uchun kamida bitta sinf kiriting",'err');
+      if(role==='homeroom' && !classes.length) return setMsg('#adminMsg',"Sinf rahbari uchun kamida bitta sinf kiriting",'err');
     }
     var doc = {email:em, addedBy:curUser.email, addedAt:Date.now(), role:role};
-    if(role==='homeroom') doc.classes = classes;
+    if(classes.length) doc.classes = classes;
     db.collection('admins').doc(em).set(doc).then(function(){
       $('#newAdmin').value=''; $('#newAdminClass').value=''; $('#newAdminRole').value='full'; $('#newAdminClassBox').classList.add('hidden');
       setMsg('#adminMsg',em+" admin qilib qo'shildi",'ok'); logAudit('admin_added',{email:em, role:role}); loadAdmins();
@@ -4293,6 +4303,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
   /* ---------- tabs ---------- */
   function goTab(t){
+    if(isAttStaff() && t!=='att') t='att';
     if(isHomeroom() && (t==='settings'||t==='tletter'||t==='tlog'||t==='audit')) t='letter';
     $$('nav.tabs [data-tab]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-tab')===t)});
     ['letter','log','tletter','tlog','att','stats','audit','settings'].forEach(function(n){$('#tab-'+n).classList.toggle('hidden',n!==t)});
@@ -5642,9 +5653,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
   function attStu(){var a=jparse(lget('m28_attst'),[]);return Array.isArray(a)?a:[]}
   function attSaveStu(a){lset('m28_attst',JSON.stringify(a)); cloudSave('attst',a)}
-  function attCanEdit(cls){return !isViewer() && inMyClasses(cls)}
-  function attCanManage(){return !isViewer() && !isHomeroom()}
-  function attVisible(){return attStu().filter(function(s){return inMyClasses(s.cls)})}
+  function attMine(cls){ if(!isAttStaff()) return inMyClasses(cls); return myClasses.length===0 || myClasses.indexOf(normClass(cls))>=0 }
+  function attCanEdit(cls){return !isViewer() && attMine(cls)}
+  function attCanManage(){return !isViewer() && !isHomeroom() && !isAttStaff()}
+  function attVisible(){return attStu().filter(function(s){return attMine(s.cls)})}
   function attClasses(){
     var m={}; attVisible().forEach(function(s){m[s.cls||'—']=1});
     return Object.keys(m).sort(function(a,b){return (parseInt(a)||99)-(parseInt(b)||99)||a.localeCompare(b)});
