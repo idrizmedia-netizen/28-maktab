@@ -395,6 +395,8 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
 .att-chips button.on{border-color:var(--text)}
 .att-sign{display:none}
 @media print{#tab-att .att-sign{display:flex;justify-content:space-between;margin-top:26px;color:#000;font-size:14px}}
+#attChCard.ch-full{position:fixed;inset:0;z-index:70;margin:0;border-radius:0;overflow:auto;padding:16px max(16px,env(safe-area-inset-right,0px)) 24px}
+@media print{#attChCard .ch-act{display:none!important}}
 .att-in{width:100%;min-width:34px;max-width:46px;text-align:center;border:1px solid var(--brand);border-radius:6px;background:var(--input);color:var(--text);font:inherit;font-weight:700;padding:2px;outline:none}
 .ac-x{background:var(--brand-soft)}
 .ac-Sz{background:rgba(224,49,49,.32)}.ac-Kas{background:rgba(232,137,12,.32)}.ac-Sb{background:rgba(47,107,255,.32)}.ac-Tad{background:rgba(156,54,181,.32)}.ac-Kch{background:rgba(12,133,153,.32)}
@@ -688,7 +690,50 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
           <div class="att-sec"><h3>Ro'yxat</h3><div class="att-list" id="attList"></div></div>
         </div>
 
-        <div id="att-st" class="hidden"></div>
+        <div id="att-st" class="hidden">
+          <div id="attStCards" class="stat-cards"></div>
+          <div class="card" id="attChCard" style="margin-top:12px">
+            <div class="ch-head">
+              <h2 id="atTitle">Diagramma</h2>
+              <div class="ch-act" style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn line sm" id="atPng" type="button">⬇ PNG</button>
+                <button class="btn line sm" id="atXls" type="button">⬇ Excel</button>
+                <button class="btn line sm" id="atCsv" type="button">⬇ CSV</button>
+                <button class="btn line sm" id="atPrint" type="button">🖨 Chop etish</button>
+                <button class="btn line sm" id="atFull" type="button">⛶ Katta ko'rish</button>
+              </div>
+            </div>
+            <div class="ch-row"><span class="ch-lb">Nimani ko'rsatamiz</span>
+              <div class="seg" id="atData">
+                <button type="button" data-atd="code">Qisqartmalar</button>
+                <button type="button" data-atd="class">Sinflar</button>
+                <button type="button" data-atd="month">Oylar</button>
+                <button type="button" data-atd="weekday">Hafta kunlari</button>
+                <button type="button" data-atd="student">O'quvchilar (top 10)</button>
+              </div>
+            </div>
+            <div class="ch-row"><span class="ch-lb">Diagramma turi</span>
+              <div class="seg" id="atType">
+                <button type="button" data-att="column">📊 Ustunli</button>
+                <button type="button" data-att="bar">📶 Gorizontal</button>
+                <button type="button" data-att="line">📈 Chiziqli</button>
+                <button type="button" data-att="donut">🍩 Doira</button>
+              </div>
+            </div>
+            <div class="ch-row"><span class="ch-lb">Davr</span>
+              <select class="inp ch-sel" id="atPeriod">
+                <option value="all">Hammasi</option><option value="7">Oxirgi 7 kun</option><option value="30">Oxirgi 30 kun</option>
+                <option value="month">Shu oy</option><option value="year">Shu o'quv yili (1-sentyabrdan)</option><option value="custom">Sanani o'zim tanlayman</option>
+              </select>
+              <span id="atCustom" class="hidden"><input type="date" class="inp ch-sel" id="atFrom"> – <input type="date" class="inp ch-sel" id="atTo"></span>
+              <label class="ch-chk"><input type="checkbox" id="atVals"> Raqamlarni ko'rsatish</label>
+            </div>
+            <div id="atSum" class="hint"></div>
+            <div id="atBox"></div>
+            <details class="ch-det"><summary>Ma'lumotlar jadvali</summary><div id="atTable"></div></details>
+          </div>
+          <div id="attStMore"></div>
+        </div>
         <div class="msg" id="attMsg"></div>
       </div>
     </section>
@@ -5916,73 +5961,136 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
 
   /* ----- statistika ----- */
-  function attPctMap(k,st){
-    var p=k.split('-'), y=+p[0], mo=+p[1], dim=new Date(y,mo,0).getDate(), now=new Date(), r={}, ds={}, d;
-    st.forEach(function(s){ var c=s.cls||'—'; r[c]=r[c]||{n:0,a:0};
-      if(!ds[c]){ ds[c]=[]; for(d=1;d<=dim;d++) if(!attOff(k,c,d)&&new Date(y,mo-1,d)<=now) ds[c].push(d) }
-      r[c].n++; ds[c].forEach(function(dd){ if(attIsAbs(attCode(k,c,s.id,dd))) r[c].a++ }); });
-    var o={}; Object.keys(r).forEach(function(c){ var e=r[c].n*ds[c].length; o[c]=e?100*(1-r[c].a/e):null }); return o;
+  var ATP=(function(){var o=jparse(lget('m28_attpref'),{})||{};return {data:({code:1,class:1,month:1,weekday:1,student:1})[o.data]?o.data:'code',type:({column:1,bar:1,line:1,donut:1})[o.type]?o.type:'column',period:o.period||'month',vals:o.vals!==false,from:o.from||'',to:o.to||''}})();
+  var ATP_T={code:"Qisqartmalar bo'yicha",'class':"Sinflar bo'yicha qoldirilganlar",month:"Oyma-oy qoldirilganlar",weekday:"Hafta kunlari bo'yicha qoldirilganlar",student:"Eng ko'p qoldirgan o'quvchilar (top 10)"};
+  var attLast=null;
+  function attSavePref(){ lset('m28_attpref',JSON.stringify(ATP)) }
+  function attRange(){
+    var t=todayISO(), p=ATP.period, d;
+    if(p==='month') return [t.slice(0,8)+'01',t];
+    if(p==='7'||p==='30'){ d=new Date(); d.setDate(d.getDate()-(+p-1)); return [dateISO(d),t] }
+    if(p==='year'){ d=new Date(); return [(d.getMonth()>=8?d.getFullYear():d.getFullYear()-1)+'-09-01',t] }
+    if(p==='custom') return [ATP.from||'',(ATP.to&&ATP.to<t)?ATP.to:t];
+    return ['',t];
   }
+  function attPeriodText(){
+    var p=ATP.period, r=attRange();
+    if(p==='all') return 'barcha davr';
+    if(p==='custom') return (r[0]?fmtDate(r[0]):'…')+' – '+fmtDate(r[1]);
+    return ({'7':'oxirgi 7 kun','30':'oxirgi 30 kun',month:'shu oy',year:"shu o'quv yili"})[p]||'';
+  }
+  function attCalc(st,r){
+    var lo=r[0], hi=r[1], R={by:{},pc:{},ps:[],wd:[0,0,0,0,0,0,0],pm:{},days:0,abs:0}, ks={};
+    Object.keys(ATT).forEach(function(k){ks[k.split('|')[0]]=1});
+    var first=lo?lo.slice(0,7):(Object.keys(ks).sort()[0]||hi.slice(0,7)), last=hi.slice(0,7), months=[], y=+first.slice(0,4), mo=+first.slice(5,7), g=0;
+    while((y+'-'+pad(mo))<=last && g++<80){ months.push(y+'-'+pad(mo)); mo++; if(mo>12){mo=1;y++} }
+    st.forEach(function(s){var c=s.cls||'—'; R.pc[c]=R.pc[c]||{n:0,days:0,abs:0,sz:0}; R.pc[c].n++});
+    R.ps=st.map(function(s){return {s:s,abs:0,sz:0,kch:0}});
+    months.forEach(function(k){
+      var yy=+k.slice(0,4), mm=+k.slice(5,7), dim=new Date(yy,mm,0).getDate(), ds={}, d;
+      Object.keys(R.pc).forEach(function(c){ var a=[]; for(d=1;d<=dim;d++){ var iso=k+'-'+pad(d); if(iso<lo||iso>hi) continue; if(!attOff(k,c,d)) a.push(d) } ds[c]=a; R.pc[c].days+=a.length });
+      R.pm[k]=0;
+      R.ps.forEach(function(q){ var c=q.s.cls||'—'; ds[c].forEach(function(d){
+        var x=attCode(k,c,q.s.id,d); if(!x) return; R.by[x]=(R.by[x]||0)+1;
+        if(attIsAbs(x)){ R.abs++; q.abs++; R.pc[c].abs++; R.pm[k]++; R.wd[new Date(yy,mm-1,d).getDay()]++; if(x==='Sz'){q.sz++; R.pc[c].sz++} }
+        if(x==='Kch') q.kch++;
+      }) });
+    });
+    Object.keys(R.pc).forEach(function(c){R.days=Math.max(R.days,R.pc[c].days)});
+    return R;
+  }
+  var attNat=function(a,b){return (parseInt(a)||99)-(parseInt(b)||99)||a.localeCompare(b)};
+  function attItems(id,R){
+    var items=[], ck=Object.keys(ATT_CODES);
+    if(id==='code'){ Object.keys(R.by).sort(function(a,b){var ia=ck.indexOf(a),ib=ck.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b)}).forEach(function(c){items.push({k:ATT_CODES[c]?c+' · '+ATT_CODES[c][0]:c,n:R.by[c]})}) }
+    else if(id==='class'){ Object.keys(R.pc).sort(attNat).forEach(function(c){items.push({k:c,n:R.pc[c].abs})}) }
+    else if(id==='month'){ Object.keys(R.pm).sort().forEach(function(k){items.push({k:ATT_MONTHS[+k.slice(5)-1].slice(0,3)+' '+k.slice(2,4),n:R.pm[k]})}) }
+    else if(id==='weekday'){ [1,2,3,4,5,6,0].forEach(function(i){items.push({k:ATT_WDF[i],n:R.wd[i]})}) }
+    else { R.ps.filter(function(p){return p.abs>0}).sort(function(a,b){return b.abs-a.abs||b.sz-a.sz}).slice(0,10).forEach(function(p){items.push({k:p.s.name+' ('+(p.s.cls||'—')+')',n:p.abs})}) }
+    return {items:items,total:items.reduce(function(a,i){return a+i.n},0)};
+  }
+  function attPct(q){ var e=q.n*q.days; return e?100*(1-q.abs/e):-1 }
   function attRankRows(pc,prev){
-    return Object.keys(pc).map(function(c){var q=pc[c], e=q.n*q.days; return {c:c,q:q,p:e?100*(1-q.abs/e):-1}}).sort(function(a,b){return b.p-a.p}).map(function(o,i){
-      var t='', pv=prev?prev[o.c]:null; if(pv!=null&&o.p>=0){ var x=o.p-pv; t=(x>0?'▲ +':x<0?'▼ ':'= ')+x.toFixed(1)+'%' }
+    return Object.keys(pc).map(function(c){return {c:c,q:pc[c],p:attPct(pc[c])}}).sort(function(a,b){return b.p-a.p}).map(function(o,i){
+      var t='', pv=prev&&prev[o.c]; if(pv!=null&&pv>=0&&o.p>=0){ var x=o.p-pv; t=(x>0?'▲ +':x<0?'▼ ':'= ')+x.toFixed(1)+'%' }
       return '<tr><td>'+(i+1)+'</td><td>'+esc(o.c)+'</td><td>'+o.q.n+'</td><td>'+o.q.abs+'</td><td>'+o.q.sz+'</td><td>'+(o.p>=0?o.p.toFixed(1)+'%':'—')+'</td><td>'+t+'</td></tr>';
     }).join('');
   }
   function attStats(){
-    var cl=$('#attCls').value||'*', all=$('#attScope').value==='a', sel=attMonth(), now=new Date();
-    var months={}; if(all){ Object.keys(ATT).forEach(function(k){months[k.split('|')[0]]=1}) } if(sel) months[sel]=1;
-    var keys=Object.keys(months).sort();
-    var st=attVisible().filter(function(s){return cl==='*'?s.cls!==ATT_TCLS:(s.cls||'—')===cl}), box=$('#att-st');
-    if(!st.length){ box.innerHTML='<div class="stat-empty">Ma\'lumot yo\'q</div>'; return }
-    var by={}, pc={}, ps=st.map(function(s){return {s:s,abs:0,sz:0,kch:0}}), pd=[], days=0, abs=0, i;
-    Object.keys(ATT_CODES).forEach(function(c){by[c]=0});
-    st.forEach(function(s){var c=s.cls||'—'; pc[c]=pc[c]||{n:0,abs:0,sz:0,days:0}; pc[c].n++});
-    var perMonthMax=[], wd=[0,0,0,0,0,0,0];
-    var single=!all; var dayArr=[];
-    keys.forEach(function(k){
-      var p=k.split('-'), y=+p[0], mo=+p[1], dim=new Date(y,mo,0).getDate(), per=[], ma=0, d;
-      var clsDays={};
-      Object.keys(pc).forEach(function(c){
-        var ds=[]; for(d=1;d<=dim;d++){ if(!attOff(k,c,d) && new Date(y,mo-1,d)<=now) ds.push(d) }
-        clsDays[c]=ds; pc[c].days+=ds.length;
-      });
-      for(d=0;d<=dim;d++) per.push(0);
-      ps.forEach(function(q){
-        var c=q.s.cls||'—'; clsDays[c].forEach(function(d){
-          var x=attCode(k,c,q.s.id,d); if(!x) return; by[x]=(by[x]||0)+1;
-          if(attIsAbs(x)){ abs++; q.abs++; pc[c].abs++; per[d]++; ma++; wd[new Date(y,mo-1,d).getDay()]++; if(x==='Sz'){q.sz++; pc[c].sz++} }
-          if(x==='Kch') q.kch++;
-        });
-      });
-      if(single){ for(d=1;d<=dim;d++) dayArr.push({l:d,v:per[d],off:(cl!=='*'&&attOff(k,cl,d))}) }
-      else pd.push({l:ATT_MONTHS[mo-1].slice(0,3),v:ma});
-    });
-    if(single) pd=dayArr;
-    Object.keys(pc).forEach(function(c){ days=Math.max(days,pc[c].days) });
-    var exp=0; Object.keys(pc).forEach(function(c){exp+=pc[c].n*pc[c].days});
-    var pct=exp?(100*(1-abs/exp)).toFixed(1)+'%':'—';
-    var mx=Math.max.apply(null,pd.map(function(x){return x.v}).concat([1]));
-    var codeEntries=Object.keys(by).sort(function(a,b){var ia=ATT_CODES[a]?Object.keys(ATT_CODES).indexOf(a):99, ib=ATT_CODES[b]?Object.keys(ATT_CODES).indexOf(b):99; return ia-ib||a.localeCompare(b)}).map(function(c){return {k:ATT_CODES[c]?c+' · '+ATT_CODES[c][0]:c,n:by[c]}});
-    var top=ps.filter(function(p){return p.abs||p.kch}).sort(function(a,b){return b.abs-a.abs||b.sz-a.sz}).slice(0,10);
-    var prev=null; if(!all&&sel){ var pp=sel.split('-'), pm=+pp[1]-1, py=+pp[0]; if(pm<1){pm=12;py--} prev=attPctMap(py+'-'+pad(pm),st) }
-    box.innerHTML=
-      '<div class="stat-cards"><div class="stat-card"><b>'+st.length+"</b><span>O'quvchilar</span></div><div class=\"stat-card\"><b>"+days+'</b><span>Dars kunlari</span></div><div class="stat-card"><b>'+pct+'</b><span>Davomat foizi</span></div><div class="stat-card"><b>'+abs+'</b><span>Qoldirilgan kunlar</span></div></div>'+
-      '<div class="att-sec"><h3>Qisqartmalar bo\'yicha</h3>'+barList(codeEntries,Math.max.apply(null,codeEntries.map(function(e){return e.n}).concat([1])),"Ma'lumot yo'q")+'</div>'+
-      '<div class="att-sec"><h3>'+(all?'Oylar':'Kunlar')+' bo\'yicha qoldirilganlar</h3><div class="att-ch">'+pd.map(function(x){return '<div style="height:'+(x.v/mx*100)+'%;'+(x.off?'opacity:.25':'')+'"><i>'+(x.v||'')+'</i></div>'}).join('')+'</div><div class="att-lb">'+pd.map(function(x){return '<span>'+x.l+'</span>'}).join('')+'</div></div>'+
-      '<div class="att-sec"><h3>Hafta kunlari bo\'yicha qoldirilganlar</h3>'+barList([1,2,3,4,5,6,0].map(function(i){return {k:ATT_WDF[i],n:wd[i]}}),Math.max.apply(null,wd.concat([1])),"Ma'lumot yo'q")+'</div>'+
-      '<div class="att-sec"><h3>Sinflar reytingi</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>Sinf</th><th>O\'quvchi</th><th>Qoldirilgan</th><th>Sababsiz</th><th>Davomat</th><th>'+(prev?"O'tgan oyga nisbatan":'')+'</th></tr></thead><tbody>'+attRankRows(pc,prev)+'</tbody></table></div></div>'+
+    var cl=$('#attCls').value||'*', st=attVisible().filter(function(s){return cl==='*'?s.cls!==ATT_TCLS:(s.cls||'—')===cl}), r=attRange(), R=attCalc(st,r), box=$('#atBox');
+    $$('#atData [data-atd]').forEach(function(b){b.classList.toggle('on',b.dataset.atd===ATP.data)});
+    $$('#atType [data-att]').forEach(function(b){b.classList.toggle('on',b.dataset.att===ATP.type)});
+    $('#atPeriod').value=ATP.period; $('#atCustom').classList.toggle('hidden',ATP.period!=='custom'); $('#atFrom').value=ATP.from; $('#atTo').value=ATP.to; $('#atVals').checked=ATP.vals;
+    var exp=0; Object.keys(R.pc).forEach(function(c){exp+=R.pc[c].n*R.pc[c].days});
+    $('#attStCards').innerHTML='<div class="stat-card"><b>'+st.length+"</b><span>O'quvchilar</span></div><div class=\"stat-card\"><b>"+R.days+'</b><span>Dars kunlari</span></div><div class="stat-card"><b>'+(exp?(100*(1-R.abs/exp)).toFixed(1)+'%':'—')+'</b><span>Davomat foizi</span></div><div class="stat-card"><b>'+R.abs+'</b><span>Qoldirilgan kunlar</span></div>';
+    var res=attItems(ATP.data,R); $('#atTitle').textContent=ATP_T[ATP.data]; $('#atSum').textContent='Davr: '+attPeriodText()+' · jami: '+res.total+' ta';
+    attLast={R:R,res:res,st:st,cl:cl};
+    if(!st.length||!res.total){ box.innerHTML='<div class="stat-empty">Tanlangan davr uchun ma\'lumot yo\'q.</div>'; $('#atTable').innerHTML=''; }
+    else {
+      var W=Math.max(300,Math.min(1000,box.clientWidth||700)), svg;
+      if(ATP.type==='donut') svg=svgDonut(res.items,W,ATP.vals,res.total); else if(ATP.type==='bar') svg=svgBars(res.items,W,ATP.vals); else svg=svgColumn(res.items,W,ATP.vals,ATP.type==='line');
+      box.innerHTML='<div class="ch-scroll">'+svg+'</div>';
+      $('#atTable').innerHTML='<table class="log"><thead><tr><th>Nomi</th><th>Soni</th><th>Ulushi</th></tr></thead><tbody>'+res.items.map(function(it){return '<tr><td>'+esc(it.k)+'</td><td><b>'+it.n+'</b></td><td>'+Math.round(it.n/res.total*100)+'%</td></tr>'}).join('')+'</tbody></table>';
+    }
+    var prev=null;
+    if(ATP.period==='month'&&st.length){ var d=new Date(); var pe=dateISO(new Date(d.getFullYear(),d.getMonth(),0)), ps=dateISO(new Date(d.getFullYear(),d.getMonth()-1,1)), PR=attCalc(st,[ps,pe]); prev={}; Object.keys(PR.pc).forEach(function(c){prev[c]=attPct(PR.pc[c])}) }
+    var top=R.ps.filter(function(p){return p.abs||p.kch}).sort(function(a,b){return b.abs-a.abs||b.sz-a.sz}).slice(0,10);
+    $('#attStMore').innerHTML=(st.length?'<div class="att-sec"><h3>Sinflar reytingi</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>Sinf</th><th>O\'quvchi</th><th>Qoldirilgan</th><th>Sababsiz</th><th>Davomat</th><th>'+(prev?"O'tgan oyga nisbatan":'')+'</th></tr></thead><tbody>'+attRankRows(R.pc,prev)+'</tbody></table></div></div>'+
       '<div class="att-sec"><h3>Eng ko\'p qoldirgan o\'quvchilar (top 10)</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>F.I.Sh</th><th>Sinf</th><th>Jami</th><th>Sababsiz</th><th>Kechikdi</th></tr></thead><tbody>'+
       (top.length?top.map(function(p,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(p.s.name)+'</td><td>'+esc(p.s.cls||'—')+'</td><td>'+p.abs+'</td><td>'+p.sz+'</td><td>'+p.kch+'</td></tr>'}).join(''):'<tr><td colspan="6" class="stat-empty">Hali qoldirgan yo\'q</td></tr>')+'</tbody></table></div></div>'+
-      '<p class="hint att-sec">Eslatma: belgi qo\'yilmagan katak «keldi» hisoblanadi. Faqat o\'tgan va bugungi dars kunlari olinadi, kechikish qoldirilgan kunga kirmaydi.</p>';
+      '<p class="hint att-sec">Eslatma: belgi qo\'yilmagan katak «keldi» hisoblanadi. Faqat o\'tgan va bugungi dars kunlari olinadi, kechikish qoldirilgan kunga kirmaydi.</p>':'');
   }
+  function attPng(){
+    var svg=document.querySelector('#atBox svg'); if(!svg) return toast("Diagramma yo'q");
+    var cs=getComputedStyle(document.documentElement), g=function(n,d){return (cs.getPropertyValue(n)||'').trim()||d};
+    var vb=svg.viewBox.baseVal, w=vb.width, h=vb.height;
+    var str=new XMLSerializer().serializeToString(svg).replace(/class="ch-t"/g,'fill="'+g('--ink','#1b2330')+'"').replace(/class="ch-m"/g,'fill="'+g('--muted','#667085')+'"').replace(/class="ch-g"/g,'stroke="'+g('--line','#e2e6ee')+'" fill="none"').replace(/style="[^"]*"/,'width="'+w+'" height="'+h+'"');
+    var im=new Image();
+    im.onload=function(){ var c=document.createElement('canvas'); c.width=w*2; c.height=h*2; var x=c.getContext('2d'); x.fillStyle=g('--card','#ffffff'); x.fillRect(0,0,c.width,c.height); x.drawImage(im,0,0,c.width,c.height);
+      c.toBlob(function(b){ if(!b) return toast("PNG tayyorlab bo'lmadi"); saveFile('davomat-'+ATP.data+'-'+todayISO()+'.png',b).catch(function(e){toast(saveErr(e))}) },'image/png') };
+    im.onerror=function(){toast("PNG tayyorlab bo'lmadi")}; im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(str);
+  }
+  function attStXlsx(){
+    if(!attLast) return; if(!window.XLSX) return setMsg('#attMsg',"Excel kutubxonasi yuklanmadi (internetni tekshiring)",'err');
+    var L=attLast, R=L.R, wb=XLSX.utils.book_new();
+    var a=[['Davomat statistikasi'],['Davr: '+attPeriodText()],['Sinf: '+(L.cl==='*'?'barcha sinflar':L.cl)],[],[ATP_T[ATP.data]],['Nomi','Soni','Ulushi']];
+    L.res.items.forEach(function(it){a.push([it.k,it.n,L.res.total?Math.round(it.n/L.res.total*100)+'%':''])});
+    var b=[['№','Sinf','O\'quvchi','Qoldirilgan','Sababsiz','Davomat %']];
+    Object.keys(R.pc).map(function(c){return {c:c,q:R.pc[c],p:attPct(R.pc[c])}}).sort(function(x,y){return y.p-x.p}).forEach(function(o,i){b.push([i+1,o.c,o.q.n,o.q.abs,o.q.sz,o.p>=0?+o.p.toFixed(1):''])});
+    var c=[['Sinf','F.I.Sh','Jami qoldirilgan','Sababsiz','Kechikdi']];
+    R.ps.slice().sort(function(x,y){return y.abs-x.abs||x.s.name.localeCompare(y.s.name)}).forEach(function(p){c.push([p.s.cls||'—',p.s.name,p.abs,p.sz,p.kch])});
+    [['Umumiy',a],['Sinflar reytingi',b],["O'quvchilar",c]].forEach(function(x){var ws=XLSX.utils.aoa_to_sheet(x[1]); ws['!cols']=[{wch:26},{wch:30},{wch:16},{wch:12},{wch:12},{wch:12}]; XLSX.utils.book_append_sheet(wb,ws,x[0])});
+    XLSX.writeFile(wb,'davomat_statistika_'+todayISO()+'.xlsx');
+  }
+  function attStCsv(){
+    if(!attLast) return; var L=attLast, rows=['Nomi,Soni,Ulushi'];
+    L.res.items.forEach(function(it){rows.push('"'+String(it.k).replace(/"/g,'""')+'",'+it.n+','+(L.res.total?Math.round(it.n/L.res.total*100):0)+'%')});
+    attDl('davomat_'+ATP.data+'_'+todayISO()+'.csv','\ufeff'+rows.join('\n'),'text/csv');
+  }
+  function attChFull(on){
+    var c=$('#attChCard'); if(on===undefined) on=!c.classList.contains('ch-full');
+    c.classList.toggle('ch-full',on); document.body.style.overflow=on?'hidden':''; $('#atFull').textContent=on?'✕ Yopish':"⛶ Katta ko'rish"; attStats();
+  }
+  (function(){
+    $('#attChCard').addEventListener('click',function(e){
+      var d=e.target.closest('[data-atd]'), t=e.target.closest('[data-att]');
+      if(d){ ATP.data=d.dataset.atd; attSavePref(); attStats() } else if(t){ ATP.type=t.dataset.att; attSavePref(); attStats() }
+    });
+    $('#atPeriod').addEventListener('change',function(){ATP.period=this.value; attSavePref(); attStats()});
+    $('#atFrom').addEventListener('change',function(){ATP.from=this.value; attSavePref(); attStats()});
+    $('#atTo').addEventListener('change',function(){ATP.to=this.value; attSavePref(); attStats()});
+    $('#atVals').addEventListener('change',function(){ATP.vals=this.checked; attSavePref(); attStats()});
+    $('#atPng').addEventListener('click',attPng); $('#atXls').addEventListener('click',attStXlsx); $('#atCsv').addEventListener('click',attStCsv);
+    $('#atPrint').addEventListener('click',function(){window.print()}); $('#atFull').addEventListener('click',function(){attChFull()});
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('#attChCard').classList.contains('ch-full')) attChFull(false) });
+  })();
 
   function attRender(){
     $$('#attSub [data-as]').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-as')===attSubTab)});
     ['today','grid','stu','st'].forEach(function(n){$('#att-'+n).classList.toggle('hidden',n!==attSubTab)});
     $('#attCtl').classList.toggle('hidden',attSubTab==='stu');
-    $('#attMon').classList.toggle('hidden',attSubTab==='today'); $('#attDay').classList.toggle('hidden',attSubTab!=='today');
-    $('#attScopeBox').classList.toggle('hidden',attSubTab!=='st');
+    $('#attMon').classList.toggle('hidden',attSubTab==='today'||attSubTab==='st'); $('#attDay').classList.toggle('hidden',attSubTab!=='today');
+    $('#attScopeBox').classList.add('hidden');
     attFillCls(); attPalette();
     if(attSubTab==='today') attToday(); else if(attSubTab==='grid') attGrid(); else if(attSubTab==='stu') attList(); else attStats();
   }
