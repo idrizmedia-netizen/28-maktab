@@ -699,6 +699,8 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
                 <button class="btn line sm" id="atPng" type="button">⬇ PNG</button>
                 <button class="btn line sm" id="atXls" type="button">⬇ Excel</button>
                 <button class="btn line sm" id="atCsv" type="button">⬇ CSV</button>
+                <button class="btn line sm" id="atAbsX" type="button">⬇ Kelmaganlar (Excel)</button>
+                <button class="btn line sm" id="atAbsP" type="button">🖨 Kelmaganlar (PDF)</button>
                 <button class="btn line sm" id="atPrint" type="button">🖨 Chop etish</button>
                 <button class="btn line sm" id="atFull" type="button">⛶ Katta ko'rish</button>
               </div>
@@ -843,6 +845,7 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
               <select class="inp" id="newAdminRole">
                 <option value="full">To'liq — hamma narsani qila oladi</option>
                 <option value="homeroom">Sinf rahbari — faqat o'z sinfi, faqat o'quvchi xatlari</option>
+                <option value="tletter">O'qituvchilarga xat — faqat o'qituvchilarga ogohlantirish xati yozadi</option>
                 <option value="attendance">Davomat xodimi — faqat davomat belgilaydi (sinf biriktirish shart emas)</option>
                 <option value="viewer">Faqat ko'ruvchi — hech narsa yoza/yubora olmaydi</option>
               </select>
@@ -3728,6 +3731,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function isViewer(){ return myRole==='viewer' }
   function isHomeroom(){ return myRole==='homeroom' }
   function isAttStaff(){ return myRole==='attendance' }
+  function isTLetter(){ return myRole==='tletter' }
   function inMyClasses(cls){ return !isHomeroom() || (myClasses.length>0 && myClasses.indexOf(normClass(cls))>=0); }
   function cloudDocId(key){ return 'm28_'+key; }
   function cloudSave(key, arr){
@@ -3755,14 +3759,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   }
   function startCloud(){
     stopCloud(true);
+    if(!isAttStaff() && !isTLetter()) cloudSync('log', function(){ renderLog() });
     if(!isAttStaff()){
-    cloudSync('log', function(){ renderLog() });
     cloudSync('tlog', function(){ renderTLog() });
     cloudSync('sigs', function(){ renderSigPanel(); renderSheet(); renderLog(); });
     }
     ensureSettingsDoc();
     if(!isAttStaff()){ watchRoster(); watchNotices(); }
-    attStart();
+    if(!isTLetter()) attStart();
   }
   /* ---------- O'quvchilar/o'qituvchilar bazasi (ism tanlab kiritish uchun) ---------- */
   var roster = {students:[], teachers:[]};
@@ -4194,8 +4198,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     if(homeroom && ['settings','tletter','tlog','audit'].some(function(n){ var el=$('#tab-'+n); return el && !el.classList.contains('hidden'); })) goTab('letter');
 
     // Davomat xodimi: faqat "Davomat" bo'limi ko'rinadi
-    $$('nav.tabs [data-tab]').forEach(function(b){ var n=b.getAttribute('data-tab'); if(isAttStaff()) b.classList.toggle('hidden', n!=='att'); else if(n==='att') b.classList.remove('hidden'); });
-    if(isAttStaff()) goTab('att');
+    var onlyTab = isAttStaff() ? 'att' : (isTLetter() ? 'tletter' : '');
+    $$('nav.tabs [data-tab]').forEach(function(b){ var n=b.getAttribute('data-tab'); if(onlyTab) b.classList.toggle('hidden', n!==onlyTab); else if(n==='att') b.classList.remove('hidden'); });
+    if(onlyTab) goTab(onlyTab);
+    if(isTLetter()){ $('#roleNote').textContent="Siz faqat o'qituvchilarga ogohlantirish xati yozish huquqiga egasiz."; $('#roleNote').classList.remove('hidden'); }
 
     // Sinf rahbari uchun "Sinf" maydoni: bitta sinf bo'lsa qulflanadi, bir nechta bo'lsa tanlovga aylanadi
     var fClass = $('#f_class');
@@ -4305,7 +4311,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
   /* ---------- adminlar boshqaruvi ---------- */
   var adminsList = [];
-  var ROLE_LABELS = { full:"To'liq", viewer:"Faqat ko'ruvchi", homeroom:"Sinf rahbari", attendance:"Davomat xodimi" };
+  var ROLE_LABELS = { full:"To'liq", viewer:"Faqat ko'ruvchi", homeroom:"Sinf rahbari", attendance:"Davomat xodimi", tletter:"O'qituvchilarga xat yozuvchi" };
   function renderAdminCard(){
     $('#meEmail').textContent = curUser ? curUser.email : '—';
     $('#adminAddBox').classList.toggle('hidden', !isOwner);
@@ -4366,6 +4372,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   /* ---------- tabs ---------- */
   function goTab(t){
     if(isAttStaff() && t!=='att') t='att';
+    if(isTLetter() && t!=='tletter') t='tletter';
     if(isHomeroom() && (t==='settings'||t==='tletter'||t==='tlog'||t==='audit')) t='letter';
     $$('nav.tabs [data-tab]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-tab')===t)});
     ['letter','log','tletter','tlog','att','stats','audit','settings'].forEach(function(n){$('#tab-'+n).classList.toggle('hidden',n!==t)});
@@ -5985,14 +5992,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     var first=lo?lo.slice(0,7):(Object.keys(ks).sort()[0]||hi.slice(0,7)), last=hi.slice(0,7), months=[], y=+first.slice(0,4), mo=+first.slice(5,7), g=0;
     while((y+'-'+pad(mo))<=last && g++<80){ months.push(y+'-'+pad(mo)); mo++; if(mo>12){mo=1;y++} }
     st.forEach(function(s){var c=s.cls||'—'; R.pc[c]=R.pc[c]||{n:0,days:0,abs:0,sz:0}; R.pc[c].n++});
-    R.ps=st.map(function(s){return {s:s,abs:0,sz:0,kch:0}});
+    R.ps=st.map(function(s){return {s:s,abs:0,sz:0,kch:0,list:[],cnt:{}}});
     months.forEach(function(k){
       var yy=+k.slice(0,4), mm=+k.slice(5,7), dim=new Date(yy,mm,0).getDate(), ds={}, d;
       Object.keys(R.pc).forEach(function(c){ var a=[]; for(d=1;d<=dim;d++){ var iso=k+'-'+pad(d); if(iso<lo||iso>hi) continue; if(!attOff(k,c,d)) a.push(d) } ds[c]=a; R.pc[c].days+=a.length });
       R.pm[k]=0;
       R.ps.forEach(function(q){ var c=q.s.cls||'—'; ds[c].forEach(function(d){
-        var x=attCode(k,c,q.s.id,d); if(!x) return; R.by[x]=(R.by[x]||0)+1;
-        if(attIsAbs(x)){ R.abs++; q.abs++; R.pc[c].abs++; R.pm[k]++; R.wd[new Date(yy,mm-1,d).getDay()]++; if(x==='Sz'){q.sz++; R.pc[c].sz++} }
+        var x=attCode(k,c,q.s.id,d); if(!x) return; R.by[x]=(R.by[x]||0)+1; q.cnt[x]=(q.cnt[x]||0)+1;
+        if(attIsAbs(x)){ q.list.push(pad(d)+'.'+pad(mm)+' '+x); R.abs++; q.abs++; R.pc[c].abs++; R.pm[k]++; R.wd[new Date(yy,mm-1,d).getDay()]++; if(x==='Sz'){q.sz++; R.pc[c].sz++} }
         if(x==='Kch') q.kch++;
       }) });
     });
@@ -6040,6 +6047,46 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       (top.length?top.map(function(p,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(p.s.name)+'</td><td>'+esc(p.s.cls||'—')+'</td><td>'+p.abs+'</td><td>'+p.sz+'</td><td>'+p.kch+'</td></tr>'}).join(''):'<tr><td colspan="6" class="stat-empty">Hali qoldirgan yo\'q</td></tr>')+'</tbody></table></div></div>'+
       '<p class="hint att-sec">Eslatma: belgi qo\'yilmagan katak «keldi» hisoblanadi. Faqat o\'tgan va bugungi dars kunlari olinadi, kechikish qoldirilgan kunga kirmaydi.</p>':'');
   }
+  function attAbsBuild(){
+    var cl=$('#attCls').value||'*', st=attVisible().filter(function(s){return s.cls!==ATT_TCLS&&(cl==='*'||(s.cls||'—')===cl)}), R=attCalc(st,attRange()), cs=[], T={n:st.length,abs:0,sz:0,miss:0,e:0};
+    Object.keys(R.pc).sort(attNat).forEach(function(c){
+      var q=R.pc[c], rows=R.ps.filter(function(p){return (p.s.cls||'—')===c&&p.abs>0}).sort(function(a,b){return b.abs-a.abs||a.s.name.localeCompare(b.s.name)}).map(function(p){
+        return [p.s.name,p.abs,p.cnt.Sz||0,p.cnt.Kas||0,p.cnt.Sb||0,p.cnt.Tad||0,p.cnt.Kch||0,q.days?+(100*(1-p.abs/q.days)).toFixed(1):'',p.list.join(', ')] });
+      cs.push({c:c,n:q.n,days:q.days,abs:q.abs,sz:q.sz,pct:attPct(q),rows:rows}); T.abs+=q.abs; T.sz+=q.sz; T.miss+=rows.length; T.e+=q.n*q.days;
+    });
+    T.pct=T.e?100*(1-T.abs/T.e):-1;
+    return {cl:cl,cs:cs,T:T,period:attPeriodText()};
+  }
+  var ATT_AH=['F.I.Sh','Qoldirilgan kun','Sababsiz','Kasal','Sababli','Tadbir','Kechikdi','Davomat %','Qaysi kunlari'];
+  function attAbsXlsx(){
+    if(!window.XLSX) return setMsg('#attMsg',"Excel kutubxonasi yuklanmadi (internetni tekshiring)",'err');
+    var B=attAbsBuild(), wb=XLSX.utils.book_new(), pf=function(x){return x>=0?+x.toFixed(1):''}, add=function(n,a,w){var ws=XLSX.utils.aoa_to_sheet(a); ws['!cols']=w; XLSX.utils.book_append_sheet(wb,ws,String(n).replace(/[\\\/?*\[\]:]/g,'_').slice(0,30))};
+    var u=[['Davomat va kelmaganlar hisoboti'],['Davr: '+B.period],['Sinf: '+(B.cl==='*'?'barcha sinflar':B.cl)],[],['Sinf',"O'quvchi",'Dars kunlari','Qoldirilgan kun','Sababsiz','Kelmagan o\'quvchilar','Davomat %']];
+    B.cs.forEach(function(o){u.push([o.c,o.n,o.days,o.abs,o.sz,o.rows.length,pf(o.pct)])});
+    u.push(["Jami",B.T.n,'',B.T.abs,B.T.sz,B.T.miss,pf(B.T.pct)]);
+    add('Umumiy',u,[{wch:14},{wch:12},{wch:12},{wch:15},{wch:10},{wch:20},{wch:12}]);
+    var a=[['Sinf'].concat(ATT_AH)]; B.cs.forEach(function(o){o.rows.forEach(function(r){a.push([o.c].concat(r))})});
+    add('Kelmaganlar (hammasi)',a,[{wch:8},{wch:30},{wch:12},{wch:10},{wch:8},{wch:8},{wch:9},{wch:10},{wch:60}]);
+    B.cs.forEach(function(o){
+      var x=[[o.c+' sinf — kelmaganlar'],['Davr: '+B.period+' · davomat: '+(o.pct>=0?o.pct.toFixed(1)+'%':'—')+' · qoldirilgan: '+o.abs],[],['№'].concat(ATT_AH)];
+      o.rows.forEach(function(r,i){x.push([i+1].concat(r))}); if(!o.rows.length) x.push(['','Kelmagan o\'quvchi yo\'q']);
+      add(o.c,x,[{wch:4},{wch:30},{wch:12},{wch:10},{wch:8},{wch:8},{wch:9},{wch:10},{wch:60}]);
+    });
+    XLSX.writeFile(wb,'davomat_kelmaganlar_'+todayISO()+'.xlsx');
+  }
+  function attAbsPrint(){
+    var B=attAbsBuild(), pf=function(x){return x>=0?x.toFixed(1)+'%':'—'}, h='<h2>Davomat hisoboti</h2><p>Davr: '+esc(B.period)+' · Sinf: '+(B.cl==='*'?'barcha sinflar':esc(B.cl))+'</p><table><tr><th>Sinf</th><th>O\'quvchi</th><th>Qoldirilgan</th><th>Sababsiz</th><th>Kelmagan o\'quvchi</th><th>Davomat</th></tr>';
+    B.cs.forEach(function(o){h+='<tr><td>'+esc(o.c)+'</td><td>'+o.n+'</td><td>'+o.abs+'</td><td>'+o.sz+'</td><td>'+o.rows.length+'</td><td>'+pf(o.pct)+'</td></tr>'});
+    h+='<tr><th>Jami</th><th>'+B.T.n+'</th><th>'+B.T.abs+'</th><th>'+B.T.sz+'</th><th>'+B.T.miss+'</th><th>'+pf(B.T.pct)+'</th></tr></table>';
+    B.cs.forEach(function(o){
+      h+='<h3 style="page-break-before:always">'+esc(o.c)+' sinf — davomat '+pf(o.pct)+'</h3><table><tr><th>№</th><th>F.I.Sh</th><th>Jami</th><th>Sz</th><th>Kas</th><th>Sb</th><th>Tad</th><th>Kch</th><th>%</th><th>Qaysi kunlari</th></tr>';
+      h+=o.rows.length?o.rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td style="text-align:left">'+esc(r[0])+'</td><td>'+r.slice(1,8).join('</td><td>')+'</td><td style="text-align:left">'+esc(r[8])+'</td></tr>'}).join(''):'<tr><td colspan="10">Kelmagan o\'quvchi yo\'q</td></tr>';
+      h+='</table>';
+    });
+    var w=window.open('','_blank'); if(!w) return toast("Oyna ochilmadi — brauzerda qalqib chiquvchi oynalarga ruxsat bering");
+    w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Kelmaganlar hisoboti</title><style>body{font:13px Arial,sans-serif;margin:16px}table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border:1px solid #888;padding:4px 6px;text-align:center}th{background:#eee}@page{size:A4 landscape;margin:10mm}</style></head><body>'+h+'</body></html>');
+    w.document.close(); w.focus(); setTimeout(function(){w.print()},300);
+  }
   function attPng(){
     var svg=document.querySelector('#atBox svg'); if(!svg) return toast("Diagramma yo'q");
     var cs=getComputedStyle(document.documentElement), g=function(n,d){return (cs.getPropertyValue(n)||'').trim()||d};
@@ -6081,6 +6128,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     $('#atTo').addEventListener('change',function(){ATP.to=this.value; attSavePref(); attStats()});
     $('#atVals').addEventListener('change',function(){ATP.vals=this.checked; attSavePref(); attStats()});
     $('#atPng').addEventListener('click',attPng); $('#atXls').addEventListener('click',attStXlsx); $('#atCsv').addEventListener('click',attStCsv);
+    $('#atAbsX').addEventListener('click',attAbsXlsx); $('#atAbsP').addEventListener('click',attAbsPrint);
     $('#atPrint').addEventListener('click',function(){window.print()}); $('#atFull').addEventListener('click',function(){attChFull()});
     document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('#attChCard').classList.contains('ch-full')) attChFull(false) });
   })();
