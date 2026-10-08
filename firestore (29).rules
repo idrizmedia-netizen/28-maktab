@@ -1,0 +1,142 @@
+rules_version = '2';
+
+// 28-maktab platformasi: Firestore xavfsizlik qoidalari (v2, rollar to'liq qamrab olingan)
+//
+// Rollar:
+//   owner      - asosiy admin (email qoidada qattiq yozilgan)
+//   full       - to'liq admin
+//   viewer     - faqat ko'ruvchi
+//   homeroom   - sinf rahbari (o'quvchi xatlari, imzo, davomat, bazaga qo'shish)
+//   attendance - davomat xodimi (faqat davomat)
+//   tletter    - o'qituvchilarga xat yozuvchi (faqat o'qituvchi xatlari)
+//   (noma'lum rol -> hech narsa qila olmaydi)
+//
+// Joylash: Firebase Console -> Firestore Database -> Rules -> Publish
+//   yoki: firebase deploy --only firestore:rules
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- yordamchi funksiyalar ----------
+    function signedIn() {
+      return request.auth != null
+          && request.auth.token.email_verified == true
+          && request.auth.token.email != null;
+    }
+    function me() {
+      return request.auth.token.email.lower();
+    }
+    function isOwner() {
+      return signedIn() && me() == 'idrizmedia@gmail.com';
+    }
+    function adminPath() {
+      return /databases/$(database)/documents/admins/$(me());
+    }
+    function isAdmin() {
+      return isOwner() || (signedIn() && exists(adminPath()));
+    }
+    function role() {
+      return isOwner() ? 'owner' : get(adminPath()).data.get('role', 'full');
+    }
+    function myClasses() {
+      return isOwner() ? [] : get(adminPath()).data.get('classes', []);
+    }
+
+    // aniq rol tekshiruvlari (har biri isAdmin() ni o'zi tekshiradi)
+    function isFull()       { return isAdmin() && role() in ['owner', 'full']; }
+    function isViewer()     { return isAdmin() && role() == 'viewer'; }
+    function isHomeroom()   { return isAdmin() && role() == 'homeroom'; }
+    function isAttendance() { return isAdmin() && role() == 'attendance'; }
+    function isTLetter()    { return isAdmin() && role() == 'tletter'; }
+    // hamma ma'lumotni ko'ra oladiganlar
+    function seesAll()      { return isFull() || isViewer(); }
+    // viewer'dan boshqa hamma admin (faqat audit_log yozish uchun)
+    function canWrite()     { return isAdmin() && role() != 'viewer'; }
+
+    // m28letters hujjat turlari
+    function isAttDay(docId) { return docId.matches('m28_att_.*'); }   // sinf-oy davomati
+    function validLetterDoc(docId) {
+      return isAttDay(docId)
+        ? request.resource.data.get('kind', '') == 'att'
+        : request.resource.data.get('items', null) is list;
+    }
+
+    // ---------- adminlar ro'yxati ----------
+    match /admins/{id} {
+      // har kim faqat o'z hujjatini o'qiy oladi (kirishda rol aniqlanadi)
+      allow get: if signedIn() && (id == me() || isFull());
+      allow list: if isFull();
+      // qo'shish/o'chirish faqat asosiy admin
+      allow create, update, delete: if isOwner();
+    }
+
+    // ---------- ochiq maktab ma'lumoti (QR sahifasi uchun) ----------
+    // DIQQAT: bu yerga shaxsiy ma'lumot (telefon, email) yozmang
+    match /publicinfo/{doc} {
+      allow read: if true;
+      allow write: if isFull();
+    }
+
+    // ---------- xatlar, imzolar, davomat ----------
+    // m28_log          - o'quvchi xatlari
+    // m28_tlog         - o'qituvchi xatlari
+    // m28_sigs         - sinf rahbarlari imzolari
+    // m28_attst        - davomat uchun o'quvchilar ro'yxati
+    // m28_att_<oy>_<sinf> - sinf-oy davomati (kind == 'att')
+    match /m28letters/{docId} {
+      allow read: if seesAll()
+        || (isHomeroom() && (docId in ['m28_log', 'm28_sigs', 'm28_attst']
+                             || (resource != null && resource.data.get('kind', '') == 'att')))
+        || (isAttendance() && (docId == 'm28_attst'
+                               || (resource != null && resource.data.get('kind', '') == 'att')))
+        || (isTLetter() && docId in ['m28_tlog', 'm28_sigs']);
+
+      allow create, update: if validLetterDoc(docId) && (
+           isFull()
+        || (isHomeroom()   && (docId in ['m28_log', 'm28_sigs'] || isAttDay(docId)))
+        || (isAttendance() && isAttDay(docId))
+        || (isTLetter()    && docId == 'm28_tlog'));
+
+      // hujjatni o'chirish faqat to'liq admin (ilova hozir o'chirmaydi, set() bilan yangilaydi)
+      allow delete: if isFull();
+    }
+
+    // ---------- o'quvchi/o'qituvchilar bazasi ----------
+    // Sinf rahbari xat yozganda baza avtomatik yangilanadi, shuning uchun u ham yozadi,
+    // lekin faqat QO'SHA oladi: o'quvchilarni kamaytira olmaydi, o'qituvchilar va hisobot raqamini o'zgartira olmaydi.
+    // Davomat xodimi bazaga umuman kirmaydi.
+    match /adminonly/{doc} {
+      allow read: if seesAll() || isHomeroom() || isTLetter();
+      allow write: if isFull()
+        || (isHomeroom()
+            && resource != null
+            && request.resource.data.data.teachers == resource.data.data.teachers
+            && request.resource.data.data.get('reportPhone', '') == resource.data.data.get('reportPhone', '')
+            && request.resource.data.data.students.size() >= resource.data.data.students.size());
+    }
+
+    // ---------- faollik jurnali ----------
+    match /audit_log/{id} {
+      // faqat owner/full/viewer o'qiydi
+      allow read: if seesAll();
+      // faqat o'z nomidan yozish; o'zgartirish va o'chirish mumkin emas
+      allow create: if canWrite()
+                    && request.resource.data.keys().hasOnly(['action', 'details', 'by', 'at'])
+                    && request.resource.data.by.lower() == me();
+      allow update, delete: if false;
+    }
+
+    // ---------- ota-onaga yuborilgan xabarlar holati ----------
+    // Yozishni faqat server (Admin SDK) bajaradi.
+    // Sinf rahbari faqat o'z sinfi yozuvlarini o'qiydi (so'rovda where('clsKey','in', sinflari) bo'ladi)
+    match /notify_log/{id} {
+      allow read: if seesAll()
+        || (isHomeroom() && resource.data.get('clsKey', '') in myClasses());
+      allow write: if false;
+    }
+
+    // qolgan hamma narsa yopiq (telegram_links ham: faqat server)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
