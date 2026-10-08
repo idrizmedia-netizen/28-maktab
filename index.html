@@ -11,8 +11,8 @@
 <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon/favicon-16.png">
 <link rel="apple-touch-icon" href="icons/apple/apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
-<meta name="theme-color" content="#1f4fd8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0f1420" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#0f766e" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c1411" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="28-maktab">
@@ -38,7 +38,7 @@
     R.style.colorScheme = p==='auto' ? 'light dark' : p;
     var dark = p==='auto' ? mq.matches : p==='dark';
     metas.forEach(function(m,i){
-      m.setAttribute('content', p==='auto' ? orig[i] : (dark ? '#0f1420' : '#1f4fd8'));
+      m.setAttribute('content', p==='auto' ? orig[i] : (dark ? '#0c1411' : '#0f766e'));
     });
     var b=document.getElementById('themeBtn');
     if(b){
@@ -63,22 +63,22 @@
 </script>
 <style>
 :root{
-  --bg:#f3f5f9;--card:#ffffff;--text:#172033;--muted:#5b6578;--line:#dde2eb;
-  --brand:#1f4fd8;--brand-ink:#ffffff;--brand-soft:#e8eefc;--danger:#b42318;--ok:#067647;
+  --bg:#f2f7f4;--card:#ffffff;--text:#14231c;--muted:#566a60;--line:#d9e6df;
+  --brand:#0f766e;--brand-ink:#ffffff;--brand-soft:#e0f2ee;--danger:#b42318;--ok:#067647;
   --input:#ffffff;--shadow:0 1px 2px rgba(16,24,40,.06),0 4px 16px rgba(16,24,40,.06);
   box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#0f1420;--card:#171e2e;--text:#e8ecf5;--muted:#9aa5bb;--line:#2a3348;
-    --brand:#6d93ff;--brand-ink:#0b1020;--brand-soft:#1f2a4a;--danger:#ff8a80;--ok:#5fd39a;
-    --input:#111827;--shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+    --bg:#0c1411;--card:#13201b;--text:#e6f0ea;--muted:#98aba1;--line:#25362e;
+    --brand:#3dd6b5;--brand-ink:#05201a;--brand-soft:#16322a;--danger:#ff8a80;--ok:#5fd39a;
+    --input:#0e1a15;--shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0f1420;--card:#171e2e;--text:#e8ecf5;--muted:#9aa5bb;--line:#2a3348;
-  --brand:#6d93ff;--brand-ink:#0b1020;--brand-soft:#1f2a4a;--danger:#ff8a80;--ok:#5fd39a;
-  --input:#111827;--shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+  --bg:#0c1411;--card:#13201b;--text:#e6f0ea;--muted:#98aba1;--line:#25362e;
+  --brand:#3dd6b5;--brand-ink:#05201a;--brand-soft:#16322a;--danger:#ff8a80;--ok:#5fd39a;
+  --input:#0e1a15;--shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
@@ -90,7 +90,7 @@ button,input,textarea{font:inherit;color:inherit}
 /* ---------- auth ---------- */
 #authView{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
 .auth-card{width:100%;max-width:400px;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:28px 24px}
-.logo{width:56px;height:56px;border-radius:14px;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center;font-weight:800;font-size:22px;margin:0 auto 14px}
+.logo{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--brand),#14a08f);color:var(--brand-ink);display:grid;place-items:center;font-weight:800;font-size:22px;margin:0 auto 14px}
 .auth-card h1{margin:0 0 4px;font-size:22px;text-align:center}
 .auth-card p.sub{margin:0 0 20px;text-align:center;color:var(--muted);font-size:14px}
 
@@ -102,6 +102,7 @@ textarea.inp{resize:vertical;min-height:76px}
 .pw{position:relative}
 .pw .inp{padding-right:92px}
 .pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:var(--brand-soft);color:var(--brand);border-radius:8px;padding:6px 10px;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{filter:brightness(1.07)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:10px;padding:11px 18px;font-weight:700;cursor:pointer;background:var(--brand);color:var(--brand-ink)}
 .btn.block{width:100%;margin-top:20px}
 .btn.ghost{background:var(--brand-soft);color:var(--brand)}
@@ -117,12 +118,13 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background
 .brand .logo{width:36px;height:36px;font-size:15px;margin:0;border-radius:10px}
 nav.tabs{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
 nav.tabs button{border:0;background:transparent;color:var(--muted);padding:8px 11px;font-size:15px;border-radius:10px;font-weight:700;cursor:pointer}
-nav.tabs button.on{background:var(--brand-soft);color:var(--brand)}
+nav.tabs button.on{background:var(--brand-soft);color:var(--brand);box-shadow:inset 0 -2px 0 var(--brand)}
+nav.tabs button:hover:not(.on){background:var(--brand-soft)}
 nav.tabs button.exit{color:var(--danger)}
 main{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
 .layout{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
 @media (max-width:860px){.layout{grid-template-columns:1fr}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px}
 .card h2{margin:0 0 4px;font-size:18px}
 .card p.hint{margin:0 0 6px;color:var(--muted);font-size:14px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -217,7 +219,7 @@ main{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
 .check input{margin-top:3px}
 .btn.sm{padding:8px 12px;font-size:13px}
 .sheet .letter{cursor:pointer}
-.sheet .letter.sel{outline:2px solid #1f4fd8;outline-offset:-3px}
+.sheet .letter.sel{outline:2px solid #0f766e;outline-offset:-3px}
 .filters{display:grid;grid-template-columns:1fr 170px;gap:10px;margin-top:12px}
 .tbl-wrap{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:12px}
 table.log{width:100%;border-collapse:collapse;font-size:14px;min-width:820px}
