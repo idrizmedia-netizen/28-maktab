@@ -536,7 +536,7 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
     <section id="tab-log" class="hidden">
       <div class="card">
         <h2>O'quvchilar ro'yxati</h2>
-        <p class="hint">Berilgan xatlar shu yerda yig'iladi (shu qurilmada saqlanadi). <b>O'quvchi qatorini bosing</b>: xati "Ogohlantirish xati" oynasida qayta ochiladi. Bir nechtasini belgilab (eng ko'pi 4 ta), bitta A4 varaqqa joylash ham mumkin.</p>
+        <p class="hint">Berilgan xatlar shu yerda yig'iladi (bulutda saqlanadi, Google hisobingiz bilan istalgan qurilmadan ko'rinadi). <b>O'quvchi qatorini bosing</b>: xati "Ogohlantirish xati" oynasida qayta ochiladi. Bir nechtasini belgilab (eng ko'pi 4 ta), bitta A4 varaqqa joylash ham mumkin.</p>
         <div class="filters">
           <input class="inp" id="q" placeholder="Qidirish: ism, sinf, sabab...">
           <select class="inp" id="qClass"><option value="">Barcha sinflar</option></select>
@@ -618,7 +618,7 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
     <section id="tab-tlog" class="hidden">
       <div class="card">
         <h2>O'qituvchilar ro'yxati</h2>
-        <p class="hint">Bu ro'yxat o'quvchilar ro'yxatidan alohida. Qatorni bossangiz, xat "O'qituvchilar xati" oynasida qayta ochiladi. Ro'yxat shu qurilmada saqlanadi.</p>
+        <p class="hint">Bu ro'yxat o'quvchilar ro'yxatidan alohida. Qatorni bossangiz, xat "O'qituvchilar xati" oynasida qayta ochiladi. Ro'yxat bulutda saqlanadi va barcha qurilmalarda bir xil ko'rinadi.</p>
         <div class="filters">
           <input class="inp" id="tq" placeholder="Qidirish: ism, fan, holat...">
           <select class="inp" id="tqSubj"><option value="">Barcha fanlar</option></select>
@@ -880,9 +880,8 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
             </div></div>
             <div class="note"><b>QR hamma telefonda ochilishi uchun:</b>
               <ol class="steps">
-                <li>Platforma joylashgan sahifadagi ulashish (Share) sozlamasidan "havolasi bor har kim ko'ra oladi" turini yoqing.</li>
-                <li>Yoki bu faylni maktabning o'z saytiga (hosting) qo'yib, uning manzilini yuqoriga yozing.</li>
-                <li>Har bir xatdagi QR kodga faqat o'quvchi yoki o'qituvchining ismi va sanasi joylanadi (sinf, ota-ona va sabab kabi maxfiy ma'lumotlar QR ichida bo'lmaydi). Skanerlaganda login so'ramaydigan sahifada shu ism, sana va maktab ma'muriyati ko'rinadi.</li>
+                <li>Havola sayt manzili (Vercel) bo'lishi kerak, shunda QR kod hamma telefonda ochiladi.</li>
+                                <li>Har bir xatdagi QR kodga faqat o'quvchi yoki o'qituvchining ismi va sanasi joylanadi (sinf, ota-ona va sabab kabi maxfiy ma'lumotlar QR ichida bo'lmaydi). Skanerlaganda login so'ramaydigan sahifada shu ism, sana va maktab ma'muriyati ko'rinadi.</li>
               </ol></div>
             <label class="fl" for="s_tgbot" style="margin-top:14px">Telegram bot (username, @ va t.me/ siz)</label>
             <input class="inp" id="s_tgbot" autocapitalize="off" spellcheck="false" placeholder="masalan, maktab28_bot">
