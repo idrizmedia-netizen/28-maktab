@@ -201,16 +201,6 @@ textarea.inp{resize:vertical;min-height:76px}
 .msg.err{color:var(--danger)}.msg.ok{color:var(--ok)}
 
 /* ---------- app shell ---------- */
-header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
-.top-in{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:10px;font-weight:800}
-.brand .logo{width:36px;height:36px;font-size:15px;margin:0;border-radius:10px}
-nav.tabs{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
-nav.tabs button{border:0;background:transparent;color:var(--muted);padding:8px 11px;font-size:15px;border-radius:10px;font-weight:700;cursor:pointer}
-nav.tabs button.on{background:var(--brand-soft);color:var(--brand);box-shadow:inset 0 -2px 0 var(--brand)}
-nav.tabs button:hover:not(.on){background:var(--brand-soft)}
-nav.tabs button.exit{color:var(--danger)}
-main{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
 .layout{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
 @media (max-width:860px){.layout{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px}
@@ -376,7 +366,7 @@ details.tpl summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:7
 @media print{
   :root{padding:0!important}
   html,body{background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  #authView,#infoView,header.top,.inst-row,#instModal,#formPanel,#tFormPanel,.previewbar,#tab-settings,#tab-log,#tab-tlog,#tab-stats,#tab-audit,.toast{display:none!important}
+  #authView,#infoView,header.top,#bnav,#moreSheet,.inst-row,#instModal,#formPanel,#tFormPanel,.previewbar,#tab-settings,#tab-log,#tab-tlog,#tab-stats,#tab-audit,.toast{display:none!important}
   main{padding:0!important;max-width:none!important}
   .layout{display:block!important}
   .paper-area{background:#fff!important;padding:0!important;border-radius:0!important;overflow:visible!important}
@@ -512,6 +502,147 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
 .att-list .it{display:flex;justify-content:space-between;padding:4px 0;gap:10px}
 .att-x{color:var(--danger);cursor:pointer;font-weight:700;text-decoration:none}
 @media print{#attSub,#tab-att .att-np{display:none!important}#tab-att .card{box-shadow:none;border:0;padding:0}.att-wrap{max-height:none!important;overflow:visible!important;border:0}.att-t th,.att-t td{border-color:#999!important;color:#000!important;background:#fff!important}.att-t th{background:#eee!important}.att-t td.nm,.att-t th.nm{position:static}.att-t .off{background:#ddd!important}}
+/* ====== YANGI SARLAVHA VA MENYU ====== */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--card);background:color-mix(in srgb,var(--card) 88%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:0 16px;height:62px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.01em;min-width:0;flex:none}
+.brand .logo{width:36px;height:36px;font-size:15px;margin:0;border-radius:10px;flex:none}
+.brand span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+nav.tabs{display:flex;gap:4px;margin:0 auto;align-items:center}
+.hd-right{display:flex;align-items:center;gap:8px;flex:none}
+.ic{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ic.sm{width:16px;height:16px}
+/* ochiluvchi menyu (dropdown) */
+.dd{position:relative}
+.dd-btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 12px;border:0;border-radius:11px;background:transparent;color:var(--muted);font-weight:700;font-size:14.5px;cursor:pointer;white-space:nowrap;transition:background-color .15s,color .15s,box-shadow .15s}
+.dd-btn:hover{background:var(--brand-soft);color:var(--text)}
+.dd-btn.on{background:var(--brand-soft);color:var(--brand);box-shadow:inset 0 -2px 0 var(--brand)}
+.dd-btn .chev{width:14px;height:14px;opacity:.7;transition:transform .18s}
+.dd.open>.dd-btn .chev{transform:rotate(180deg)}
+.dd.open>.dd-btn{background:var(--brand-soft);color:var(--brand)}
+.dd-menu{position:absolute;top:calc(100% + 8px);left:0;min-width:324px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 34px rgba(16,24,40,.16),0 2px 6px rgba(16,24,40,.06);padding:6px;opacity:0;visibility:hidden;transform:translateY(-4px) scale(.98);transform-origin:top left;pointer-events:none;transition:opacity .14s,transform .14s,visibility 0s .14s;z-index:60}
+.dd-menu.right{left:auto;right:0;transform-origin:top right}
+.dd.open>.dd-menu{opacity:1;visibility:visible;transform:none;pointer-events:auto;transition-delay:0s}
+.dd-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:transparent;color:var(--text);padding:9px 10px;border-radius:10px;cursor:pointer;transition:background-color .12s}
+.dd-item:hover,.dd-item:focus-visible{background:var(--brand-soft)}
+.dd-item .ico{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand);flex:none;transition:background-color .12s,color .12s}
+.dd-item:hover .ico,.dd-item.on .ico{background:var(--brand);color:var(--brand-ink)}
+.dd-item .tx{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.dd-item .tx b{font-size:14.5px}
+.dd-item .tx small{font-size:12.5px;color:var(--muted);font-weight:500}
+.dd-item.on{background:var(--brand-soft)}
+.dd-item.on::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--brand);margin-left:auto;flex:none}
+.dd-item.danger{color:var(--danger)}
+.dd-item.danger .ico{background:rgba(180,35,24,.12);color:var(--danger)}
+.dd-item.danger:hover .ico{background:var(--danger);color:#fff}
+.dd-sep{height:1px;background:var(--line);margin:6px 4px}
+.dd-menu.narrow{min-width:236px}
+/* o'rnatish tugmasi */
+.inst-row.inst-head{margin:0;justify-content:flex-end;flex-wrap:nowrap;gap:0}
+.inst-row.inst-head .dd-btn{background:var(--brand-soft);color:var(--brand);padding:0 14px}
+.inst-row.inst-head .dd-btn:hover{background:color-mix(in srgb,var(--brand) 16%,var(--brand-soft))}
+/* foydalanuvchi */
+.avatar{width:40px;height:40px;border-radius:50%;border:0;padding:0;display:grid;place-items:center;font-weight:800;font-size:16px;color:var(--brand-ink);background:linear-gradient(135deg,var(--brand),var(--brand-2,var(--brand)));background-size:cover;background-position:center;cursor:pointer;box-shadow:0 0 0 2px var(--card),0 0 0 3px var(--line);transition:box-shadow .15s,transform .1s}
+.avatar:hover{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--brand)}
+.avatar:active{transform:scale(.96)}
+.u-info{padding:10px 10px 8px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.u-info small{font-size:12px;color:var(--muted)}
+.u-info b{font-size:14px;word-break:break-all}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
+
+/* ====== PASTKI MENYU (telefon) ====== */
+#bnav,#moreSheet{display:none}
+@media (max-width:860px){
+  nav.tabs{display:none}
+  .top-in{height:58px;gap:10px}
+  .hd-right{margin-left:auto}
+  .brand span{max-width:50vw}
+  #bnav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:45;background:var(--card);background:color-mix(in srgb,var(--card) 92%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+  #bnav button{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:transparent;color:var(--muted);padding:6px 2px 4px;border-radius:12px;font-size:11.5px;font-weight:700;cursor:pointer;min-width:0;transition:color .15s}
+  #bnav button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #bnav button .ic{width:23px;height:23px;transition:transform .18s}
+  #bnav button.on{color:var(--brand)}
+  #bnav button.on .ic{transform:translateY(-1px) scale(1.06)}
+  #bnav button.on::before{content:"";position:absolute;top:-7px;left:50%;width:26px;height:3px;border-radius:0 0 4px 4px;background:var(--brand);transform:translateX(-50%)}
+  #bnav button:active{background:var(--brand-soft)}
+  main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  #themeBtn{bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  #moreSheet{position:fixed;inset:0;z-index:55;background:rgba(10,15,30,.5);align-items:flex-end}
+  #moreSheet:not(.hidden){display:flex;animation:fadeIn .16s ease-out}
+  .msheet{width:100%;background:var(--card);border-radius:20px 20px 0 0;padding:8px 10px calc(14px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 30px rgba(0,0,0,.2);animation:sheetUp .22s cubic-bezier(.2,.8,.2,1);max-height:80vh;overflow:auto}
+  .msheet .grab{width:38px;height:4px;border-radius:4px;background:var(--line);margin:4px auto 10px}
+  .msheet h3{margin:2px 10px 8px;font-size:13px;color:var(--muted);font-weight:700}
+}
+@media (max-width:520px){
+  .inst-row.inst-head .dd-btn .lbl{display:none}
+  .inst-row.inst-head .dd-btn{padding:0 11px}
+  .brand span{max-width:47vw}
+}
+@media print{#bnav,#moreSheet{display:none!important}}
+
+/* ====== MAYDA TAFSILOTLAR ====== */
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.inp:focus-visible{outline:none}
+.btn{transition:filter .15s,transform .08s,box-shadow .15s,background-color .15s,border-color .15s,color .15s}
+.btn:hover:not(:disabled){box-shadow:0 3px 10px color-mix(in srgb,var(--brand) 28%,transparent)}
+.btn.ghost:hover:not(:disabled){filter:none;box-shadow:none;background:color-mix(in srgb,var(--brand) 16%,var(--brand-soft))}
+.btn.line:hover:not(:disabled){filter:none;box-shadow:none;border-color:var(--brand);color:var(--brand)}
+.btn:active:not(:disabled){transform:translateY(1px) scale(.99);box-shadow:none}
+.btn:disabled{filter:grayscale(.35)}
+.btn.is-loading{position:relative;color:transparent!important;pointer-events:none}
+.btn.is-loading::after,.gbtn:disabled span::before{content:"";width:16px;height:16px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .7s linear infinite}
+.btn.is-loading::after{position:absolute;left:50%;top:50%;margin:-8px 0 0 -8px;color:var(--brand-ink)}
+.btn.ghost.is-loading::after{color:var(--brand)}
+.gbtn:disabled span::before{display:inline-block;vertical-align:-3px;margin-right:8px;color:#5f6368}
+.inp{transition:border-color .15s,box-shadow .15s,background-color .15s}
+.inp:hover:not(:focus){border-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
+.mini{transition:background-color .12s}
+.mini:hover{background:var(--brand-soft)}
+.slot,.chip,.seg button,.att-sub button,.att-pal button,.att-chips button{transition:background-color .12s,border-color .12s,color .12s,transform .08s}
+.slot:hover:not(.on),.att-sub button:hover:not(.on){border-color:var(--brand);color:var(--text)}
+.slot:active,.chip:active,.seg button:active,.att-chips button:active{transform:scale(.97)}
+table.log tr.rowlink td{transition:background-color .12s}
+.pw button,.inst-x{transition:filter .12s}
+.inst-x:hover{filter:brightness(.95)}
+/* tab almashishi */
+main>section[id^="tab-"]:not(.hidden){animation:tabIn .2s ease-out}
+.inst-modal:not(.hidden){animation:fadeIn .15s ease-out}
+.inst-modal:not(.hidden) .inst-box{animation:popIn .2s cubic-bezier(.2,.8,.2,1)}
+.toast{transform:translate(-50%,10px);transition:opacity .2s,transform .2s;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.toast.show{transform:translate(-50%,0)}
+@keyframes tabIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{to{background-position:-200% 0}}
+/* yuklanish skeletlari */
+.skel{display:block;border-radius:8px;background:linear-gradient(90deg,var(--line) 25%,color-mix(in srgb,var(--line) 45%,var(--card)) 50%,var(--line) 75%);background-size:200% 100%;animation:shimmer 1.3s linear infinite}
+.skel-list{padding:2px 0}
+.skel-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+.skel-row:last-child{border-bottom:0}
+.skel-row .skel.c{width:38px;height:38px;border-radius:50%;flex:none}
+.skel-row .col{flex:1;display:grid;gap:8px;min-width:0}
+.skel-row .skel.l{height:11px}
+.skel-row .skel.l.w1{width:46%}.skel-row .skel.l.w2{width:78%}
+.skel-row .skel.t{width:64px;height:22px;border-radius:999px;flex:none}
+/* bo'sh holat */
+.empty{padding:0;color:var(--muted)}
+.empty-state{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:34px 20px 30px;color:var(--brand)}
+.es-art{width:124px;height:100px;margin-bottom:6px}
+.es-art .f1{fill:var(--brand-soft)}
+.es-art .f2{fill:var(--card)}
+.es-art .s{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.es-art .sh{fill:currentColor;opacity:.1}
+.es-art .dot{fill:currentColor;opacity:.45}
+.es-t{font-weight:800;font-size:16px;color:var(--text)}
+.es-d{color:var(--muted);font-size:14px;max-width:340px;line-height:1.5}
+.empty-state .btn{margin-top:10px}
+.stat-empty{padding:22px 12px;text-align:center;border:1px dashed var(--line);border-radius:12px;margin:6px 0}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
 </style>
 </head>
 <body>
@@ -556,20 +687,47 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
   <header class="top">
     <div class="top-in">
       <div class="brand"><img class="logo" src="icons/logo/icon.svg" alt="28-maktab" width="36" height="36"><span id="brandName">28-maktab platformasi</span></div>
-      <nav class="tabs">
-        <button data-tab="letter" class="on">O'quvchilar xati</button>
-        <button data-tab="log">O'quvchilar ro'yxati</button>
-        <button data-tab="tletter">O'qituvchilar xati</button>
-        <button data-tab="tlog">O'qituvchilar ro'yxati</button>
-        <button data-tab="att">Davomat</button>
-        <button data-tab="stats">Statistika</button>
-        <button data-tab="audit">Faollik jurnali</button>
-        <button data-tab="settings">Sozlamalar</button>
-        <button class="exit" id="logoutBtn">Chiqish</button>
+      <nav class="tabs" id="mainNav" aria-label="Asosiy menyu">
+        <div class="grp dd" data-grp="letters">
+          <button type="button" class="dd-btn grp-btn" aria-haspopup="true" aria-expanded="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>Xatlar</span><svg class="ic chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="dd-menu">
+            <button type="button" class="dd-item on" data-tab="letter"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></span><span class="tx"><b>O'quvchilar xati</b><small>Ogohlantirish, maqtov, taklifnoma</small></span></button>
+            <button type="button" class="dd-item" data-tab="log"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></span><span class="tx"><b>O'quvchilar ro'yxati</b><small>Berilgan xatlar va imzolar</small></span></button>
+            <button type="button" class="dd-item" data-tab="tletter"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="tx"><b>O'qituvchilar xati</b><small>Ogohlantirish xatini yozish</small></span></button>
+            <button type="button" class="dd-item" data-tab="tlog"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M12 11h4M12 16h4M8 11h.01M8 16h.01"/></svg></span><span class="tx"><b>O'qituvchilar ro'yxati</b><small>Yozilgan xatlar tarixi</small></span></button>
+          </div>
+        </div>
+        <div class="grp dd" data-grp="att">
+          <button type="button" class="dd-btn grp-btn" aria-haspopup="true" aria-expanded="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18m-12 6 2 2 4-4"/></svg><span>Davomat va statistika</span><svg class="ic chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="dd-menu">
+            <button type="button" class="dd-item" data-tab="att"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18m-12 6 2 2 4-4"/></svg></span><span class="tx"><b>Davomat</b><small>Kunlik belgilash va jadval</small></span></button>
+            <button type="button" class="dd-item" data-tab="stats"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></svg></span><span class="tx"><b>Statistika</b><small>Diagrammalar va hisobotlar</small></span></button>
+          </div>
+        </div>
+        <div class="grp dd" data-grp="admin">
+          <button type="button" class="dd-btn grp-btn" aria-haspopup="true" aria-expanded="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg><span>Boshqaruv</span><svg class="ic chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="dd-menu">
+            <button type="button" class="dd-item" data-tab="audit"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span><span class="tx"><b>Faollik jurnali</b><small>Adminlar amallari tarixi</small></span></button>
+            <button type="button" class="dd-item" data-tab="settings"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></span><span class="tx"><b>Sozlamalar</b><small>Adminlar, maktab, zaxira nusxa</small></span></button>
+          </div>
+        </div>
       </nav>
-      <div class="inst-row inst-head" data-inst-row>
-        <button type="button" class="btn ghost sm" data-inst="phone" title="Telefonga o'rnatish">📱 Telefon</button>
-        <button type="button" class="btn ghost sm" data-inst="pc" title="Kompyuterga o'rnatish">💻 Kompyuter</button>
+      <div class="hd-right">
+        <div class="inst-row inst-head dd" data-inst-row>
+          <button type="button" class="dd-btn" aria-haspopup="true" aria-expanded="false" title="Ilovani o'rnatish"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span class="lbl">O'rnatish</span></button>
+          <div class="dd-menu right narrow">
+            <button type="button" class="dd-item" data-inst="phone"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg></span><span class="tx"><b>Telefonga</b><small>Bosh ekranga qo'shish</small></span></button>
+            <button type="button" class="dd-item" data-inst="pc"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span><span class="tx"><b>Kompyuterga</b><small>Alohida ilova sifatida</small></span></button>
+          </div>
+        </div>
+        <div class="dd" id="userDd">
+          <button type="button" class="avatar dd-btn-av" id="uAvatar" aria-haspopup="true" aria-expanded="false" aria-label="Hisob menyusi">?</button>
+          <div class="dd-menu right narrow">
+            <div class="u-info"><small>Kirgan hisob</small><b id="uEmail">—</b></div>
+            <div class="dd-sep"></div>
+            <button type="button" class="dd-item danger" id="logoutBtn"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></span><span class="tx"><b>Chiqish</b></span></button>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -917,7 +1075,7 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
           <button class="mini" id="auditClear" type="button">Filtrni tozalash</button>
           <button class="mini" id="auditRefresh" type="button">Yangilash</button>
         </div>
-        <div id="auditBody"><div class="stat-empty">Yuklanmoqda...</div></div>
+        <div id="auditBody"></div>
       </div>
     </section>
 
@@ -1029,9 +1187,142 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
       </div>
     </section>
   </main>
+  <nav id="bnav" aria-label="Pastki menyu">
+    <button type="button" data-go="letter"><svg class="ic" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span>Xat</span></button>
+    <button type="button" data-go="log"><svg class="ic" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Ro'yxat</span></button>
+    <button type="button" data-go="att"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18m-12 6 2 2 4-4"/></svg><span>Davomat</span></button>
+    <button type="button" data-go="stats"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></svg><span>Statistika</span></button>
+    <button type="button" data-go="more" id="bnavMore" aria-haspopup="dialog"><svg class="ic" viewBox="0 0 24 24" style="stroke-width:3"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg><span>Yana</span></button>
+  </nav>
+  <div id="moreSheet" class="hidden" role="dialog" aria-modal="true" aria-label="Boshqa bo'limlar">
+    <div class="msheet">
+      <div class="grab"></div>
+      <h3>Boshqa bo'limlar</h3>
+      <div id="moreList"></div>
+    </div>
+  </div>
 </div>
 <div class="toast" id="toast"></div>
 
+
+<script>
+/* ===== Interfeys yordamchilari: menyu, pastki panel, bo'sh holat, skelet ===== */
+(function(){
+  var d=document;
+  function $(s,r){return (r||d).querySelector(s)}
+  function $$(s,r){return [].slice.call((r||d).querySelectorAll(s))}
+  var ART={
+    letters:'<ellipse class="sh" cx="62" cy="90" rx="34" ry="4"/><rect class="f1" x="14" y="26" width="96" height="58" rx="12"/><rect class="f2 s" x="24" y="30" width="76" height="50" rx="8"/><path class="s" d="M26 35l36 24 36-24"/><path class="s" d="M32 74l20-16M92 74L72 58"/><circle class="dot" cx="106" cy="16" r="3"/><path class="s" d="M16 14v8M12 18h8" style="stroke-width:1.8"/>',
+    search:'<ellipse class="sh" cx="62" cy="90" rx="34" ry="4"/><circle class="f1" cx="56" cy="44" r="32"/><circle class="f2 s" cx="54" cy="42" r="22"/><path class="s" d="M70 58l20 20" style="stroke-width:6"/><path class="s" d="M46 42h16" style="stroke-width:2.6"/><circle class="dot" cx="104" cy="22" r="3"/>',
+    chart:'<ellipse class="sh" cx="62" cy="90" rx="38" ry="4"/><rect class="f1" x="14" y="14" width="96" height="70" rx="12"/><path class="s" d="M26 76h72"/><rect class="f2 s" x="32" y="52" width="14" height="24" rx="3"/><rect class="f2 s" x="55" y="36" width="14" height="40" rx="3"/><rect class="f2 s" x="78" y="46" width="14" height="30" rx="3"/><circle class="dot" cx="104" cy="12" r="3"/>'
+  };
+  window.__ui={
+    empty:function(kind,title,text,cta){
+      return '<div class="empty-state"><svg class="es-art" viewBox="0 0 124 100" aria-hidden="true">'+(ART[kind]||ART.search)+'</svg>'+
+        '<div class="es-t">'+title+'</div><div class="es-d">'+text+'</div>'+
+        (cta?'<button type="button" class="btn ghost sm" data-gonav="'+cta.go+'">'+cta.label+'</button>':'')+'</div>';
+    },
+    skel:function(n){
+      var h='<div class="skel-list" aria-busy="true" aria-label="Yuklanmoqda">';
+      for(var i=0;i<(n||5);i++) h+='<div class="skel-row"><span class="skel c"></span><div class="col"><span class="skel l w1"></span><span class="skel l w2"></span></div><span class="skel t"></span></div>';
+      return h+'</div>';
+    },
+    setUser:function(u){
+      var av=$('#uAvatar'), em=$('#uEmail'); if(!av) return;
+      if(!u){ av.textContent='?'; av.style.backgroundImage=''; if(em) em.textContent='—'; return; }
+      var mail=u.email||'', name=u.displayName||mail||'?';
+      av.textContent=(name.trim().charAt(0)||'?').toUpperCase();
+      av.title=mail; if(em) em.textContent=mail||name;
+      if(u.photoURL){ var img=new Image(); img.referrerPolicy='no-referrer';
+        img.onload=function(){ av.style.backgroundImage='url("'+String(u.photoURL).replace(/["\\\n]/g,'')+'")'; av.textContent=''; };
+        img.src=u.photoURL; }
+    }
+  };
+
+  /* --- ochiluvchi menyular --- */
+  function closeAll(except,focus){
+    $$('.dd.open').forEach(function(w){
+      if(w===except) return;
+      w.classList.remove('open');
+      var b=$('.dd-btn,.avatar',w); if(b){ b.setAttribute('aria-expanded','false'); if(focus) b.focus(); }
+    });
+  }
+  d.addEventListener('click',function(e){
+    var btn=e.target.closest&&e.target.closest('.dd-btn,.avatar');
+    if(btn&&btn.parentNode.classList.contains('dd')){
+      var w=btn.parentNode;
+      if(w.classList.contains('single')){ var one=$$('[data-tab]',w).filter(function(b){return !b.classList.contains('hidden')})[0]; closeAll(); if(one) one.click(); return; }
+      var open=!w.classList.contains('open'); closeAll(w);
+      w.classList.toggle('open',open); btn.setAttribute('aria-expanded',open?'true':'false');
+      return;
+    }
+    if(e.target.closest&&e.target.closest('.dd-menu .dd-item')){ closeAll(); return; }
+    if(!(e.target.closest&&e.target.closest('.dd'))) closeAll();
+    var g=e.target.closest&&e.target.closest('[data-gonav]');
+    if(g){ var t=$('nav.tabs [data-tab="'+g.getAttribute('data-gonav')+'"]'); if(t) t.click(); }
+  });
+  d.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){ closeAll(null,true); closeMore(); return; }
+    var w=e.target.closest&&e.target.closest('.dd'); if(!w) return;
+    var items=$$('.dd-item:not(.hidden)',w);
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+      if(!items.length) return; e.preventDefault();
+      if(!w.classList.contains('open')){ var b=$('.dd-btn,.avatar',w); b.click(); }
+      var i=items.indexOf(d.activeElement);
+      i = e.key==='ArrowDown' ? (i+1)%items.length : (i<=0?items.length-1:i-1);
+      items[i].focus();
+    }
+  });
+
+  /* --- menyu holatini sinxronlash (rollar, faol bo'lim) --- */
+  var MORE=['tletter','tlog','audit','settings'];
+  function vis(b){return b && !b.classList.contains('hidden')}
+  function tabBtn(n){return $('nav.tabs [data-tab="'+n+'"]')}
+  function sync(){
+    $$('nav.tabs .grp').forEach(function(g){
+      var items=$$('[data-tab]',g), v=items.filter(vis), on=items.some(function(b){return b.classList.contains('on')});
+      g.classList.toggle('hidden',v.length===0);
+      g.classList.toggle('single',v.length===1);
+      $('.grp-btn',g).classList.toggle('on',on);
+    });
+    $$('#bnav [data-go]').forEach(function(b){
+      var n=b.getAttribute('data-go'), on;
+      if(n==='more'){
+        var any=MORE.some(function(m){return vis(tabBtn(m))});
+        b.classList.toggle('hidden',!any);
+        on=MORE.some(function(m){var t=tabBtn(m);return t&&t.classList.contains('on')});
+      } else { var t=tabBtn(n); b.classList.toggle('hidden',!vis(t)); on=!!(t&&t.classList.contains('on')); }
+      b.classList.toggle('on',on);
+    });
+    var vb=$$('#bnav [data-go]').filter(function(b){return !b.classList.contains('hidden')}).length;
+    if(vb) $('#bnav').style.gridTemplateColumns='repeat('+vb+',1fr)';
+  }
+  var pend=false;
+  function queue(){ if(pend) return; pend=true; requestAnimationFrame(function(){pend=false; sync();}); }
+  var nav=$('nav.tabs');
+  if(nav){ try{ new MutationObserver(queue).observe(nav,{attributes:true,attributeFilter:['class'],subtree:true}); }catch(e){} }
+  sync();
+
+  /* --- pastki panel va "Yana" varag'i --- */
+  function closeMore(){ var s=$('#moreSheet'); if(s) s.classList.add('hidden'); }
+  function openMore(){
+    var list=$('#moreList'); list.innerHTML='';
+    MORE.forEach(function(n){
+      var src=tabBtn(n); if(!vis(src)) return;
+      var c=src.cloneNode(true); c.removeAttribute('data-tab'); c.setAttribute('data-more',n); c.classList.remove('hidden');
+      list.appendChild(c);
+    });
+    $('#moreSheet').classList.remove('hidden');
+  }
+  d.addEventListener('click',function(e){
+    var g=e.target.closest&&e.target.closest('#bnav [data-go]');
+    if(g){ var n=g.getAttribute('data-go'); if(n==='more') openMore(); else { var t=tabBtn(n); if(t) t.click(); } return; }
+    var m=e.target.closest&&e.target.closest('#moreList [data-more]');
+    if(m){ var t2=tabBtn(m.getAttribute('data-more')); closeMore(); if(t2) t2.click(); return; }
+    if(e.target.id==='moreSheet') closeMore();
+  });
+})();
+</script>
 
 <script src="qrcode.js"></script>
 <script src="html2canvas-1.4.1.min.js"></script>
@@ -1405,7 +1696,7 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
   }
   var auditCache = [];
   function loadAuditLog(){
-    $('#auditBody').innerHTML = '<div class="stat-empty">Yuklanmoqda...</div>';
+    $('#auditBody').innerHTML = __ui.skel(6);
     if(!db){ $('#auditBody').innerHTML = "<div class=\"stat-empty\">Internet ulanishi yo'q.</div>"; return; }
     db.collection('audit_log').orderBy('at','desc').limit(200).get().then(function(qs){
       auditCache = qs.docs.map(function(d){ return d.data() });
@@ -1665,7 +1956,7 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
   var authSeq = 0;
   function onUser(user){
     var seq = ++authSeq;
-    stopCloud(false); curUser = null; isOwner = false; myRole='full'; myClasses=[];
+    stopCloud(false); curUser = null; isOwner = false; myRole='full'; myClasses=[]; if(window.__ui) __ui.setUser(null);
     if(!user){
       if(!infoActive){
         showAuth();
@@ -1677,7 +1968,7 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
     checkAdmin(user).then(function(info){
       if(seq !== authSeq) return;
       if(!info){ pendingDenied = user.email || 'Bu hisob'; auth.signOut(); return; }
-      curUser = user; isOwner = (user.email||'').toLowerCase() === OWNER_EMAIL;
+      curUser = user; isOwner = (user.email||'').toLowerCase() === OWNER_EMAIL; if(window.__ui) __ui.setUser(user);
       myRole = info.role; myClasses = info.classes||[];
       startCloud();
       if(!infoActive) showApp();
@@ -1938,7 +2229,7 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
     $('#chTitle').textContent=CH_DATA[CH_PREF.data].t;
     $('#chSum').textContent='Davr: '+chPeriodText()+' · jami: '+res.total+' ta';
     if(!res.total){
-      box.innerHTML='<div class="stat-empty">Tanlangan davr uchun ma\'lumot yo\'q.</div>';
+      box.innerHTML=__ui.empty('chart',"Ma'lumot yo'q","Tanlangan davr uchun ma'lumot topilmadi. Davrni o'zgartirib ko'ring.");
       $('#chTable').innerHTML=''; return;
     }
     var W=Math.max(300, Math.min(1000, box.clientWidth||700)), svg;
@@ -2684,7 +2975,7 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
              '<td>'+(phoneOf(e,pm)?esc(phoneOf(e,pm)):'<span class="muted">—</span>')+deliveryHTML(e)+'</td>'+
              (e.kind ? '<td><span class="badge">'+kindOf(e).icon+' '+kindOf(e).short+'</span></td>' : '<td><span class="badge'+(n>=3?' warn':'')+'" title="Bu — '+ordById[e.id]+'-xat">'+n+' marta</span>'+(n>=3?' <span class="badge warn" title="3 va undan ko\'p xat: direktor bilan suhbat tavsiya etiladi">🔴 Suhbat</span>':'')+'</td>')+
              '<td>'+(!isViewer()?'<button type="button" class="mini" data-sign="'+esc(e.id)+'">'+(e.sig?'✓ Imzolangan':'✍️ Imzolash')+'</button> ':'')+(isViewer()||isHomeroom()?'':'<button class="mini" style="color:var(--danger)" data-rm="'+esc(e.id)+'">O\'chirish</button>')+'</td></tr>';
-    }).join('') : '<tr><td colspan="9"><div class="empty">'+(all.length?"Hech narsa topilmadi.":"Hozircha xat yo'q. Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.")+'</div></td></tr>';
+    }).join('') : '<tr><td colspan="9">'+(all.length?__ui.empty('search',"Hech narsa topilmadi","Qidiruv yoki filtrni o'zgartirib ko'ring."):__ui.empty('letters',"Hozircha xat yo'q","Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.",isViewer()?null:{label:"Xat yozish",go:'letter'}))+'</td></tr>';
     $$('#logBody tr[data-open]').forEach(function(tr){tr.addEventListener('click',function(e){
       if(e.target.closest('input,button')) return; openEntries([tr.dataset.open]);
     })});
@@ -3034,7 +3325,7 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
       return '<tr class="rowlink" data-topen="'+esc(e.id)+'"><td>'+esc(fmtDate(e.date))+'</td><td><b class="lnk">'+esc(e.name)+'</b></td><td>'+esc(e.subject)+'</td><td>'+esc(e.issue)+'</td><td>'+esc(e.signer)+'</td>'+
              '<td><span class="badge'+(n>=3?' warn':'')+'">'+n+' marta</span></td>'+
              '<td><button class="mini" style="color:var(--danger)" data-trm="'+esc(e.id)+'">O\'chirish</button></td></tr>';
-    }).join('') : '<tr><td colspan="7"><div class="empty">'+(all.length?"Hech narsa topilmadi.":"Hozircha xat yo'q. Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.")+'</div></td></tr>';
+    }).join('') : '<tr><td colspan="7">'+(all.length?__ui.empty('search',"Hech narsa topilmadi","Qidiruv yoki filtrni o'zgartirib ko'ring."):__ui.empty('letters',"Hozircha xat yo'q","Xatni chop etsangiz yoki PDF olsangiz, shu yerga yoziladi.",isViewer()?null:{label:"Xat yozish",go:'tletter'}))+'</td></tr>';
     $$('#tlogBody tr[data-topen]').forEach(function(tr){tr.addEventListener('click',function(e){
       if(e.target.closest('button')) return;
       var r=loadTLog().filter(function(x){return x.id===tr.dataset.topen})[0]; if(!r) return;
@@ -3413,7 +3704,7 @@ table.att-t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
     $('#attStCards').innerHTML='<div class="stat-card"><b>'+st.length+"</b><span>O'quvchilar</span></div><div class=\"stat-card\"><b>"+R.days+'</b><span>Dars kunlari</span></div><div class="stat-card"><b>'+(exp?(100*(1-R.abs/exp)).toFixed(1)+'%':'—')+'</b><span>Davomat foizi</span></div><div class="stat-card"><b>'+R.abs+'</b><span>Qoldirilgan kunlar</span></div>';
     var res=attItems(ATP.data,R); $('#atTitle').textContent=ATP_T[ATP.data]; $('#atSum').textContent='Davr: '+attPeriodText()+' · jami: '+res.total+' ta';
     attLast={R:R,res:res,st:st,cl:cl};
-    if(!st.length||!res.total){ box.innerHTML='<div class="stat-empty">Tanlangan davr uchun ma\'lumot yo\'q.</div>'; $('#atTable').innerHTML=''; }
+    if(!st.length||!res.total){ box.innerHTML=__ui.empty('chart',"Ma'lumot yo'q","Tanlangan davr uchun ma'lumot topilmadi. Davrni o'zgartirib ko'ring."); $('#atTable').innerHTML=''; }
     else {
       var W=Math.max(300,Math.min(1000,box.clientWidth||700)), svg;
       if(ATP.type==='donut') svg=svgDonut(res.items,W,ATP.vals,res.total); else if(ATP.type==='bar') svg=svgBars(res.items,W,ATP.vals); else svg=svgColumn(res.items,W,ATP.vals,ATP.type==='line');
