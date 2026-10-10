@@ -172,7 +172,7 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:16px;line-height:1.45;min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;font-size:16px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;line-height:1.45;min-height:100%}
 button,input,textarea{font:inherit;color:inherit}
 .hidden{display:none!important}
 
@@ -689,6 +689,47 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
   table.log.cardify tr.tot{background:var(--brand-soft)}
   .tbl-wrap{overflow:visible}
 }
+
+/* ====== Bosh sahifa, kirish, mobil tablar ====== */
+h1,h2,h3{letter-spacing:-.012em}
+#authView{background:radial-gradient(900px 500px at 15% -10%,color-mix(in srgb,var(--brand) 22%,transparent),transparent 60%),radial-gradient(700px 420px at 100% 110%,color-mix(in srgb,var(--brand) 16%,transparent),transparent 60%),var(--bg)}
+.auth-card{max-width:420px;padding:34px 28px;border-radius:20px;box-shadow:0 20px 50px rgba(16,24,40,.12),0 2px 6px rgba(16,24,40,.05)}
+.auth-card .logo{display:block;margin:0 auto 14px;width:64px;height:64px;border-radius:16px;box-shadow:0 8px 20px color-mix(in srgb,var(--brand) 30%,transparent)}
+.auth-points{list-style:none;margin:0 0 20px;padding:12px 14px;background:var(--brand-soft);border-radius:12px;display:grid;gap:8px;font-size:14px}
+.auth-points li{display:flex;gap:10px;align-items:center}
+.auth-points span{width:26px;height:26px;border-radius:8px;background:var(--card);display:grid;place-items:center;font-size:14px;flex:none}
+.home-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.home-hero h2{margin:0;font-size:26px}
+.home-hero p{margin:2px 0 0;color:var(--muted)}
+.home-act{display:flex;gap:8px;flex-wrap:wrap}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:2px;box-shadow:var(--shadow)}
+.kpi b{font-size:32px;line-height:1.1;letter-spacing:-.02em;color:var(--brand)}
+.kpi.bad b{color:var(--danger)}
+.kpi span{font-weight:700;font-size:14px}
+.kpi small{color:var(--muted);font-size:12.5px}
+.home-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.home-grid .card h3{margin:0 0 10px;font-size:16px}
+.home-list{list-style:none;margin:0 0 8px;padding:0}
+.home-list li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.home-list li:last-child{border-bottom:0}
+.home-list small{color:var(--muted)}
+.home-list .pbar{flex:0 0 90px;margin-left:auto}
+.m-tabs{display:none}
+#netBar{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:80;max-width:min(92vw,520px);padding:10px 16px;border-radius:999px;font-size:13.5px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);animation:popIn .2s ease-out}
+#netBar.off{background:#b42318;color:#fff}
+#netBar.on{background:#067647;color:#fff}
+@media (max-width:860px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .kpi b{font-size:26px}
+  .home-grid{grid-template-columns:1fr}
+  .m-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--brand-soft);padding:4px;border-radius:14px;margin-bottom:12px}
+  .m-tabs button{border:0;background:transparent;border-radius:11px;padding:10px;font-weight:700;color:var(--muted);cursor:pointer;transition:background-color .15s,color .15s}
+  .m-tabs button.on{background:var(--card);color:var(--brand);box-shadow:0 1px 4px rgba(16,24,40,.12)}
+  .layout.m-form>:not(:first-child){display:none}
+  .layout.m-view>:first-child{display:none}
+}
+@media print{.m-tabs,#netBar{display:none!important}}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
@@ -702,6 +743,7 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
     <img class="logo" src="icons/logo/icon.svg" alt="28-maktab" width="56" height="56">
     <h1 id="authTitle">Kirish</h1>
     <p class="sub" id="authSub">28-maktab platformasi</p>
+    <ul class="auth-points"><li><span>✉️</span>Ogohlantirish va minnatdorchilik xatlari</li><li><span>📅</span>Davomat va statistika</li><li><span>✈️</span>Ota-onalarga Telegram xabar</li></ul>
     <button class="btn block gbtn" id="googleBtn" type="button">
       <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       <span>Google orqali kirish</span>
@@ -737,6 +779,10 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
     <div class="top-in">
       <div class="brand"><img class="logo" src="icons/logo/icon.svg" alt="28-maktab" width="36" height="36"><span id="brandName">28-maktab platformasi</span></div>
       <nav class="tabs" id="mainNav" aria-label="Asosiy menyu">
+        <div class="grp dd" data-grp="home">
+          <button type="button" class="dd-btn grp-btn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg><span>Bosh sahifa</span></button>
+          <div class="dd-menu"><button type="button" class="dd-item" data-tab="home"><span class="ico"></span><span class="tx"><b>Bosh sahifa</b></span></button></div>
+        </div>
         <div class="grp dd" data-grp="letters">
           <button type="button" class="dd-btn grp-btn" aria-haspopup="true" aria-expanded="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>Xatlar</span><svg class="ic chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
           <div class="dd-menu">
@@ -784,6 +830,7 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
 
   <main>
     <!-- Ogohlantirish xati -->
+    <section id="tab-home" class="hidden"><div id="homeBody"></div></section>
     <section id="tab-letter">
       <div class="layout">
         <div class="card" id="formPanel">
@@ -1237,8 +1284,9 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
     </section>
   </main>
   <nav id="bnav" aria-label="Pastki menyu">
+    <button type="button" data-go="home"><svg class="ic" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg><span>Bosh</span></button>
     <button type="button" data-go="letter"><svg class="ic" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span>Xat</span></button>
-    <button type="button" data-go="log"><svg class="ic" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Ro'yxat</span></button>
+    
     <button type="button" data-go="att"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18m-12 6 2 2 4-4"/></svg><span>Davomat</span></button>
     <button type="button" data-go="stats"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></svg><span>Statistika</span></button>
     <button type="button" data-go="more" id="bnavMore" aria-haspopup="dialog"><svg class="ic" viewBox="0 0 24 24" style="stroke-width:3"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg><span>Yana</span></button>
@@ -1324,7 +1372,7 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
   });
 
   /* --- menyu holatini sinxronlash (rollar, faol bo'lim) --- */
-  var MORE=['tletter','tlog','audit','settings'];
+  var MORE=['log','tletter','tlog','audit','settings'];
   function vis(b){return b && !b.classList.contains('hidden')}
   function tabBtn(n){return $('nav.tabs [data-tab="'+n+'"]')}
   function sync(){
@@ -1370,6 +1418,20 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
     if(m){ var t2=tabBtn(m.getAttribute('data-more')); closeMore(); if(t2) t2.click(); return; }
     if(e.target.id==='moreSheet') closeMore();
   });
+  /* mobil: xat oynasida "Forma / Ko'rinish" */
+  $$('#tab-letter .layout, #tab-tletter .layout').forEach(function(L){
+    var bar=d.createElement('div'); bar.className='m-tabs';
+    bar.innerHTML='<button type="button" class="on" data-m="form">✏️ Forma</button><button type="button" data-m="view">📄 Ko\'rinish</button>';
+    L.parentNode.insertBefore(bar,L); L.classList.add('m-form');
+    bar.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; var v=b.getAttribute('data-m')==='view';
+      L.classList.toggle('m-view',v); L.classList.toggle('m-form',!v); $$('button',bar).forEach(function(x){x.classList.toggle('on',x===b)});
+      setTimeout(function(){window.dispatchEvent(new Event('resize'))},40); });
+  });
+  /* internet aloqasi holati */
+  var nb=d.createElement('div'); nb.id='netBar'; nb.className='hidden'; nb.setAttribute('role','status'); d.body.appendChild(nb);
+  function net(){ if(!navigator.onLine){ nb.textContent="📡 Internet aloqasi yo'q. Bulutga saqlash va Telegram yuborish vaqtincha ishlamasligi mumkin."; nb.className='off'; }
+    else if(nb.className==='off'){ nb.textContent='✅ Aloqa tiklandi'; nb.className='on'; setTimeout(function(){ if(nb.className==='on') nb.className='hidden' },2500); } }
+  window.addEventListener('offline',net); window.addEventListener('online',net); net();
 })();
 </script>
 
@@ -1921,7 +1983,7 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
     // Davomat xodimi: faqat "Davomat" bo'limi ko'rinadi
     var onlyTab = isAttStaff() ? 'att' : (isTLetter() ? 'tletter' : '');
     $$('nav.tabs [data-tab]').forEach(function(b){ var n=b.getAttribute('data-tab'); if(onlyTab) b.classList.toggle('hidden', n!==onlyTab); else if(n==='att') b.classList.remove('hidden'); });
-    if(onlyTab) goTab(onlyTab);
+    if(onlyTab) goTab(onlyTab); else if(!window.__homeDone){ window.__homeDone=1; goTab('home'); }
     if(isTLetter()){ $('#roleNote').textContent="Siz faqat o'qituvchilarga ogohlantirish xati yozish huquqiga egasiz."; $('#roleNote').classList.remove('hidden'); }
 
     // Sinf rahbari uchun "Sinf" maydoni: bitta sinf bo'lsa qulflanadi, bir nechta bo'lsa tanlovga aylanadi
@@ -2096,8 +2158,8 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
     if(isTLetter() && t!=='tletter') t='tletter';
     if(isHomeroom() && (t==='settings'||t==='tletter'||t==='tlog'||t==='audit')) t='letter';
     $$('nav.tabs [data-tab]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-tab')===t)});
-    ['letter','log','tletter','tlog','att','stats','audit','settings'].forEach(function(n){$('#tab-'+n).classList.toggle('hidden',n!==t)});
-    if(t==='letter') fit(); else if(t==='tletter'){fillSigner();fit()} else if(t==='settings'){fillSettings();loadAdmins()} else if(t==='log') renderLog(); else if(t==='tlog') renderTLog(); else if(t==='stats') renderStats(); else if(t==='audit') loadAuditLog(); else if(t==='att') attRender();
+    ['home','letter','log','tletter','tlog','att','stats','audit','settings'].forEach(function(n){$('#tab-'+n).classList.toggle('hidden',n!==t)});
+    if(t==='letter') fit(); else if(t==='tletter'){fillSigner();fit()} else if(t==='settings'){fillSettings();loadAdmins()} else if(t==='log') renderLog(); else if(t==='tlog') renderTLog(); else if(t==='stats') renderStats(); else if(t==='home') renderHome(); else if(t==='audit') loadAuditLog(); else if(t==='att') attRender();
     window.scrollTo(0,0);
   }
   /* ---------- Statistika ---------- */
@@ -3820,6 +3882,29 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
       '</tbody></table></div></div><div class="att-sec"><h3>Haftalik xulosa (oxirgi 7 kun)</h3><pre class="wk" id="attWkTxt">'+esc(wk)+'</pre><div class="row-btns"><button type="button" class="btn sm" id="attWkTg">✈️ Telegram\'da yuborish</button><button type="button" class="btn line sm" id="attWkCp">Nusxalash</button></div><p class="hint">Faqat sinflar bo\'yicha raqamlar yuboriladi, o\'quvchi ismlari yo\'q. Telegram ochilganda chatni o\'zingiz tanlaysiz.</p></div>');
     $('#attWkTg').onclick=function(){ var u='https://t.me/share/url?url='+encodeURIComponent(platformUrl())+'&text='+encodeURIComponent(wk); window.open(u,'_blank','noopener') };
     $('#attWkCp').onclick=function(){ copyText(wk,'Xulosa nusxalandi') };
+  }
+
+  function renderHome(){
+    var box=$('#homeBody'); if(!box) return;
+    var st=attVisible().filter(function(s){return s.cls!==ATT_TCLS}), t=new Date(), iso=dateISO(t), hr=t.getHours();
+    var gr=hr<5?'Xayrli tun':hr<12?'Xayrli tong':hr<18?'Xayrli kun':'Xayrli kech';
+    var h='<div class="home-hero"><div><h2>'+gr+'!</h2><p>'+ATT_WDF[t.getDay()]+', '+esc(fmtDate(iso))+'</p></div><div class="home-act">'+(isViewer()?'':'<button type="button" class="btn sm" data-gonav="letter">✍️ Xat yozish</button>')+'<button type="button" class="btn ghost sm" data-gonav="att">📅 Davomat</button><button type="button" class="btn line sm" data-gonav="stats">📊 Statistika</button></div></div>';
+    if(!st.length){ box.innerHTML=h+'<div class="card">'+__ui.empty('chart',"Hali o'quvchilar yo'q","Davomat bo'limiga o'quvchilar ro'yxatini yuklang, shunda bu yerda kunlik holat ko'rinadi.",{label:'Davomatga o\'tish',go:'att'})+'</div>'; return }
+    var a=new Date(); a.setDate(a.getDate()-6); var b=new Date(); b.setDate(b.getDate()-29);
+    var T=attCalc(st,[iso,iso]), W=attCalc(st,[dateISO(a),iso]), M=attCalc(st,[dateISO(b),iso]);
+    var exp=0; Object.keys(W.pc).forEach(function(c){exp+=W.pc[c].n*W.pc[c].days});
+    var wp=exp?(100*(1-W.abs/exp)).toFixed(1)+'%':'—';
+    var dq=M.ps.filter(function(p){return p.mx>=3||p.zm>5}).sort(function(x,y){return (y.mx||0)-(x.mx||0)||(y.zm||0)-(x.zm||0)});
+    var kp=function(v,l,sub,cls){return '<div class="kpi '+(cls||'')+'"><b>'+v+'</b><span>'+l+'</span>'+(sub?'<small>'+sub+'</small>':'')+'</div>'};
+    h+='<div class="kpi-grid">'+kp(T.days?T.pa:'—','Bugun kelmaganlar',T.days?('sababsiz: '+T.pz):'Bugun dars kuni emas',T.pz?'bad':'')+kp(wp,'Haftalik davomat','oxirgi 7 kun')+kp(dq.length,'Diqqat talab qiladi',"oxirgi 30 kun",dq.length?'bad':'')+kp(st.length,"O'quvchilar",Object.keys(M.pc).length+' ta sinf')+'</div><div class="home-grid">';
+    var tl=T.ps.filter(function(p){return p.abs>0}).sort(function(x,y){return (x.s.cls||'').localeCompare(y.s.cls||'','uz',{numeric:true})||x.s.name.localeCompare(y.s.name)});
+    h+='<div class="card"><h3>Bugun kelmaganlar</h3>'+(!T.days?'<p class="hint">Bugun dars kuni emas yoki davomat belgilanmagan.</p>':tl.length?'<ul class="home-list">'+tl.slice(0,8).map(function(p){var cd=(p.list[p.list.length-1]||'').split(' ')[1]||''; return '<li><span><b>'+esc(p.s.name)+'</b> <small>'+esc(p.s.cls||'—')+'</small></span><span class="dchip '+(cd==='Sz'?'z':'')+'">'+esc(cd)+'</span></li>'}).join('')+'</ul>'+(tl.length>8?'<p class="hint">+ yana '+(tl.length-8)+' ta o\'quvchi</p>':''):'<p class="hint">🎉 Hamma keldi yoki hali belgilanmagan.</p>')+'</div>';
+    var rk=Object.keys(W.pc).map(function(c){return {c:c,p:attPct(W.pc[c])}}).filter(function(o){return o.p>=0}).sort(function(x,y){return y.p-x.p}).slice(0,3);
+    h+='<div class="card"><h3>Hafta peshqadamlari</h3>'+(rk.length?'<ul class="home-list">'+rk.map(function(o,i){return '<li><span>'+['🥇','🥈','🥉'][i]+' <b>'+esc(o.c)+'</b></span><span class="pbar"><i style="width:'+o.p+'%"></i></span><b>'+o.p.toFixed(1)+'%</b></li>'}).join('')+'</ul>':'<p class="hint">Ma\'lumot yo\'q.</p>')+'</div>';
+    h+='<div class="card"><h3>⚠️ Diqqat ro\'yxati</h3>'+(dq.length?'<ul class="home-list">'+dq.slice(0,5).map(function(p){return '<li><span><b>'+esc(p.s.name)+'</b> <small>'+esc(p.s.cls||'—')+'</small></span><span class="hint">'+(p.mx>=3?p.mx+' kun ketma-ket':p.zm+' marta sababsiz')+'</span></li>'}).join('')+'</ul>'+(dq.length>5?'<p class="hint">+ yana '+(dq.length-5)+' ta. To\'liq ro\'yxat: Statistika.</p>':''):'<p class="hint">Hozircha bunday o\'quvchi yo\'q 👍</p>')+'</div>';
+    var lg=loadLog().filter(function(e){return inMyClasses(e.cls)}).sort(function(x,y){return (y.at||0)-(x.at||0)}).slice(0,5);
+    h+='<div class="card"><h3>Oxirgi xatlar</h3>'+(lg.length?'<ul class="home-list">'+lg.map(function(e){return '<li><span><b>'+esc(e.name)+'</b> <small>'+esc(normClass(e.cls))+'</small></span><span class="hint">'+esc(fmtDate(e.date))+'</span></li>'}).join('')+'</ul><button type="button" class="btn line sm" data-gonav="log">Hammasini ko\'rish</button>':'<p class="hint">Hali xat yo\'q.</p>')+'</div></div>';
+    box.innerHTML=h;
   }
   function attAbsBuild(){
     var cl=$('#attCls').value||'*', st=attVisible().filter(function(s){return s.cls!==ATT_TCLS&&(cl==='*'||(s.cls||'—')===cl)}), R=attCalc(st,attRange()), cs=[], T={n:st.length,abs:0,sz:0,miss:0,e:0};
