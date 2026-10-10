@@ -2637,7 +2637,7 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
       var phone=(s.phone||'').trim() ? formatPhoneDisplay(s.phone) : '';
       if(isHomeroom() && !inMyClasses(s.cls)){ blockedClass++; return; }
       var id=[s.name,s.cls,s.parent,s.reason,d].concat(s.kind?[s.kind]:[]).join('|').toLowerCase();
-      var rec={name:s.name.trim(),cls:(s.cls||'').trim(),parent:(s.parent||'').trim(),reason:(s.reason||'').trim(),date:d,phone:phone,kind:s.kind||''};
+      var rec={name:s.name.trim(),cls:normClass((s.cls||'').trim()),parent:(s.parent||'').trim(),reason:(s.reason||'').trim(),date:d,phone:phone,kind:s.kind||''};
       /* 1) ro'yxatdan ochilgan xat tahrirlangan bo'lsa, o'sha yozuvning o'zi yangilanadi */
       var src = s.srcId ? log.filter(function(e){return e.id===s.srcId})[0] : null;
       if(src && isHomeroom()){
@@ -2726,7 +2726,7 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
     log.sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.at-a.at});
     return log.filter(function(e){
       if(!inMyClasses(e.cls)) return false;
-      if(cl && e.cls!==cl) return false;
+      if(cl && normClass(e.cls)!==cl) return false;
       if(from && e.date && e.date<from) return false;
       if(to && e.date && e.date>to) return false;
       if(!q) return true;
@@ -3007,7 +3007,7 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
   });
   function renderLog(){
     var all=loadLog(), sel=$('#qClass'), keep=sel.value;
-    var classes=[]; all.forEach(function(e){if(e.cls&&classes.indexOf(e.cls)<0)classes.push(e.cls)});
+    var classes=[]; all.forEach(function(e){var nc=normClass(e.cls); if(nc&&classes.indexOf(nc)<0)classes.push(nc)});
     if(isHomeroom()) classes=classes.filter(inMyClasses);
     classes.sort(function(a,b){return a.localeCompare(b,'uz',{numeric:true})});
     sel.innerHTML='<option value="">Barcha sinflar</option>'+classes.map(function(c){return '<option value="'+esc(c)+'"'+(c===keep?' selected':'')+'>'+esc(c)+'</option>'}).join('');
@@ -3020,7 +3020,7 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
     $('#logBody').innerHTML = rows.length ? rows.map(function(e){
       var n=counts[personKey(e)]||0;
       return '<tr class="rowlink'+(isHomeroom()?' nolink':'')+(!e.kind&&n>=3?' danger':'')+'" data-open="'+esc(e.id)+'"><td><input type="checkbox" data-sel="'+esc(e.id)+'"'+(selected[e.id]?' checked':'')+'></td>'+
-             '<td>'+esc(fmtDate(e.date))+'</td><td><b class="lnk">'+esc(e.name)+'</b> <button type="button" class="mini" data-card="'+esc(e.id)+'" title="O\'quvchi kartochkasi">📋 Kartochka</button></td><td>'+esc(e.cls)+'</td><td>'+esc(e.parent)+'</td><td>'+esc(e.reason)+'</td>'+
+             '<td>'+esc(fmtDate(e.date))+'</td><td><b class="lnk">'+esc(e.name)+'</b> <button type="button" class="mini" data-card="'+esc(e.id)+'" title="O\'quvchi kartochkasi">📋 Kartochka</button></td><td>'+esc(normClass(e.cls))+'</td><td>'+esc(e.parent)+'</td><td>'+esc(e.reason)+'</td>'+
              '<td>'+(phoneOf(e,pm)?esc(phoneOf(e,pm)):'<span class="muted">—</span>')+deliveryHTML(e)+'</td>'+
              (e.kind ? '<td><span class="badge">'+kindOf(e).icon+' '+kindOf(e).short+'</span></td>' : '<td><span class="badge'+(n>=3?' warn':'')+'" title="Bu — '+ordById[e.id]+'-xat">'+n+' marta</span>'+(n>=3?' <span class="badge warn" title="3 va undan ko\'p xat: direktor bilan suhbat tavsiya etiladi">🔴 Suhbat</span>':'')+'</td>')+
              '<td>'+(!isViewer()?'<button type="button" class="mini" data-sign="'+esc(e.id)+'">'+(e.sig?'✓ Imzolangan':'✍️ Imzolash')+'</button> ':'')+(isViewer()||isHomeroom()?'':'<button class="mini" style="color:var(--danger)" data-rm="'+esc(e.id)+'">O\'chirish</button>')+'</td></tr>';
