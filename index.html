@@ -299,7 +299,12 @@ textarea.inp{resize:vertical;min-height:76px}
 .btn.sm{padding:8px 12px;font-size:13px}
 .sheet .letter{cursor:pointer}
 .sheet .letter.sel{outline:2px solid var(--brand);outline-offset:-3px}
-.filters{display:grid;grid-template-columns:1fr 170px;gap:10px;margin-top:12px}
+.filters{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:10px;margin-top:12px;align-items:end}
+.filters>:first-child{grid-column:1/-1}
+.filters .fld{display:grid;gap:3px;font-size:12px;font-weight:700;color:var(--muted);min-width:0}
+.filters .fld .inp{font-weight:400;color:var(--text)}
+.filters .mini{white-space:nowrap;height:44px}
+@media (max-width:700px){.filters{grid-template-columns:1fr 1fr}.filters>select{grid-column:1/-1}.filters .mini{grid-column:1/-1;height:40px}}
 .tbl-wrap{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:12px}
 table.log{width:100%;border-collapse:collapse;font-size:14px;min-width:820px}
 table.log th,table.log td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
@@ -679,19 +684,31 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
   table.log.cardify tr{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--card)}
   table.log.cardify td{display:flex;flex-direction:column;border:0!important;padding:4px 0!important;background:transparent!important;min-width:0}
   table.log.cardify td::before{content:attr(data-l);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
-  table.log.cardify td:first-child{grid-column:1/-1;flex-direction:row;font-size:18px}
-  table.log.cardify td:first-child::before{content:none}
+  #attStMore table.log.cardify td:first-child{grid-column:1/-1;flex-direction:row;font-size:18px}
+  #attStMore table.log.cardify td:first-child::before{content:none}
+  table.log.cardify td:not([data-l])::before{content:none}
+  table.log.cardify tr{position:relative}
+  table.log.cardify td.c-name{grid-column:1/-1;order:-1;font-size:17px;padding-right:34px!important}
+  table.log.cardify td.c-name::before{content:none}
+  table.log.cardify td.c-chk{position:absolute;top:12px;right:12px;padding:0!important;z-index:1}
+  table.log.cardify td.c-chk input{width:20px;height:20px}
+  table.log.cardify td.c-wide{grid-column:1/-1}
+  table.log.cardify td.c-act{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;gap:8px;justify-content:flex-end;border-top:1px solid var(--line)!important;margin-top:4px;padding-top:10px!important}
+  table.log.cardify td.c-act .mini{padding:8px 12px}
   table.log.cardify td[colspan]{grid-column:1/-1}
   table.log.cardify td[colspan]::before{content:none}
   table.log.cardify td.rk{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:0 6px}
   table.log.cardify td.rk::before{flex-basis:100%}
   table.log.cardify td.rk .lnk{margin:0;padding:0}
   table.log.cardify tr.tot{background:var(--brand-soft)}
-  .tbl-wrap{overflow:visible}
+  #attStMore .tbl-wrap,#tab-log .tbl-wrap,#tab-tlog .tbl-wrap{overflow:visible}
 }
 
 /* ====== Bosh sahifa, kirish, mobil tablar ====== */
 h1,h2,h3{letter-spacing:-.012em}
+html,body{max-width:100%}
+#chTable,#auditBody,#atTable{overflow-x:auto;max-width:100%}
+body{overflow-x:clip}
 #authView{background:radial-gradient(900px 500px at 15% -10%,color-mix(in srgb,var(--brand) 22%,transparent),transparent 60%),radial-gradient(700px 420px at 100% 110%,color-mix(in srgb,var(--brand) 16%,transparent),transparent 60%),var(--bg)}
 .auth-card{max-width:420px;padding:34px 28px;border-radius:20px;box-shadow:0 20px 50px rgba(16,24,40,.12),0 2px 6px rgba(16,24,40,.05)}
 .auth-card .logo{display:block;margin:0 auto 14px;width:64px;height:64px;border-radius:16px;box-shadow:0 8px 20px color-mix(in srgb,var(--brand) 30%,transparent)}
@@ -896,8 +913,8 @@ h1,h2,h3{letter-spacing:-.012em}
         <div class="filters">
           <input class="inp" id="q" placeholder="Qidirish: ism, sinf, sabab...">
           <select class="inp" id="qClass"><option value="">Barcha sinflar</option></select>
-          <label class="fl" for="qFrom" style="margin:0">Sanadan</label><input class="inp" id="qFrom" type="date">
-          <label class="fl" for="qTo" style="margin:0">Sanagacha</label><input class="inp" id="qTo" type="date">
+          <label class="fld"><span>Sanadan</span><input class="inp" id="qFrom" type="date"></label>
+          <label class="fld"><span>Sanagacha</span><input class="inp" id="qTo" type="date"></label>
           <button class="mini" id="qClear" type="button">Filtrni tozalash</button>
         </div>
         <div class="sigbox hidden" id="sigPanel">
@@ -978,8 +995,8 @@ h1,h2,h3{letter-spacing:-.012em}
         <div class="filters">
           <input class="inp" id="tq" placeholder="Qidirish: ism, fan, holat...">
           <select class="inp" id="tqSubj"><option value="">Barcha fanlar</option></select>
-          <label class="fl" for="tqFrom" style="margin:0">Sanadan</label><input class="inp" id="tqFrom" type="date">
-          <label class="fl" for="tqTo" style="margin:0">Sanagacha</label><input class="inp" id="tqTo" type="date">
+          <label class="fld"><span>Sanadan</span><input class="inp" id="tqFrom" type="date"></label>
+          <label class="fld"><span>Sanagacha</span><input class="inp" id="tqTo" type="date"></label>
           <button class="mini" id="tqClear" type="button">Filtrni tozalash</button>
         </div>
         <div class="stat"><span id="tlogCount"></span></div>
@@ -1166,8 +1183,8 @@ h1,h2,h3{letter-spacing:-.012em}
             <option value="admin_removed">Admin olib tashlandi</option>
             <option value="settings_changed">Sozlamalar o'zgartirildi</option>
           </select>
-          <label class="fl" for="auditFrom" style="margin:0">Sanadan</label><input class="inp" id="auditFrom" type="date">
-          <label class="fl" for="auditTo" style="margin:0">Sanagacha</label><input class="inp" id="auditTo" type="date">
+          <label class="fld"><span>Sanadan</span><input class="inp" id="auditFrom" type="date"></label>
+          <label class="fld"><span>Sanagacha</span><input class="inp" id="auditTo" type="date"></label>
           <button class="mini" id="auditClear" type="button">Filtrni tozalash</button>
           <button class="mini" id="auditRefresh" type="button">Yangilash</button>
         </div>
@@ -1427,6 +1444,22 @@ h1,h2,h3{letter-spacing:-.012em}
       L.classList.toggle('m-view',v); L.classList.toggle('m-form',!v); $$('button',bar).forEach(function(x){x.classList.toggle('on',x===b)});
       setTimeout(function(){window.dispatchEvent(new Event('resize'))},40); });
   });
+
+  /* ro'yxat jadvallarini telefon uchun kartochkaga tayyorlash */
+  function cardifyLogs(){
+    [['#tab-log',true],['#tab-tlog',false],['#auditBody',false],['#chTable',false],['#atTable',false]].forEach(function(c){ $$(c[0]+' table.log').forEach(function(t){
+      var th=$$('thead th',t).map(function(x){return x.textContent.trim()}); t.classList.add('cardify');
+      $$('tbody tr',t).forEach(function(r){ $$('td',r).forEach(function(td,i){
+        if(td.hasAttribute('colspan')) return; var l=th[i];
+        if(l) td.setAttribute('data-l',l);
+        if(i===0&&!l&&c[1]) td.classList.add('c-chk');
+        if(l==="O'quvchi"||l==="O'qituvchi") td.classList.add('c-name');
+        if(['Sababi','Ota-onasi','Telegram','Imzolovchi'].indexOf(l)>=0) td.classList.add('c-wide');
+        if(i===th.length-1&&!l) td.classList.add('c-act');
+      }) }) }) });
+  }
+  ['logBody','tlogBody','auditBody','chTable','atTable'].forEach(function(id){ var e=d.getElementById(id); if(e) new MutationObserver(cardifyLogs).observe(e,{childList:true}); });
+  cardifyLogs();
   /* internet aloqasi holati */
   var nb=d.createElement('div'); nb.id='netBar'; nb.className='hidden'; nb.setAttribute('role','status'); d.body.appendChild(nb);
   function net(){ if(!navigator.onLine){ nb.textContent="📡 Internet aloqasi yo'q. Bulutga saqlash va Telegram yuborish vaqtincha ishlamasligi mumkin."; nb.className='off'; }
