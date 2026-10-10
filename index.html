@@ -3726,7 +3726,7 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
     });
     R.pa=0; R.pb=0; R.pz=0;
     R.ps.forEach(function(q){ var P=R.pc[q.s.cls||'—'], sb=q.abs-q.sz;
-      if(q.abs>0){P.pa++; R.pa++} if(sb>0){P.pb++; R.pb++} if(q.sz>0){P.pz++; R.pz++} });
+      if(q.abs>0){P.pa++; R.pa++} if(q.sz>0){P.pz++; R.pz++} else if(sb>0){P.pb++; R.pb++} });
     Object.keys(R.pc).forEach(function(c){R.days=Math.max(R.days,R.pc[c].days)});
     return R;
   }
@@ -3776,17 +3776,16 @@ pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padd
     var prev=null, prevLbl='';
     if(st.length){ var pr=attPrevRange(); if(pr){ var PR=attCalc(st,pr.r); prev={}; Object.keys(PR.pc).forEach(function(c){prev[c]=attPct(PR.pc[c])}); prevLbl=pr.t } }
     var top=R.ps.filter(function(p){return p.abs||p.kch}).sort(function(a,b){return b.abs-a.abs||b.sz-a.sz}).slice(0,10);
-    $('#attStMore').innerHTML=(st.length?'<div class="att-sec"><h3>Sinflar reytingi</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>Sinf</th><th>O\'quvchi</th><th title="Tanlangan davrda kamida 1 kun kelmagan o\'quvchilar soni (jami)">Kelmagan <small>(kishi)</small></th><th title="Kamida 1 marta sababli (kasal, sababli, tadbir) kelmaganlar">Sababli <small>(kishi)</small></th><th title="Kamida 1 marta sababsiz kelmaganlar">Sababsiz <small>(kishi)</small></th><th>Davomat</th><th>'+prevLbl+'</th></tr></thead><tbody>'+attRankRows(R.pc,prev)+'</tbody><tfoot>'+attRankFoot(R.pc,exp,R)+'</tfoot></table></div></div>'+
+    $('#attStMore').innerHTML=(st.length?'<div class="att-sec"><h3>Sinflar reytingi</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>Sinf</th><th>O\'quvchi</th><th title="Tanlangan davrda kamida 1 kun kelmagan o\'quvchilar soni (jami)">Kelmagan <small>(kishi)</small></th><th title="Faqat sababli kelmaganlar (kasal, sababli, tadbir). Sababsiz kuni yo\'q">Sababli <small>(kishi)</small></th><th title="Kamida 1 kun sababsiz kelgan o\'quvchilar">Sababsiz <small>(kishi)</small></th><th>Davomat</th><th>'+prevLbl+'</th></tr></thead><tbody>'+attRankRows(R.pc,prev)+'</tbody><tfoot>'+attRankFoot(R.pc,exp,R)+'</tfoot></table></div></div>'+
       '<div class="att-sec"><h3>Eng ko\'p qoldirgan o\'quvchilar (top 10)</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>F.I.Sh</th><th>Sinf</th><th>Jami</th><th>Sababsiz</th><th>Kechikdi</th></tr></thead><tbody>'+
       (top.length?top.map(function(p,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(p.s.name)+'</td><td>'+esc(p.s.cls||'—')+'</td><td>'+p.abs+'</td><td>'+p.sz+'</td><td>'+p.kch+'</td></tr>'}).join(''):'<tr><td colspan="6" class="stat-empty">Hali qoldirgan yo\'q</td></tr>')+'</tbody></table></div></div>'+
-      '<p class="hint att-sec">Eslatma: ustunlarda <b>o\'quvchilar soni</b> ko\'rsatilgan (kunlar emas). «Kelmagan» — jami. Bir o\'quvchi ham sababli, ham sababsiz kelmagan bo\'lsa, u ikkala ustunda alohida sanaladi, shuning uchun «Sababli» + «Sababsiz» yig\'indisi «Kelmagan»dan katta bo\'lishi mumkin. Belgi qo\'yilmagan katak «keldi» hisoblanadi, kechikish kelmaganlikka kirmaydi.</p>':'');
+      '<p class="hint att-sec">Eslatma: ustunlarda <b>o\'quvchilar soni</b> ko\'rsatilgan (kunlar emas). Har bir kelmagan o\'quvchi faqat bitta ustunga tushadi: kamida 1 kun sababsiz kelgan bo\'lsa — «Sababsiz»ga, qolganlar (faqat kasal, sababli yoki tadbir sababli kelmaganlar) — «Sababli»ga. Shuning uchun «Sababli» + «Sababsiz» = «Kelmagan». Belgi qo\'yilmagan katak «keldi» hisoblanadi, kechikish kelmaganlikka kirmaydi.</p>':'');
     attExtras(R,st,exp); attCardify();
   }
   document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[data-drill]'); if(b) attDrill(b.getAttribute('data-dc'),b.getAttribute('data-drill')) });
   function attDrill(c,k){
     var L=attLast; if(!L) return;
-    var rows=L.R.ps.filter(function(p){return c==='*'||(p.s.cls||'—')===c}).map(function(p){
-      return {p:p,l:p.list.filter(function(e){var z=e.split(' ')[1]==='Sz'; return k==='a'||(k==='z'?z:!z)})}}).filter(function(o){return o.l.length}).sort(function(a,b){return b.l.length-a.l.length||a.p.s.name.localeCompare(b.p.s.name)});
+    var rows=L.R.ps.filter(function(p){ if(!(c==='*'||(p.s.cls||'—')===c)||!p.abs) return false; return k==='a'||(k==='z'?p.sz>0:!p.sz) }).map(function(p){return {p:p,l:p.list}}).sort(function(a,b){return b.l.length-a.l.length||a.p.s.name.localeCompare(b.p.s.name)});
     var T={a:'Kelmagan',b:'Sababli kelmagan',z:'Sababsiz kelmagan'}[k], m=$('#drillModal');
     if(!m){ m=document.createElement('div'); m.id='drillModal'; m.className='inst-modal hidden'; m.setAttribute('role','dialog'); m.innerHTML='<div class="inst-box" style="max-width:560px"><button type="button" class="inst-x" aria-label="Yopish">×</button><h3></h3><div class="dr-body"></div></div>'; document.body.appendChild(m);
       m.addEventListener('click',function(e){ if(e.target===m||e.target.closest('.inst-x')) m.classList.add('hidden') }); }
