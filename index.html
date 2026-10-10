@@ -640,6 +640,17 @@ main>section[id^="tab-"]:not(.hidden){animation:tabIn .2s ease-out}
 .es-d{color:var(--muted);font-size:14px;max-width:340px;line-height:1.5}
 .empty-state .btn{margin-top:10px}
 .stat-empty{padding:22px 12px;text-align:center;border:1px dashed var(--line);border-radius:12px;margin:6px 0}
+
+/* Statistika: kishilar ustunlari */
+table.log td.rk{white-space:nowrap}
+table.log td.rk small{color:var(--muted);font-weight:600;font-size:12px;margin-left:2px}
+table.log td.rk.z,table.log td.rk.z b{color:var(--muted);font-weight:500}
+table.log td.rk.bad b{color:var(--danger)}
+table.log th small{font-weight:600;opacity:.75;text-transform:none;letter-spacing:0}
+table.log tfoot tr.tot td{background:var(--brand-soft);border-top:2px solid var(--line)}
+.pbar{display:inline-block;width:64px;height:7px;border-radius:99px;background:var(--line);vertical-align:middle;overflow:hidden}
+.pbar i{display:block;height:100%;border-radius:99px;background:var(--brand)}
+.stat-card.bad b{color:var(--danger)}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
@@ -3663,7 +3674,7 @@ main>section[id^="tab-"]:not(.hidden){animation:tabIn .2s ease-out}
     Object.keys(ATT).forEach(function(k){ks[k.split('|')[0]]=1});
     var first=lo?lo.slice(0,7):(Object.keys(ks).sort()[0]||hi.slice(0,7)), last=hi.slice(0,7), months=[], y=+first.slice(0,4), mo=+first.slice(5,7), g=0;
     while((y+'-'+pad(mo))<=last && g++<80){ months.push(y+'-'+pad(mo)); mo++; if(mo>12){mo=1;y++} }
-    st.forEach(function(s){var c=s.cls||'—'; R.pc[c]=R.pc[c]||{n:0,days:0,abs:0,sz:0}; R.pc[c].n++});
+    st.forEach(function(s){var c=s.cls||'—'; R.pc[c]=R.pc[c]||{n:0,days:0,abs:0,sz:0,pa:0,pb:0,pz:0}; R.pc[c].n++});
     R.ps=st.map(function(s){return {s:s,abs:0,sz:0,kch:0,list:[],cnt:{}}});
     months.forEach(function(k){
       var yy=+k.slice(0,4), mm=+k.slice(5,7), dim=new Date(yy,mm,0).getDate(), ds={}, d;
@@ -3675,6 +3686,9 @@ main>section[id^="tab-"]:not(.hidden){animation:tabIn .2s ease-out}
         if(x==='Kch') q.kch++;
       }) });
     });
+    R.pa=0; R.pb=0; R.pz=0;
+    R.ps.forEach(function(q){ var P=R.pc[q.s.cls||'—'], sb=q.abs-q.sz;
+      if(q.abs>0){P.pa++; R.pa++} if(sb>0){P.pb++; R.pb++} if(q.sz>0){P.pz++; R.pz++} });
     Object.keys(R.pc).forEach(function(c){R.days=Math.max(R.days,R.pc[c].days)});
     return R;
   }
@@ -3689,10 +3703,14 @@ main>section[id^="tab-"]:not(.hidden){animation:tabIn .2s ease-out}
     return {items:items,total:items.reduce(function(a,i){return a+i.n},0)};
   }
   function attPct(q){ var e=q.n*q.days; return e?100*(1-q.abs/e):-1 }
+  function attPpl(v,n,cls){ return '<td class="rk '+(v?cls:'z')+'"><b>'+v+'</b>'+(v&&n?' <small>'+Math.round(100*v/n)+'%</small>':'')+'</td>' }
+  function attBar(p){ if(p<0) return '—'; var w=Math.max(0,Math.min(100,p)); return '<span class="pbar"><i style="width:'+w+'%"></i></span> <b>'+p.toFixed(1)+'%</b>' }
+  function attRankFoot(pc,exp,R){ var n=0,pa=0,pb=0,pz=0; Object.keys(pc).forEach(function(c){n+=pc[c].n;pa+=pc[c].pa;pb+=pc[c].pb;pz+=pc[c].pz});
+    return '<tr class="tot"><td></td><td><b>Jami</b></td><td><b>'+n+'</b></td><td class="rk"><b>'+pa+'</b></td><td class="rk"><b>'+pb+'</b></td><td class="rk"><b>'+pz+'</b></td><td><b>'+(exp?(100*(1-R.abs/exp)).toFixed(1)+'%':'—')+'</b></td><td></td></tr>' }
   function attRankRows(pc,prev){
     return Object.keys(pc).map(function(c){return {c:c,q:pc[c],p:attPct(pc[c])}}).sort(function(a,b){return b.p-a.p}).map(function(o,i){
       var t='', pv=prev&&prev[o.c]; if(pv!=null&&pv>=0&&o.p>=0){ var x=o.p-pv; t=(x>0?'▲ +':x<0?'▼ ':'= ')+x.toFixed(1)+'%' }
-      return '<tr><td>'+(i+1)+'</td><td>'+esc(o.c)+'</td><td>'+o.q.n+'</td><td>'+o.q.abs+'</td><td>'+o.q.sz+'</td><td>'+(o.p>=0?o.p.toFixed(1)+'%':'—')+'</td><td>'+t+'</td></tr>';
+      return '<tr><td>'+(i+1)+'</td><td><b>'+esc(o.c)+'</b></td><td>'+o.q.n+'</td>'+attPpl(o.q.pa,o.q.n,'')+attPpl(o.q.pb,o.q.n,'')+attPpl(o.q.pz,o.q.n,'bad')+'<td>'+attBar(o.p)+'</td><td>'+t+'</td></tr>';
     }).join('');
   }
   function attStats(){
@@ -3701,7 +3719,7 @@ main>section[id^="tab-"]:not(.hidden){animation:tabIn .2s ease-out}
     $$('#atType [data-att]').forEach(function(b){b.classList.toggle('on',b.dataset.att===ATP.type)});
     $('#atPeriod').value=ATP.period; $('#atCustom').classList.toggle('hidden',ATP.period!=='custom'); $('#atFrom').value=ATP.from; $('#atTo').value=ATP.to; $('#atVals').checked=ATP.vals;
     var exp=0; Object.keys(R.pc).forEach(function(c){exp+=R.pc[c].n*R.pc[c].days});
-    $('#attStCards').innerHTML='<div class="stat-card"><b>'+st.length+"</b><span>O'quvchilar</span></div><div class=\"stat-card\"><b>"+R.days+'</b><span>Dars kunlari</span></div><div class="stat-card"><b>'+(exp?(100*(1-R.abs/exp)).toFixed(1)+'%':'—')+'</b><span>Davomat foizi</span></div><div class="stat-card"><b>'+R.abs+'</b><span>Qoldirilgan kunlar</span></div>';
+    $('#attStCards').innerHTML='<div class="stat-card"><b>'+st.length+"</b><span>O'quvchilar</span></div><div class=\"stat-card\"><b>"+R.days+'</b><span>Dars kunlari</span></div><div class="stat-card"><b>'+(exp?(100*(1-R.abs/exp)).toFixed(1)+'%':'—')+'</b><span>Davomat foizi</span></div><div class="stat-card"><b>'+R.pa+'</b><span>Kelmagan o\'quvchilar</span></div><div class="stat-card"><b>'+R.pb+'</b><span>Sababli (kishi)</span></div><div class="stat-card bad"><b>'+R.pz+'</b><span>Sababsiz (kishi)</span></div>';
     var res=attItems(ATP.data,R); $('#atTitle').textContent=ATP_T[ATP.data]; $('#atSum').textContent='Davr: '+attPeriodText()+' · jami: '+res.total+' ta';
     attLast={R:R,res:res,st:st,cl:cl};
     if(!st.length||!res.total){ box.innerHTML=__ui.empty('chart',"Ma'lumot yo'q","Tanlangan davr uchun ma'lumot topilmadi. Davrni o'zgartirib ko'ring."); $('#atTable').innerHTML=''; }
@@ -3714,10 +3732,10 @@ main>section[id^="tab-"]:not(.hidden){animation:tabIn .2s ease-out}
     var prev=null;
     if(ATP.period==='month'&&st.length){ var d=new Date(); var pe=dateISO(new Date(d.getFullYear(),d.getMonth(),0)), ps=dateISO(new Date(d.getFullYear(),d.getMonth()-1,1)), PR=attCalc(st,[ps,pe]); prev={}; Object.keys(PR.pc).forEach(function(c){prev[c]=attPct(PR.pc[c])}) }
     var top=R.ps.filter(function(p){return p.abs||p.kch}).sort(function(a,b){return b.abs-a.abs||b.sz-a.sz}).slice(0,10);
-    $('#attStMore').innerHTML=(st.length?'<div class="att-sec"><h3>Sinflar reytingi</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>Sinf</th><th>O\'quvchi</th><th>Qoldirilgan</th><th>Sababsiz</th><th>Davomat</th><th>'+(prev?"O'tgan oyga nisbatan":'')+'</th></tr></thead><tbody>'+attRankRows(R.pc,prev)+'</tbody></table></div></div>'+
+    $('#attStMore').innerHTML=(st.length?'<div class="att-sec"><h3>Sinflar reytingi</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>Sinf</th><th>O\'quvchi</th><th title="Tanlangan davrda kamida 1 kun kelmagan o\'quvchilar soni">Kelmagan <small>(kishi)</small></th><th title="Kamida 1 marta sababli (kasal, sababli, tadbir) kelmaganlar">Sababli <small>(kishi)</small></th><th title="Kamida 1 marta sababsiz kelmaganlar">Sababsiz <small>(kishi)</small></th><th>Davomat</th><th>'+(prev?"O'tgan oyga nisbatan":'')+'</th></tr></thead><tbody>'+attRankRows(R.pc,prev)+'</tbody><tfoot>'+attRankFoot(R.pc,exp,R)+'</tfoot></table></div></div>'+
       '<div class="att-sec"><h3>Eng ko\'p qoldirgan o\'quvchilar (top 10)</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>F.I.Sh</th><th>Sinf</th><th>Jami</th><th>Sababsiz</th><th>Kechikdi</th></tr></thead><tbody>'+
       (top.length?top.map(function(p,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(p.s.name)+'</td><td>'+esc(p.s.cls||'—')+'</td><td>'+p.abs+'</td><td>'+p.sz+'</td><td>'+p.kch+'</td></tr>'}).join(''):'<tr><td colspan="6" class="stat-empty">Hali qoldirgan yo\'q</td></tr>')+'</tbody></table></div></div>'+
-      '<p class="hint att-sec">Eslatma: belgi qo\'yilmagan katak «keldi» hisoblanadi. Faqat o\'tgan va bugungi dars kunlari olinadi, kechikish qoldirilgan kunga kirmaydi.</p>':'');
+      '<p class="hint att-sec">Eslatma: ustunlarda <b>o\'quvchilar soni</b> ko\'rsatilgan (kunlar emas). Bir o\'quvchi ham sababli, ham sababsiz kelmagan bo\'lsa, ikkala ustunda ham hisoblanadi, shuning uchun «Sababli» + «Sababsiz» yig\'indisi «Kelmagan»dan katta bo\'lishi mumkin. Belgi qo\'yilmagan katak «keldi» hisoblanadi, kechikish kelmaganlikka kirmaydi.</p>':'');
   }
   function attAbsBuild(){
     var cl=$('#attCls').value||'*', st=attVisible().filter(function(s){return s.cls!==ATT_TCLS&&(cl==='*'||(s.cls||'—')===cl)}), R=attCalc(st,attRange()), cs=[], T={n:st.length,abs:0,sz:0,miss:0,e:0};
@@ -3769,13 +3787,15 @@ main>section[id^="tab-"]:not(.hidden){animation:tabIn .2s ease-out}
       c.toBlob(function(b){ if(!b) return toast("PNG tayyorlab bo'lmadi"); saveFile('davomat-'+ATP.data+'-'+todayISO()+'.png',b).catch(function(e){toast(saveErr(e))}) },'image/png') };
     im.onerror=function(){toast("PNG tayyorlab bo'lmadi")}; im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(str);
   }
+  function st0(R,k){var t=0;Object.keys(R.pc).forEach(function(c){t+=R.pc[c][k]});return t}
   function attStXlsx(){
     if(!attLast) return; if(!window.XLSX) return setMsg('#attMsg',"Excel kutubxonasi yuklanmadi (internetni tekshiring)",'err');
     var L=attLast, R=L.R, wb=XLSX.utils.book_new();
     var a=[['Davomat statistikasi'],['Davr: '+attPeriodText()],['Sinf: '+(L.cl==='*'?'barcha sinflar':L.cl)],[],[ATP_T[ATP.data]],['Nomi','Soni','Ulushi']];
     L.res.items.forEach(function(it){a.push([it.k,it.n,L.res.total?Math.round(it.n/L.res.total*100)+'%':''])});
-    var b=[['№','Sinf','O\'quvchi','Qoldirilgan','Sababsiz','Davomat %']];
-    Object.keys(R.pc).map(function(c){return {c:c,q:R.pc[c],p:attPct(R.pc[c])}}).sort(function(x,y){return y.p-x.p}).forEach(function(o,i){b.push([i+1,o.c,o.q.n,o.q.abs,o.q.sz,o.p>=0?+o.p.toFixed(1):''])});
+    var b=[['№','Sinf','O\'quvchi','Kelmagan (kishi)','Sababli (kishi)','Sababsiz (kishi)','Davomat %']];
+    Object.keys(R.pc).map(function(c){return {c:c,q:R.pc[c],p:attPct(R.pc[c])}}).sort(function(x,y){return y.p-x.p}).forEach(function(o,i){b.push([i+1,o.c,o.q.n,o.q.pa,o.q.pb,o.q.pz,o.p>=0?+o.p.toFixed(1):''])});
+    b.push(['','Jami',st0(R,'n'),R.pa,R.pb,R.pz,'']);
     var c=[['Sinf','F.I.Sh','Jami qoldirilgan','Sababsiz','Kechikdi']];
     R.ps.slice().sort(function(x,y){return y.abs-x.abs||x.s.name.localeCompare(y.s.name)}).forEach(function(p){c.push([p.s.cls||'—',p.s.name,p.abs,p.sz,p.kch])});
     [['Umumiy',a],['Sinflar reytingi',b],["O'quvchilar",c]].forEach(function(x){var ws=XLSX.utils.aoa_to_sheet(x[1]); ws['!cols']=[{wch:26},{wch:30},{wch:16},{wch:12},{wch:12},{wch:12}]; XLSX.utils.book_append_sheet(wb,ws,x[0])});
