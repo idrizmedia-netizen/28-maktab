@@ -651,6 +651,43 @@ table.log tfoot tr.tot td{background:var(--brand-soft);border-top:2px solid var(
 .pbar{display:inline-block;width:64px;height:7px;border-radius:99px;background:var(--line);vertical-align:middle;overflow:hidden}
 .pbar i{display:block;height:100%;border-radius:99px;background:var(--brand)}
 .stat-card.bad b{color:var(--danger)}
+
+/* Statistika: yangi bo'limlar */
+.lnk{border:0;background:transparent;font:inherit;font-weight:800;color:inherit;cursor:pointer;padding:2px 8px;margin:-2px -4px;border-radius:8px;text-decoration:underline dotted;text-underline-offset:3px;transition:background-color .12s}
+.lnk:hover{background:var(--brand-soft)}
+td.rk.bad .lnk{color:var(--danger)}
+.pods{display:flex;flex-wrap:wrap;gap:8px}
+.pod{background:var(--brand-soft);border-radius:12px;padding:8px 12px;font-size:15px}
+.pod small{color:var(--muted);font-weight:700}
+ul.ins{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+ul.ins li{background:var(--brand-soft);border-radius:12px;padding:10px 12px;font-size:14.5px;line-height:1.5}
+td.dg,td.dg b{color:var(--danger)}
+pre.wk{white-space:pre-wrap;background:var(--brand-soft);border-radius:12px;padding:12px;font:13.5px/1.55 inherit;margin:0 0 10px}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.dr-list{display:grid;gap:8px}
+.dr-row{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.dr-row small{color:var(--muted)}
+.dr-days{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.dchip{background:var(--brand-soft);border-radius:8px;padding:3px 8px;font-size:12.5px;font-weight:600}
+.dchip.z{background:rgba(180,35,24,.12);color:var(--danger)}
+.dchip i{font-style:normal;opacity:.75}
+@media (max-width:700px){
+  table.log.cardify{display:block;min-width:0!important}
+  table.log.cardify thead{display:none}
+  table.log.cardify tbody,table.log.cardify tfoot{display:grid;gap:10px}
+  table.log.cardify tr{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--card)}
+  table.log.cardify td{display:flex;flex-direction:column;border:0!important;padding:4px 0!important;background:transparent!important;min-width:0}
+  table.log.cardify td::before{content:attr(data-l);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  table.log.cardify td:first-child{grid-column:1/-1;flex-direction:row;font-size:18px}
+  table.log.cardify td:first-child::before{content:none}
+  table.log.cardify td[colspan]{grid-column:1/-1}
+  table.log.cardify td[colspan]::before{content:none}
+  table.log.cardify td.rk{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:0 6px}
+  table.log.cardify td.rk::before{flex-basis:100%}
+  table.log.cardify td.rk .lnk{margin:0;padding:0}
+  table.log.cardify tr.tot{background:var(--brand-soft)}
+  .tbl-wrap{overflow:visible}
+}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
@@ -995,7 +1032,7 @@ table.log tfoot tr.tot td{background:var(--brand-soft);border-top:2px solid var(
             </div>
             <div class="ch-row"><span class="ch-lb">Davr</span>
               <select class="inp ch-sel" id="atPeriod">
-                <option value="all">Hammasi</option><option value="7">Oxirgi 7 kun</option><option value="30">Oxirgi 30 kun</option>
+                <option value="all">Hammasi</option><option value="7">Oxirgi 7 kun</option><option value="30">Oxirgi 30 kun</option><option value="90">Oxirgi 90 kun (chorak)</option>
                 <option value="month">Shu oy</option><option value="year">Shu o'quv yili (1-sentyabrdan)</option><option value="custom">Sanani o'zim tanlayman</option>
               </select>
               <span id="atCustom" class="hidden"><input type="date" class="inp ch-sel" id="atFrom"> – <input type="date" class="inp ch-sel" id="atTo"></span>
@@ -3658,7 +3695,7 @@ table.log tfoot tr.tot td{background:var(--brand-soft);border-top:2px solid var(
   function attRange(){
     var t=todayISO(), p=ATP.period, d;
     if(p==='month') return [t.slice(0,8)+'01',t];
-    if(p==='7'||p==='30'){ d=new Date(); d.setDate(d.getDate()-(+p-1)); return [dateISO(d),t] }
+    if(p==='7'||p==='30'||p==='90'){ d=new Date(); d.setDate(d.getDate()-(+p-1)); return [dateISO(d),t] }
     if(p==='year'){ d=new Date(); return [(d.getMonth()>=8?d.getFullYear():d.getFullYear()-1)+'-09-01',t] }
     if(p==='custom') return [ATP.from||'',(ATP.to&&ATP.to<t)?ATP.to:t];
     return ['',t];
@@ -3667,7 +3704,7 @@ table.log tfoot tr.tot td{background:var(--brand-soft);border-top:2px solid var(
     var p=ATP.period, r=attRange();
     if(p==='all') return 'barcha davr';
     if(p==='custom') return (r[0]?fmtDate(r[0]):'…')+' – '+fmtDate(r[1]);
-    return ({'7':'oxirgi 7 kun','30':'oxirgi 30 kun',month:'shu oy',year:"shu o'quv yili"})[p]||'';
+    return ({'7':'oxirgi 7 kun','30':'oxirgi 30 kun','90':'oxirgi 90 kun (chorak)',month:'shu oy',year:"shu o'quv yili"})[p]||'';
   }
   function attCalc(st,r){
     var lo=r[0], hi=r[1], R={by:{},pc:{},ps:[],wd:[0,0,0,0,0,0,0],pm:{},days:0,abs:0}, ks={};
@@ -3681,8 +3718,8 @@ table.log tfoot tr.tot td{background:var(--brand-soft);border-top:2px solid var(
       Object.keys(R.pc).forEach(function(c){ var a=[]; for(d=1;d<=dim;d++){ var iso=k+'-'+pad(d); if(iso<lo||iso>hi) continue; if(!attOff(k,c,d)) a.push(d) } ds[c]=a; R.pc[c].days+=a.length });
       R.pm[k]=0;
       R.ps.forEach(function(q){ var c=q.s.cls||'—'; ds[c].forEach(function(d){
-        var x=attCode(k,c,q.s.id,d); if(!x) return; R.by[x]=(R.by[x]||0)+1; q.cnt[x]=(q.cnt[x]||0)+1;
-        if(attIsAbs(x)){ q.list.push(pad(d)+'.'+pad(mm)+' '+x); R.abs++; q.abs++; R.pc[c].abs++; R.pm[k]++; R.wd[new Date(yy,mm-1,d).getDay()]++; if(x==='Sz'){q.sz++; R.pc[c].sz++} }
+        var x=attCode(k,c,q.s.id,d); if(!x||!attIsAbs(x)) q.run=0; if(!x) return; R.by[x]=(R.by[x]||0)+1; q.cnt[x]=(q.cnt[x]||0)+1;
+        if(attIsAbs(x)){ q.run=(q.run||0)+1; q.mx=Math.max(q.mx||0,q.run); if(x==='Sz'){q.mz=q.mz||{}; q.mz[k]=(q.mz[k]||0)+1; q.zm=Math.max(q.zm||0,q.mz[k])} q.list.push(pad(d)+'.'+pad(mm)+' '+x); R.abs++; q.abs++; R.pc[c].abs++; R.pm[k]++; R.wd[new Date(yy,mm-1,d).getDay()]++; if(x==='Sz'){q.sz++; R.pc[c].sz++} }
         if(x==='Kch') q.kch++;
       }) });
     });
@@ -3702,15 +3739,20 @@ table.log tfoot tr.tot td{background:var(--brand-soft);border-top:2px solid var(
     else { R.ps.filter(function(p){return p.abs>0}).sort(function(a,b){return b.abs-a.abs||b.sz-a.sz}).slice(0,10).forEach(function(p){items.push({k:p.s.name+' ('+(p.s.cls||'—')+')',n:p.abs})}) }
     return {items:items,total:items.reduce(function(a,i){return a+i.n},0)};
   }
+  function attPrevRange(){ var p=ATP.period, t=new Date(), n, a, b;
+    if(p==='month') return {r:[dateISO(new Date(t.getFullYear(),t.getMonth()-1,1)),dateISO(new Date(t.getFullYear(),t.getMonth(),0))],t:"O'tgan oyga nisbatan"};
+    if(p==='7'||p==='30'||p==='90'){ n=+p; b=new Date(); b.setDate(b.getDate()-n); a=new Date(); a.setDate(a.getDate()-2*n+1); return {r:[dateISO(a),dateISO(b)],t:'Oldingi '+n+' kunga nisbatan'} }
+    return null }
   function attPct(q){ var e=q.n*q.days; return e?100*(1-q.abs/e):-1 }
-  function attPpl(v,n,cls){ return '<td class="rk '+(v?cls:'z')+'"><b>'+v+'</b>'+(v&&n?' <small>'+Math.round(100*v/n)+'%</small>':'')+'</td>' }
+  function attPpl(v,n,cls,c,k){ return '<td class="rk '+(v?cls:'z')+'">'+(v?'<button type="button" class="lnk" data-drill="'+k+'" data-dc="'+esc(c)+'" title="Ro\'yxatni ko\'rish">'+v+'</button>':'<b>'+v+'</b>')+(v&&n?' <small>'+Math.round(100*v/n)+'%</small>':'')+'</td>' }
   function attBar(p){ if(p<0) return '—'; var w=Math.max(0,Math.min(100,p)); return '<span class="pbar"><i style="width:'+w+'%"></i></span> <b>'+p.toFixed(1)+'%</b>' }
   function attRankFoot(pc,exp,R){ var n=0,pa=0,pb=0,pz=0; Object.keys(pc).forEach(function(c){n+=pc[c].n;pa+=pc[c].pa;pb+=pc[c].pb;pz+=pc[c].pz});
-    return '<tr class="tot"><td></td><td><b>Jami</b></td><td><b>'+n+'</b></td><td class="rk"><b>'+pa+'</b></td><td class="rk"><b>'+pb+'</b></td><td class="rk"><b>'+pz+'</b></td><td><b>'+(exp?(100*(1-R.abs/exp)).toFixed(1)+'%':'—')+'</b></td><td></td></tr>' }
+    return '<tr class="tot"><td></td><td><b>Jami</b></td><td><b>'+n+'</b></td><td class="rk">'+(pa?'<button type="button" class="lnk" data-drill="a" data-dc="*">'+pa+'</button>':0)+'</td><td class="rk">'+(pb?'<button type="button" class="lnk" data-drill="b" data-dc="*">'+pb+'</button>':0)+'</td><td class="rk">'+(pz?'<button type="button" class="lnk" data-drill="z" data-dc="*">'+pz+'</button>':0)+'</td><td><b>'+(exp?(100*(1-R.abs/exp)).toFixed(1)+'%':'—')+'</b></td><td></td></tr>' }
   function attRankRows(pc,prev){
+    var md={}, ps=Object.keys(pc).map(function(c){return attPct(pc[c])}).filter(function(x){return x>=0}).sort(function(a,b){return b-a}); ps.forEach(function(x){if(md[x]==null) md[x]=Object.keys(md).length});
     return Object.keys(pc).map(function(c){return {c:c,q:pc[c],p:attPct(pc[c])}}).sort(function(a,b){return b.p-a.p}).map(function(o,i){
       var t='', pv=prev&&prev[o.c]; if(pv!=null&&pv>=0&&o.p>=0){ var x=o.p-pv; t=(x>0?'▲ +':x<0?'▼ ':'= ')+x.toFixed(1)+'%' }
-      return '<tr><td>'+(i+1)+'</td><td><b>'+esc(o.c)+'</b></td><td>'+o.q.n+'</td>'+attPpl(o.q.pa,o.q.n,'')+attPpl(o.q.pb,o.q.n,'')+attPpl(o.q.pz,o.q.n,'bad')+'<td>'+attBar(o.p)+'</td><td>'+t+'</td></tr>';
+      return '<tr><td>'+(o.p>=0&&md[o.p]!=null&&md[o.p]<3?['🥇','🥈','🥉'][md[o.p]]:(i+1))+'</td><td><b>'+esc(o.c)+'</b></td><td>'+o.q.n+'</td>'+attPpl(o.q.pa,o.q.n,'',o.c,'a')+attPpl(o.q.pb,o.q.n,'',o.c,'b')+attPpl(o.q.pz,o.q.n,'bad',o.c,'z')+'<td>'+attBar(o.p)+'</td><td>'+t+'</td></tr>';
     }).join('');
   }
   function attStats(){
@@ -3729,13 +3771,54 @@ table.log tfoot tr.tot td{background:var(--brand-soft);border-top:2px solid var(
       box.innerHTML='<div class="ch-scroll">'+svg+'</div>';
       $('#atTable').innerHTML='<table class="log"><thead><tr><th>Nomi</th><th>Soni</th><th>Ulushi</th></tr></thead><tbody>'+res.items.map(function(it){return '<tr><td>'+esc(it.k)+'</td><td><b>'+it.n+'</b></td><td>'+Math.round(it.n/res.total*100)+'%</td></tr>'}).join('')+'</tbody></table>';
     }
-    var prev=null;
-    if(ATP.period==='month'&&st.length){ var d=new Date(); var pe=dateISO(new Date(d.getFullYear(),d.getMonth(),0)), ps=dateISO(new Date(d.getFullYear(),d.getMonth()-1,1)), PR=attCalc(st,[ps,pe]); prev={}; Object.keys(PR.pc).forEach(function(c){prev[c]=attPct(PR.pc[c])}) }
+    var prev=null, prevLbl='';
+    if(st.length){ var pr=attPrevRange(); if(pr){ var PR=attCalc(st,pr.r); prev={}; Object.keys(PR.pc).forEach(function(c){prev[c]=attPct(PR.pc[c])}); prevLbl=pr.t } }
     var top=R.ps.filter(function(p){return p.abs||p.kch}).sort(function(a,b){return b.abs-a.abs||b.sz-a.sz}).slice(0,10);
-    $('#attStMore').innerHTML=(st.length?'<div class="att-sec"><h3>Sinflar reytingi</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>Sinf</th><th>O\'quvchi</th><th title="Tanlangan davrda kamida 1 kun kelmagan o\'quvchilar soni">Kelmagan <small>(kishi)</small></th><th title="Kamida 1 marta sababli (kasal, sababli, tadbir) kelmaganlar">Sababli <small>(kishi)</small></th><th title="Kamida 1 marta sababsiz kelmaganlar">Sababsiz <small>(kishi)</small></th><th>Davomat</th><th>'+(prev?"O'tgan oyga nisbatan":'')+'</th></tr></thead><tbody>'+attRankRows(R.pc,prev)+'</tbody><tfoot>'+attRankFoot(R.pc,exp,R)+'</tfoot></table></div></div>'+
+    $('#attStMore').innerHTML=(st.length?'<div class="att-sec"><h3>Sinflar reytingi</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>Sinf</th><th>O\'quvchi</th><th title="Tanlangan davrda kamida 1 kun kelmagan o\'quvchilar soni">Kelmagan <small>(kishi)</small></th><th title="Kamida 1 marta sababli (kasal, sababli, tadbir) kelmaganlar">Sababli <small>(kishi)</small></th><th title="Kamida 1 marta sababsiz kelmaganlar">Sababsiz <small>(kishi)</small></th><th>Davomat</th><th>'+prevLbl+'</th></tr></thead><tbody>'+attRankRows(R.pc,prev)+'</tbody><tfoot>'+attRankFoot(R.pc,exp,R)+'</tfoot></table></div></div>'+
       '<div class="att-sec"><h3>Eng ko\'p qoldirgan o\'quvchilar (top 10)</h3><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>F.I.Sh</th><th>Sinf</th><th>Jami</th><th>Sababsiz</th><th>Kechikdi</th></tr></thead><tbody>'+
       (top.length?top.map(function(p,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(p.s.name)+'</td><td>'+esc(p.s.cls||'—')+'</td><td>'+p.abs+'</td><td>'+p.sz+'</td><td>'+p.kch+'</td></tr>'}).join(''):'<tr><td colspan="6" class="stat-empty">Hali qoldirgan yo\'q</td></tr>')+'</tbody></table></div></div>'+
       '<p class="hint att-sec">Eslatma: ustunlarda <b>o\'quvchilar soni</b> ko\'rsatilgan (kunlar emas). Bir o\'quvchi ham sababli, ham sababsiz kelmagan bo\'lsa, ikkala ustunda ham hisoblanadi, shuning uchun «Sababli» + «Sababsiz» yig\'indisi «Kelmagan»dan katta bo\'lishi mumkin. Belgi qo\'yilmagan katak «keldi» hisoblanadi, kechikish kelmaganlikka kirmaydi.</p>':'');
+    attExtras(R,st,exp); attCardify();
+  }
+  document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[data-drill]'); if(b) attDrill(b.getAttribute('data-dc'),b.getAttribute('data-drill')) });
+  function attDrill(c,k){
+    var L=attLast; if(!L) return;
+    var rows=L.R.ps.filter(function(p){return c==='*'||(p.s.cls||'—')===c}).map(function(p){
+      return {p:p,l:p.list.filter(function(e){var z=e.split(' ')[1]==='Sz'; return k==='a'||(k==='z'?z:!z)})}}).filter(function(o){return o.l.length}).sort(function(a,b){return b.l.length-a.l.length||a.p.s.name.localeCompare(b.p.s.name)});
+    var T={a:'Kelmagan',b:'Sababli kelmagan',z:'Sababsiz kelmagan'}[k], m=$('#drillModal');
+    if(!m){ m=document.createElement('div'); m.id='drillModal'; m.className='inst-modal hidden'; m.setAttribute('role','dialog'); m.innerHTML='<div class="inst-box" style="max-width:560px"><button type="button" class="inst-x" aria-label="Yopish">×</button><h3></h3><div class="dr-body"></div></div>'; document.body.appendChild(m);
+      m.addEventListener('click',function(e){ if(e.target===m||e.target.closest('.inst-x')) m.classList.add('hidden') }); }
+    $('h3',m).textContent=T+' o\'quvchilar · '+(c==='*'?'barcha sinflar':c+' sinf')+' · '+rows.length+' kishi';
+    $('.dr-body',m).innerHTML=rows.length?'<div class="dr-list">'+rows.map(function(o,i){return '<div class="dr-row"><div><b>'+(i+1)+'. '+esc(o.p.s.name)+'</b>'+(c==='*'?' <small>'+esc(o.p.s.cls||'—')+'</small>':'')+'</div><div class="dr-days">'+o.l.map(function(e){var a=e.split(' '); return '<span class="dchip '+(a[1]==='Sz'?'z':'')+'">'+a[0]+' <i>'+esc(a[1])+'</i></span>'}).join('')+'</div></div>'}).join('')+'</div>':'<p>Bu davrda yo\'q.</p>';
+    m.classList.remove('hidden');
+  }
+  function attCardify(){ $$('#attStMore table.log').forEach(function(t){ var h=$$('thead th',t).map(function(x){return x.textContent.replace(/\(kishi\)/,'').trim()}); t.classList.add('cardify'); $$('tr',t).forEach(function(r){ $$('td',r).forEach(function(td,i){ if(h[i]&&!td.getAttribute('data-l')) td.setAttribute('data-l',h[i]) }) }) }) }
+  function attWeekText(st){
+    var t=new Date(), a=new Date(); a.setDate(a.getDate()-6); var W=attCalc(st,[dateISO(a),dateISO(t)]), L=['📊 28-maktab: haftalik davomat xulosasi','Davr: '+fmtDate(dateISO(a))+' – '+fmtDate(dateISO(t)),''];
+    var exp=0; Object.keys(W.pc).forEach(function(c){exp+=W.pc[c].n*W.pc[c].days});
+    L.push('Umumiy davomat: '+(exp?(100*(1-W.abs/exp)).toFixed(1)+'%':'—')+' · kelmagan: '+W.pa+' kishi (sababli '+W.pb+', sababsiz '+W.pz+')','');
+    Object.keys(W.pc).sort(attNat).forEach(function(c){var q=W.pc[c], p=attPct(q); L.push((q.pa?'• ':'✅ ')+c+': '+(p>=0?p.toFixed(1)+'%':'—')+(q.pa?' — kelmagan '+q.pa+' (sababsiz '+q.pz+')':' — hamma keldi'))});
+    var bad=W.ps.filter(function(p){return p.mx>=3}).length; if(bad) L.push('','⚠️ 3+ kun ketma-ket kelmaganlar: '+bad+' kishi');
+    return L.join('\n');
+  }
+  function attExtras(R,st,exp){
+    var el=$('#attStMore'); if(!st.length||!el) return;
+    var rk=Object.keys(R.pc).map(function(c){return {c:c,p:attPct(R.pc[c])}}).filter(function(o){return o.p>=0}).sort(function(a,b){return b.p-a.p}), g=[], seen=[];
+    rk.forEach(function(o){var k=o.p.toFixed(1); var i=seen.indexOf(k); if(i<0){ if(seen.length>=3) return; seen.push(k); g.push({p:k,c:[o.c]}) } else g[i].c.push(o.c)});
+    var pod=g.map(function(x,i){return '<span class="pod">'+['🥇','🥈','🥉'][i]+' <b>'+x.c.map(esc).join(', ')+'</b> <small>'+x.p+'%</small></span>'}).join('');
+    var ins=[], tot=R.wd.reduce(function(a,b){return a+b},0), WD=[1,2,3,4,5,6,0].filter(function(i){return R.wd[i]>0});
+    if(tot>=10&&WD.length>2){ var avg=tot/WD.length, mx=WD.sort(function(a,b){return R.wd[b]-R.wd[a]})[0], d=Math.round(100*(R.wd[mx]/avg-1)); if(d>=25) ins.push('📅 <b>'+ATT_WDF[mx]+'</b> kunlari eng ko\'p kelmagan: '+R.wd[mx]+' kun (o\'rtachadan +'+d+'%).') }
+    var pm=Object.keys(R.pm).filter(function(k){return R.pm[k]>0}); if(pm.length>1){ var bm=pm.sort(function(a,b){return R.pm[b]-R.pm[a]})[0]; ins.push('🗓 Eng ko\'p kelmagan oy: <b>'+ATT_MONTHS[+bm.slice(5)-1]+'</b> ('+R.pm[bm]+' kun).') }
+    if(R.abs>=10&&(R.by.Kas||0)/R.abs>=0.4) ins.push('🤒 Kelmaganlarning <b>'+Math.round(100*R.by.Kas/R.abs)+'%</b> i kasallik sababli. Sinflarda kasallik tarqalayotgani ehtimoli bor.');
+    if(R.abs>=10&&(R.by.Sz||0)/R.abs>=0.5) ins.push('⚠️ Kelmaganlarning <b>'+Math.round(100*R.by.Sz/R.abs)+'%</b> i sababsiz.');
+    el.insertAdjacentHTML('afterbegin',(pod?'<div class="att-sec"><h3>Davr peshqadamlari</h3><div class="pods">'+pod+'</div></div>':'')+(ins.length?'<div class="att-sec"><h3>Qonuniyatlar</h3><ul class="ins">'+ins.map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul></div>':''));
+    var dq=R.ps.filter(function(p){return p.mx>=3||p.zm>5}).sort(function(a,b){return (b.mx||0)-(a.mx||0)||(b.zm||0)-(a.zm||0)});
+    var wk=attWeekText(st);
+    el.insertAdjacentHTML('beforeend','<div class="att-sec"><h3>⚠️ Diqqat: doimiy kelmaydiganlar</h3><p class="hint">Ketma-ket 3 va undan ko\'p dars kuni kelmaganlar yoki bir oyda 5 martadan ko\'p sababsiz kelmaganlar.</p><div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>F.I.Sh</th><th>Sinf</th><th>Ketma-ket (kun)</th><th>Oyiga sababsiz (eng ko\'p)</th></tr></thead><tbody>'+
+      (dq.length?dq.map(function(p,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(p.s.name)+'</td><td>'+esc(p.s.cls||'—')+'</td><td class="'+(p.mx>=3?'dg':'')+'"><b>'+(p.mx||0)+'</b></td><td class="'+(p.zm>5?'dg':'')+'"><b>'+(p.zm||0)+'</b></td></tr>'}).join(''):'<tr><td colspan="5" class="stat-empty">Bunday o\'quvchi yo\'q 👍</td></tr>')+
+      '</tbody></table></div></div><div class="att-sec"><h3>Haftalik xulosa (oxirgi 7 kun)</h3><pre class="wk" id="attWkTxt">'+esc(wk)+'</pre><div class="row-btns"><button type="button" class="btn sm" id="attWkTg">✈️ Telegram\'da yuborish</button><button type="button" class="btn line sm" id="attWkCp">Nusxalash</button></div><p class="hint">Faqat sinflar bo\'yicha raqamlar yuboriladi, o\'quvchi ismlari yo\'q. Telegram ochilganda chatni o\'zingiz tanlaysiz.</p></div>');
+    $('#attWkTg').onclick=function(){ var u='https://t.me/share/url?url='+encodeURIComponent(platformUrl())+'&text='+encodeURIComponent(wk); window.open(u,'_blank','noopener') };
+    $('#attWkCp').onclick=function(){ copyText(wk,'Xulosa nusxalandi') };
   }
   function attAbsBuild(){
     var cl=$('#attCls').value||'*', st=attVisible().filter(function(s){return s.cls!==ATT_TCLS&&(cl==='*'||(s.cls||'—')===cl)}), R=attCalc(st,attRange()), cs=[], T={n:st.length,abs:0,sz:0,miss:0,e:0};
