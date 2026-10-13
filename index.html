@@ -13,6 +13,10 @@
 <meta property="og:title" content="28-maktab · Tarbiya, bilim, kelajak">
 <meta property="og:description" content="Maktab yangiliklari, e'lonlar va aloqa.">
 <meta name="theme-color" content="#0F3D7A">
+<link rel="manifest" href="maktab.webmanifest">
+<link rel="apple-touch-icon" href="icons/maktab/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="28-maktab">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'%3E%3Cpath d='M26 28H214V120C214 178 164 210 120 230C76 210 26 178 26 120Z' fill='%230F3D7A' stroke='%23F2B632' stroke-width='9'/%3E%3Ccircle cx='120' cy='112' r='40' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -122,6 +126,10 @@ footer .wrap{display:flex;gap:18px;align-items:center;justify-content:space-betw
 footer b{font:700 15px var(--head);color:#fff}
 footer small{display:block;letter-spacing:.18em;color:var(--gold);font-weight:700;font-size:10.5px;margin-top:5px}
 footer a{color:#fff;font-weight:700}
+#tip{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;background:var(--ink);color:#fff;border-radius:14px;padding:14px 16px;font-size:14.5px;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+#tip button{float:right;margin-left:10px;border:0;background:rgba(255,255,255,.15);color:#fff;border-radius:8px;padding:4px 10px;font-weight:700;cursor:pointer}
+.linkbtn{border:0;background:none;color:#fff;font:700 14px var(--body);text-decoration:underline;cursor:pointer;padding:0}
+.gmsg{margin-top:10px;font-weight:700}
 .view{animation:in .28s ease-out}
 @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
@@ -159,7 +167,7 @@ footer a{color:#fff;font-weight:700}
 
 <footer><div class="wrap">
   <div style="display:flex;gap:12px;align-items:center"><svg class="emb" width="44" height="44" aria-hidden="true"><use href="#emb"/></svg><div><b>28-MAKTAB</b><small>TARBIYA · BILIM · KELAJAK</small></div></div>
-  <div>© <span id="yr"></span> 28-maktab<span data-staff hidden> · <a href="/platforma">Platformaga o'tish →</a></span></div>
+  <div>© <span id="yr"></span> 28-maktab<span data-install hidden> · <button type="button" class="linkbtn" data-install-btn>📲 Ilovani o'rnatish</button></span><span data-staff hidden> · <a href="/platforma">Platformaga o'tish →</a></span></div>
 </div></footer>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -223,7 +231,7 @@ footer a{color:#fff;font-weight:700}
   /* ====== Sahifalar ====== */
   function home(){
     var pin=news&&news.filter(function(n){return n.pinned})[0], rest=news?news.slice(0,3):[];
-    return '<section class="hero"><div class="wrap"><div><div class="eyebrow">TARBIYA · BILIM · KELAJAK</div><h1>28-maktabga<br>xush kelibsiz</h1><p>'+esc(SCHOOL.intro)+'</p><div class="btns"><a class="btn gold" href="#/yangiliklar">Yangiliklar</a><a class="btn line" href="#/aloqa">Aloqa</a></div></div><div class="emb-box"><svg viewBox="0 0 240 240" role="img" aria-label="28-maktab emblemasi"><use href="#emb"/></svg></div></div></section>'+
+    return '<section class="hero"><div class="wrap"><div><div class="eyebrow">TARBIYA · BILIM · KELAJAK</div><h1>28-maktabga<br>xush kelibsiz</h1><p>'+esc(SCHOOL.intro)+'</p><div class="btns"><a class="btn gold" href="#/yangiliklar">Yangiliklar</a><a class="btn line" href="#/aloqa">Aloqa</a><button type="button" class="btn line" data-install hidden data-install-btn>📲 Ilovani o\'rnatish</button></div></div><div class="emb-box"><svg viewBox="0 0 240 240" role="img" aria-label="28-maktab emblemasi"><use href="#emb"/></svg></div></div></section>'+
       '<div class="wrap">'+(pin?'<a class="alert" href="#/yangilik/'+esc(pin.id)+'"><div><span>Muhim e\'lon</span><br><b>'+esc(pin.title)+'</b></div></a>':'')+
       '<section class="blk"><div class="hd"><h2>So\'nggi yangiliklar</h2><a href="#/yangiliklar">Hammasi →</a></div>'+
       (news===null?SK:err?errBox():rest.length?'<div class="grid">'+rest.map(card).join('')+'</div>':empty("Hozircha yangilik yo'q","Tez orada maktab yangiliklari shu yerda paydo bo'ladi."))+'</section></div>';
@@ -232,7 +240,7 @@ footer a{color:#fff;font-weight:700}
     var arr=(news||[]).filter(function(n){return !cat||n.cat===cat});
     var FL=[['','Hammasi'],['yangilik','Yangiliklar'],['tadbir','Tadbirlar'],['yutuq','Yutuqlar'],['elon',"E'lonlar"]];
     var f='<div class="filters" role="group" aria-label="Kategoriya">'+FL.map(function(c){return '<button type="button" data-cat="'+c[0]+'" class="'+(cat===c[0]?'on':'')+'">'+c[1]+'</button>'}).join('')+'</div>';
-    return '<div class="wrap"><section class="blk"><div class="hd"><h2>Yangiliklar</h2></div>'+f+
+    return '<div class="wrap"><section class="blk"><div class="hd"><h2>Yangiliklar</h2><a class="btn navy" data-staff hidden href="/platforma#yangiliklar" style="color:#fff">＋ Yangilik qo\'shish</a></div>'+f+
       (news===null?SK:err?errBox():arr.length?'<div class="grid">'+arr.map(card).join('')+'</div>':empty("Bu bo'limda yangilik yo'q","Boshqa kategoriyani tanlab ko'ring."))+'</section></div>';
   }
   function article(id){
@@ -244,6 +252,9 @@ footer a{color:#fff;font-weight:700}
     var im=okImg(n.img), url=location.href.split('#')[0]+'#/yangilik/'+n.id;
     return '<div class="wrap"><article class="art"><a class="back" href="#/yangiliklar">← Yangiliklar</a><div class="meta">'+(n.pinned?'<span class="chip pin">Muhim</span>':'')+'<span class="chip '+esc(n.cat)+'">'+esc(CATS[n.cat]||'Yangilik')+'</span><span>'+esc(fdate(n.date))+'</span></div><h1>'+esc(n.title)+'</h1>'+(im?'<div class="cover"><img src="'+im+'" alt=""></div>':'')+'<div class="body">'+bodyHTML(n.body)+'</div><div class="share"><a class="btn navy" target="_blank" rel="noopener" href="https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(n.title)+'">Telegram\'da ulashish</a><button type="button" class="btn out" data-copy="'+esc(url)+'">Havolani nusxalash</button></div></article></div>';
   }
+  function staffPage(){
+    return '<div class="wrap"><section class="blk">'+empty('Xodimlar uchun kirish',"Admin ro'yxatidagi Google hisobi bilan kiring.<br><br><button type=\"button\" class=\"btn navy\" data-glogin>Google orqali kirish</button><p class=\"gmsg\" id=\"gmsg\"></p>")+'</section></div>';
+  }
   function contact(){
     var rows=[['📍','Manzil',SCHOOL.address,null],['📞','Telefon',SCHOOL.phone,SCHOOL.phone&&'tel:'+SCHOOL.phone.replace(/[^\d+]/g,'')],['✉️','Email',SCHOOL.email,SCHOOL.email&&'mailto:'+SCHOOL.email],['✈️','Telegram',SCHOOL.telegram&&'Rasmiy kanal',SCHOOL.telegram],['🕘','Ish vaqti',SCHOOL.hours,null],['🗺️','Xarita',SCHOOL.mapUrl&&"Google Maps'da ochish",SCHOOL.mapUrl]].filter(function(r){return r[2]});
     return '<div class="wrap"><section class="blk"><div class="hd"><h2>Aloqa</h2></div>'+(rows.length?'<div class="info">'+rows.map(function(r){return '<div class="irow"><i aria-hidden="true">'+r[0]+'</i><div><small>'+r[1]+'</small>'+(r[3]?'<a href="'+esc(r[3])+'"'+(/^http/.test(r[3])?' target="_blank" rel="noopener noreferrer"':'')+'>'+esc(r[2])+'</a>':'<b>'+esc(r[2])+'</b>')+'</div></div>'}).join('')+'</div>':empty("Aloqa ma'lumotlari tez orada qo'shiladi","Savollaringiz bo'lsa, maktab ma'muriyatiga murojaat qiling."))+'</section></div>';
@@ -253,11 +264,11 @@ footer a{color:#fff;font-weight:700}
   function route(){
     var h=location.hash.replace(/^#\/?/,''), p=h.split('/'), r=p[0]||'home';
     document.title='28-maktab · Tarbiya, bilim, kelajak';
-    var key={yangiliklar:'news',yangilik:'news',aloqa:'contact'}[r]||'home';
+    var key={yangiliklar:'news',yangilik:'news',aloqa:'contact'}[r]||(r==='xodim'?'':'home');
     Array.prototype.forEach.call(document.querySelectorAll('nav.m a'),function(a){ if(a.dataset.r===key) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current') });
     function draw(){
-      var html= r==='yangiliklar'?list(): r==='yangilik'?article(decodeURIComponent(p[1]||'')): r==='aloqa'?contact(): home();
-      app.innerHTML='<div class="view">'+html+'</div>';
+      var html= r==='xodim'?staffPage(): r==='yangiliklar'?list(): r==='yangilik'?article(decodeURIComponent(p[1]||'')): r==='aloqa'?contact(): home();
+      app.innerHTML='<div class="view">'+html+'</div>'; applyStaff(); applyInstall();
     }
     draw();
     if(r!=='aloqa'&&news===null) load().then(function(){ var again=location.hash.replace(/^#\/?/,'').split('/')[0]||'home'; if(again===r) draw(); });
@@ -268,23 +279,47 @@ footer a{color:#fff;font-weight:700}
     if(e.target.closest('[data-retry]')){ news=null; load(true).then(route); route(); return }
     var cp=e.target.closest('[data-copy]'); if(cp){ var t=cp.getAttribute('data-copy'); (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){cp.textContent='Nusxalandi ✓'}).catch(function(){window.prompt('Havola:',t)}); }
   });
-  /* Platforma tugmalari faqat admin ro'yxatidagi hisoblarga ko'rinadi (haqiqiy ruxsatni platformaning o'zi va Firestore qoidalari beradi) */
-  function setStaff(on){
-    Array.prototype.forEach.call(document.querySelectorAll('[data-staff]'),function(el){el.hidden=!on});
-    var sa=false; try{sa=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){}
-    if(on&&sa) location.replace('/platforma');
-  }
+  /* ====== Platforma tugmalari: faqat admin ro'yxatidagi hisoblarga ====== */
+  var isStaff=false;
+  function inApp(){ try{return window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false} }
+  function applyStaff(){ Array.prototype.forEach.call(document.querySelectorAll('[data-staff]'),function(el){el.hidden=!isStaff}) }
+  function setStaff(on){ isStaff=!!on; applyStaff(); if(on&&inApp()&&location.hash.indexOf('#/yangilik')!==0) location.replace('/platforma'); }
+  function gmsg(t,bad){ var e=document.getElementById('gmsg'); if(e){ e.textContent=t; e.style.color=bad?'#b42318':'#067647' } }
   try{
     if(window.firebase&&firebase.auth){
       if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
       firebase.auth().onAuthStateChanged(function(u){
         if(!u||!u.email||!u.emailVerified) return setStaff(false);
         var em=u.email.toLowerCase();
-        if(em==='idrizmedia@gmail.com') return setStaff(true);
-        firebase.firestore().collection('admins').doc(em).get().then(function(d){setStaff(d.exists)}).catch(function(){setStaff(false)});
+        function done(ok){
+          if(ok){ setStaff(true); gmsg('✅ Xush kelibsiz! Tepada «Platforma →» tugmasi paydo bo\'ldi.'); }
+          else { setStaff(false); if(location.hash==='#/xodim'){ gmsg("Bu hisob admin ro'yxatida yo'q.",true); } firebase.auth().signOut(); }
+        }
+        if(em==='idrizmedia@gmail.com') return done(true);
+        firebase.firestore().collection('admins').doc(em).get().then(function(d){done(d.exists)}).catch(function(){done(false)});
       });
     }
   }catch(e){}
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('[data-glogin]')) return;
+    try{
+      var pr=new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(pr).catch(function(er){ if(er&&/popup/.test(er.code||'')) firebase.auth().signInWithRedirect(pr); else gmsg((er&&er.message)||'Kirib bo\'lmadi',true) });
+    }catch(er){ gmsg('Kirib bo\'lmadi',true) }
+  });
+
+  /* ====== Ilovani o'rnatish (hamma uchun) ====== */
+  var dip=null, isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+  function applyInstall(){ Array.prototype.forEach.call(document.querySelectorAll('[data-install]'),function(el){el.hidden=inApp()||!(dip||isIOS)}) }
+  window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); dip=e; applyInstall() });
+  window.addEventListener('appinstalled',function(){ dip=null; applyInstall() });
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('[data-install-btn]')) return;
+    if(dip){ dip.prompt(); dip.userChoice.then(function(){dip=null; applyInstall()}); return }
+    var t=document.getElementById('tip'); if(t) t.remove();
+    t=document.createElement('div'); t.id='tip'; t.innerHTML='<button type="button" onclick="this.parentNode.remove()">Yopish</button>Safari\'da pastdagi <b>Ulashish</b> (⬆️) tugmasini bosing, so\'ng <b>«Bosh ekranga qo\'shish»</b> ni tanlang.'; document.body.appendChild(t);
+  });
+  if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}) }); }
   route();
 })();
 </script>
