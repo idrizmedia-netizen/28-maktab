@@ -1,0 +1,22 @@
+{
+  "id": "./maktab-sahifa",
+  "name": "28-maktab",
+  "short_name": "28-maktab",
+  "description": "28-maktab rasmiy sahifasi: yangiliklar, e'lonlar va aloqa",
+  "lang": "uz",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0F3D7A",
+  "background_color": "#F7F5EE",
+  "categories": ["education", "news"],
+  "icons": [
+    { "src": "icons/maktab/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maktab/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maktab/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/maktab/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "logo-28.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
