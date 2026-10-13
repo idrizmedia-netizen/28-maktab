@@ -283,7 +283,7 @@ footer a{color:#fff;font-weight:700}
   var isStaff=false;
   function inApp(){ try{return window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false} }
   function applyStaff(){ Array.prototype.forEach.call(document.querySelectorAll('[data-staff]'),function(el){el.hidden=!isStaff}) }
-  function setStaff(on){ isStaff=!!on; applyStaff(); if(on&&inApp()&&location.hash.indexOf('#/yangilik')!==0) location.replace('/platforma'); }
+  function setStaff(on){ isStaff=!!on; applyStaff(); }
   function gmsg(t,bad){ var e=document.getElementById('gmsg'); if(e){ e.textContent=t; e.style.color=bad?'#b42318':'#067647' } }
   try{
     if(window.firebase&&firebase.auth){
