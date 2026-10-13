@@ -1,6 +1,7 @@
 {
   "rewrites": [
-    { "source": "/platforma", "destination": "/platforma.html" }
+    { "source": "/platforma", "destination": "/platforma.html" },
+    { "source": "/yangilik/:id", "destination": "/api/yangilik?id=:id" }
   ],
   "redirects": [
     { "source": "/maktab.html", "destination": "/", "permanent": false },
