@@ -1,5 +1,9 @@
 {
-  "crons": [
-    { "path": "/api/monthly-report", "schedule": "0 7 1 * *" }
+  "rewrites": [
+    { "source": "/platforma", "destination": "/platforma.html" }
+  ],
+  "redirects": [
+    { "source": "/maktab.html", "destination": "/", "permanent": false },
+    { "source": "/maktab", "destination": "/", "permanent": false }
   ]
 }
