@@ -740,6 +740,7 @@ body{overflow-x:clip}
 #netBar.off{background:#b42318;color:#fff}
 #netBar.on{background:#067647;color:#fff}
 @media (max-width:860px){
+  .icon-btn.hd-web{display:none}
   .kpi-grid{grid-template-columns:repeat(2,1fr)}
   .kpi b{font-size:26px}
   .home-grid{grid-template-columns:1fr}
@@ -851,6 +852,9 @@ i.hm.c-Kch{background:#f3d36b}
 .nw-a a.mini{text-decoration:none;display:inline-flex;align-items:center}
 .mini.danger{color:var(--danger)}
 @media (max-width:860px){.news-grid{grid-template-columns:1fr}.nf-row{grid-template-columns:1fr}.nw-row{flex-direction:column}.nw-a{justify-content:flex-start}}
+@media (min-width:861px) and (max-width:1360px){.inst-row.inst-head .dd-btn .lbl{display:none}.inst-row.inst-head .dd-btn{padding:0 11px}}
+@media (min-width:861px) and (max-width:1200px){.brand span{display:none}}
+@media (min-width:861px) and (max-width:1000px){.dd-btn{padding:0 8px}.grp-btn>svg:first-child{display:none}.icon-btn.hd-web{display:none}}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
@@ -931,6 +935,7 @@ i.hm.c-Kch{background:#f3d36b}
         </div>
       </nav>
       <div class="hd-right">
+        <a class="icon-btn hd-web" href="/" title="Maktab sahifasi" aria-label="Maktab sahifasi" style="text-decoration:none"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></a>
         <button type="button" class="icon-btn" id="gsBtn" aria-label="Qidirish (Ctrl+K)" title="Qidirish (Ctrl+K)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
         <div class="inst-row inst-head dd" data-inst-row>
           <button type="button" class="dd-btn" aria-haspopup="true" aria-expanded="false" title="Ilovani o'rnatish"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span class="lbl">O'rnatish</span></button>
@@ -1448,6 +1453,7 @@ i.hm.c-Kch{background:#f3d36b}
       <div class="grab"></div>
       <h3>Boshqa bo'limlar</h3>
       <div id="moreList"></div>
+      <a class="dd-item" href="/" style="text-decoration:none"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span><span class="tx"><b>Maktab sahifasi</b><small>Ochiq sahifaga qaytish</small></span></a>
     </div>
   </div>
 </div>
@@ -2176,7 +2182,7 @@ i.hm.c-Kch{background:#f3d36b}
     // Davomat xodimi: faqat "Davomat" bo'limi ko'rinadi
     var onlyTab = isAttStaff() ? 'att' : (isTLetter() ? 'tletter' : '');
     $$('nav.tabs [data-tab]').forEach(function(b){ var n=b.getAttribute('data-tab'); if(onlyTab) b.classList.toggle('hidden', n!==onlyTab); else if(n==='att') b.classList.remove('hidden'); });
-    if(onlyTab) goTab(onlyTab); else if(!window.__homeDone){ window.__homeDone=1; goTab('home'); }
+    if(onlyTab) goTab(onlyTab); else if(!window.__homeDone){ window.__homeDone=1; var wantNews=(location.hash==='#yangiliklar'); if(wantNews){ try{history.replaceState(null,'',location.pathname+location.search)}catch(e){} } goTab(wantNews&&newsAllowed()?'news':'home'); }
     if(isTLetter()){ $('#roleNote').textContent="Siz faqat o'qituvchilarga ogohlantirish xati yozish huquqiga egasiz."; $('#roleNote').classList.remove('hidden'); }
 
     // Sinf rahbari uchun "Sinf" maydoni: bitta sinf bo'lsa qulflanadi, bir nechta bo'lsa tanlovga aylanadi
@@ -4081,7 +4087,7 @@ i.hm.c-Kch{background:#f3d36b}
     var box=$('#homeBody'); if(!box) return;
     var st=attVisible().filter(function(s){return s.cls!==ATT_TCLS}), t=new Date(), iso=dateISO(t), hr=t.getHours();
     var gr=hr<5?'Xayrli tun':hr<12?'Xayrli tong':hr<18?'Xayrli kun':'Xayrli kech';
-    var h='<div class="home-hero"><div><h2>'+gr+'!</h2><p>'+ATT_WDF[t.getDay()]+', '+esc(fmtDate(iso))+'</p></div><div class="home-act">'+(isViewer()?'':'<button type="button" class="btn sm" data-gonav="letter">✍️ Xat yozish</button>')+'<button type="button" class="btn ghost sm" data-gonav="att">📅 Davomat</button><button type="button" class="btn line sm" data-gonav="stats">📊 Statistika</button></div></div>';
+    var h='<div class="home-hero"><div><h2>'+gr+'!</h2><p>'+ATT_WDF[t.getDay()]+', '+esc(fmtDate(iso))+'</p></div><div class="home-act">'+(isViewer()?'':'<button type="button" class="btn sm" data-gonav="letter">✍️ Xat yozish</button>')+(newsAllowed()?'<button type="button" class="btn ghost sm" data-gonav="news">📰 Yangilik yozish</button>':'')+'<button type="button" class="btn ghost sm" data-gonav="att">📅 Davomat</button><button type="button" class="btn line sm" data-gonav="stats">📊 Statistika</button></div></div>';
     if(!st.length){ box.innerHTML=h+'<div class="card">'+__ui.empty('chart',"Hali o'quvchilar yo'q","Davomat bo'limiga o'quvchilar ro'yxatini yuklang, shunda bu yerda kunlik holat ko'rinadi.",{label:'Davomatga o\'tish',go:'att'})+'</div>'; return }
     var a=new Date(); a.setDate(a.getDate()-6); var b=new Date(); b.setDate(b.getDate()-29);
     var T=attCalc(st,[iso,iso]), W=attCalc(st,[dateISO(a),iso]), M=attCalc(st,[dateISO(b),iso]);
@@ -4223,7 +4229,7 @@ i.hm.c-Kch{background:#f3d36b}
   /* ---- Maktab yangiliklari (ochiq sahifa uchun muharrir) ---- */
   var newsUnsub=null, newsDocs=[], newsEditId=null, newsImg='';
   var NCAT={yangilik:'Yangilik',tadbir:'Tadbir',yutuq:'Yutuq',elon:"E'lon"};
-  function newsAllowed(){ return myRole==='full' }
+  function newsAllowed(){ return myRole==='full'||myRole==='owner' }
   function newsApplyRole(){ var b=$('nav.tabs [data-tab="news"]'); if(b) b.classList.toggle('hidden',!newsAllowed()) }
   function newsStop(){ if(newsUnsub){ try{newsUnsub()}catch(e){} newsUnsub=null } newsDocs=[]; }
   function newsStart(){
