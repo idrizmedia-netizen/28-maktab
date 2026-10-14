@@ -1,7 +1,8 @@
 {
   "rewrites": [
     { "source": "/platforma", "destination": "/platforma.html" },
-    { "source": "/yangilik/:id", "destination": "/api/yangilik?id=:id" }
+    { "source": "/yangilik/:id", "destination": "/api/yangilik?id=:id" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" }
   ],
   "redirects": [
     { "source": "/maktab.html", "destination": "/", "permanent": false },
