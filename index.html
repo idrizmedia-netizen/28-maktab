@@ -10,6 +10,11 @@
 <title>28-maktab · Tarbiya, bilim, kelajak</title>
 <meta name="description" content="28-maktab rasmiy sahifasi: maktab yangiliklari, e'lonlar va aloqa.">
 <link rel="canonical" href="https://28-maktab.vercel.app/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="28-maktab">
+<meta property="og:url" content="https://28-maktab.vercel.app/">
+<meta property="og:image" content="https://28-maktab.vercel.app/og-default.png">
+<meta name="twitter:card" content="summary_large_image">
 <meta property="og:title" content="28-maktab · Tarbiya, bilim, kelajak">
 <meta property="og:description" content="Maktab yangiliklari, e'lonlar va aloqa.">
 <meta name="theme-color" content="#0F3D7A">
@@ -130,6 +135,24 @@ footer a{color:#fff;font-weight:700}
 #tip button{float:right;margin-left:10px;border:0;background:rgba(255,255,255,.15);color:#fff;border-radius:8px;padding:4px 10px;font-weight:700;cursor:pointer}
 .linkbtn{border:0;background:none;color:#fff;font:700 14px var(--body);text-decoration:underline;cursor:pointer;padding:0}
 .gmsg{margin-top:10px;font-weight:700}
+.cover img,.gal img{cursor:zoom-in}
+.gal{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0}
+.gal img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;border:1px solid var(--line);transition:transform .15s}
+.gal img:hover{transform:scale(1.02)}
+.vid{margin:24px 0;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:#000}
+.vid iframe{display:block;width:100%;border:0;aspect-ratio:16/9}
+.vid.tg{background:#fff}.vid.tg iframe{aspect-ratio:auto;height:560px}
+.ph{position:relative}
+.cnt{position:absolute;right:10px;bottom:10px;background:rgba(11,36,71,.82);color:#fff;font:700 12px/1 var(--body);padding:6px 9px;border-radius:99px}
+.cnt.v{right:auto;left:10px;background:var(--gold);color:#3b2a00}
+#lb{display:none;position:fixed;inset:0;z-index:90;background:rgba(5,15,35,.94);align-items:center;justify-content:center;padding:20px}
+#lb.on{display:flex}
+#lb img{max-width:100%;max-height:88vh;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.lbx,.lbn{position:absolute;border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:50%;width:48px;height:48px;font-size:28px;cursor:pointer;display:grid;place-items:center}
+.lbx{top:14px;right:14px}.lbn.p{left:12px;top:50%}.lbn.n{right:12px;top:50%}
+#lb.one .lbn{display:none}
+.lbc{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:#fff;font-weight:700;background:rgba(0,0,0,.45);padding:5px 12px;border-radius:99px}
+@media (max-width:560px){.gal{grid-template-columns:repeat(2,1fr)}.vid.tg iframe{height:480px}}
 .view{animation:in .28s ease-out}
 @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
@@ -183,8 +206,11 @@ footer a{color:#fff;font-weight:700}
     email:"",
     telegram:"",     // masalan: "https://t.me/maktab28"
     hours:"",        // masalan: "Dushanba–Shanba, 08:00–17:00"
-    mapUrl:""        // Google Maps havolasi
+    mapUrl:"",       // Google Maps havolasi
+    instagram:"",
+    youtube:""
   };
+  var DEFAULT_INTRO=SCHOOL.intro;
   var FIREBASE_CONFIG={apiKey:"AIzaSyCyY4iguO742_S9Io843WK5GGHZFSYDPOc",authDomain:"maktab-49da5.firebaseapp.com",projectId:"maktab-49da5",storageBucket:"maktab-49da5.firebasestorage.app",messagingSenderId:"437130046048",appId:"1:437130046048:web:27b0a43304507a1bc57105"};
   var CATS={yangilik:"Yangilik",tadbir:"Tadbir",yutuq:"Yutuq",elon:"E'lon"};
   var MON=["yanvar","fevral","mart","aprel","may","iyun","iyul","avgust","sentabr","oktyabr","noyabr","dekabr"];
@@ -202,10 +228,34 @@ footer a{color:#fff;font-weight:700}
       return '<p>'+p+'</p>';
     }).join('');
   }
+  function imgsOf(n){ var a=Array.isArray(n.imgs)?n.imgs:(n.img?[n.img]:[]); return a.map(okImg).filter(Boolean) }
+  function videoEmbed(u){
+    u=String(u||'').trim(); var x;
+    if((x=/^https:\/\/(?:www\.|m\.)?youtube\.com\/(?:watch\?(?:[^#]*&)?v=|shorts\/|embed\/|live\/)([A-Za-z0-9_-]{11})/.exec(u))||(x=/^https:\/\/youtu\.be\/([A-Za-z0-9_-]{11})/.exec(u))) return {src:'https://www.youtube-nocookie.com/embed/'+x[1],tg:false};
+    if((x=/^https:\/\/t\.me\/([A-Za-z0-9_]{4,32})\/(\d+)/.exec(u))) return {src:'https://t.me/'+x[1]+'/'+x[2]+'?embed=1&mode=tme',tg:true};
+    return null;
+  }
+  var galleryImgs=[];
+  function openLB(i){
+    var lb=document.getElementById('lb'); if(!galleryImgs.length) return;
+    if(!lb){ lb=document.createElement('div'); lb.id='lb'; lb.setAttribute('role','dialog'); lb.setAttribute('aria-modal','true');
+      lb.innerHTML='<button type="button" class="lbx" data-lbx aria-label="Yopish">×</button><button type="button" class="lbn p" data-lbn="-1" aria-label="Oldingi">‹</button><img alt=""><button type="button" class="lbn n" data-lbn="1" aria-label="Keyingi">›</button><span class="lbc"></span>'; document.body.appendChild(lb); }
+    lb._i=i; lb.querySelector('img').src=galleryImgs[i]; lb.querySelector('.lbc').textContent=(i+1)+' / '+galleryImgs.length; lb.className='on'+(galleryImgs.length<2?' one':'');
+  }
+  function stepLB(d){ var lb=document.getElementById('lb'); if(!lb||lb.className.indexOf('on')<0) return; openLB((lb._i+d+galleryImgs.length)%galleryImgs.length) }
+  function closeLB(){ var lb=document.getElementById('lb'); if(lb) lb.className='' }
+  function coverHTML(ims){ return ims.length?'<div class="cover"><img src="'+ims[0]+'" alt="" data-lb="0"></div>':'' }
+  function restHTML(ims,vid,raw){
+    var h='';
+    if(ims.length>1) h+='<div class="gal">'+ims.slice(1).map(function(s,i){return '<img src="'+s+'" alt="" loading="lazy" data-lb="'+(i+1)+'">'}).join('')+'</div>';
+    if(vid) h+='<div class="vid'+(vid.tg?' tg':'')+'"><iframe src="'+esc(vid.src)+'" title="Video" loading="lazy" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>';
+    else if(raw&&/^https?:\/\//.test(raw)) h+='<p><a class="btn out" target="_blank" rel="noopener noreferrer" href="'+esc(raw)+'">▶ Videoni ko\'rish</a></p>';
+    return h;
+  }
   var NOPH='<svg viewBox="0 0 240 240" aria-hidden="true"><use href="#emb"/></svg>';
   function card(n){
-    var im=okImg(n.img);
-    return '<a class="card" href="#/yangilik/'+esc(n.id)+'"><div class="ph">'+(im?'<img src="'+im+'" alt="" loading="lazy">':NOPH)+'</div><div class="cb"><div class="meta">'+(n.pinned?'<span class="chip pin">Muhim</span>':'')+'<span class="chip '+esc(n.cat)+'">'+esc(CATS[n.cat]||'Yangilik')+'</span><span>'+esc(fdate(n.date))+'</span></div><h3>'+esc(n.title)+'</h3><p>'+esc(excerpt(n.body))+'</p></div></a>';
+    var all=imgsOf(n), im=all[0]||'';
+    return '<a class="card" href="#/yangilik/'+esc(n.id)+'"><div class="ph">'+(im?'<img src="'+im+'" alt="" loading="lazy">':NOPH)+(all.length>1?'<span class="cnt">🖼 '+all.length+'</span>':'')+(n.video?'<span class="cnt v">▶</span>':'')+'</div><div class="cb"><div class="meta">'+(n.pinned?'<span class="chip pin">Muhim</span>':'')+'<span class="chip '+esc(n.cat)+'">'+esc(CATS[n.cat]||'Yangilik')+'</span><span>'+esc(fdate(n.date))+'</span></div><h3>'+esc(n.title)+'</h3><p>'+esc(excerpt(n.body))+'</p></div></a>';
   }
   var SK='<div class="grid"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>';
   function empty(t,d){return '<div class="state"><svg viewBox="0 0 240 240" aria-hidden="true"><use href="#emb"/></svg><b>'+t+'</b>'+d+'</div>'}
@@ -249,14 +299,15 @@ footer a{color:#fff;font-weight:700}
     if(err) return '<div class="wrap">'+errBox()+'</div>';
     if(!n) return '<div class="wrap">'+empty("Yangilik topilmadi","U olib tashlangan yoki hali e'lon qilinmagan bo'lishi mumkin.<br><br><a class='btn navy' href='#/yangiliklar'>Barcha yangiliklar</a>")+'</div>';
     document.title=n.title+' · 28-maktab';
-    var im=okImg(n.img), url=location.href.split('#')[0]+'#/yangilik/'+n.id;
-    return '<div class="wrap"><article class="art"><a class="back" href="#/yangiliklar">← Yangiliklar</a><div class="meta">'+(n.pinned?'<span class="chip pin">Muhim</span>':'')+'<span class="chip '+esc(n.cat)+'">'+esc(CATS[n.cat]||'Yangilik')+'</span><span>'+esc(fdate(n.date))+'</span></div><h1>'+esc(n.title)+'</h1>'+(im?'<div class="cover"><img src="'+im+'" alt=""></div>':'')+'<div class="body">'+bodyHTML(n.body)+'</div><div class="share"><a class="btn navy" target="_blank" rel="noopener" href="https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(n.title)+'">Telegram\'da ulashish</a><button type="button" class="btn out" data-copy="'+esc(url)+'">Havolani nusxalash</button></div></article></div>';
+    var ims=imgsOf(n), vid=videoEmbed(n.video), url=location.origin+'/yangilik/'+n.id; galleryImgs=ims;
+    return '<div class="wrap"><article class="art"><a class="back" href="#/yangiliklar">← Yangiliklar</a><div class="meta">'+(n.pinned?'<span class="chip pin">Muhim</span>':'')+'<span class="chip '+esc(n.cat)+'">'+esc(CATS[n.cat]||'Yangilik')+'</span><span>'+esc(fdate(n.date))+'</span></div><h1>'+esc(n.title)+'</h1>'+coverHTML(ims)+'<div class="body">'+bodyHTML(n.body)+'</div>'+restHTML(ims,vid,n.video)+'<div class="share"><a class="btn navy" target="_blank" rel="noopener" href="https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(n.title)+'">Telegram\'da ulashish</a><button type="button" class="btn out" data-copy="'+esc(url)+'">Havolani nusxalash</button></div></article></div>';
   }
   function staffPage(){
     return '<div class="wrap"><section class="blk">'+empty('Xodimlar uchun kirish',"Admin ro'yxatidagi Google hisobi bilan kiring.<br><br><button type=\"button\" class=\"btn navy\" data-glogin>Google orqali kirish</button><p class=\"gmsg\" id=\"gmsg\"></p>")+'</section></div>';
   }
   function contact(){
-    var rows=[['📍','Manzil',SCHOOL.address,null],['📞','Telefon',SCHOOL.phone,SCHOOL.phone&&'tel:'+SCHOOL.phone.replace(/[^\d+]/g,'')],['✉️','Email',SCHOOL.email,SCHOOL.email&&'mailto:'+SCHOOL.email],['✈️','Telegram',SCHOOL.telegram&&'Rasmiy kanal',SCHOOL.telegram],['🕘','Ish vaqti',SCHOOL.hours,null],['🗺️','Xarita',SCHOOL.mapUrl&&"Google Maps'da ochish",SCHOOL.mapUrl]].filter(function(r){return r[2]});
+    var L=function(u){return /^https:\/\//i.test(u||'')?u:''}, tel=(SCHOOL.phone||'').replace(/[^\d+]/g,''), mail=/^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(SCHOOL.email||'')?SCHOOL.email:'';
+    var rows=[['📍','Manzil',SCHOOL.address,null],['📞','Telefon',tel&&SCHOOL.phone,tel&&'tel:'+tel],['✉️','Email',mail,mail&&'mailto:'+mail],['✈️','Telegram',L(SCHOOL.telegram)&&'Rasmiy kanal',L(SCHOOL.telegram)],['📸','Instagram',L(SCHOOL.instagram)&&'Rasmiy sahifa',L(SCHOOL.instagram)],['▶️','YouTube',L(SCHOOL.youtube)&&'Rasmiy kanal',L(SCHOOL.youtube)],['🕘','Ish vaqti',SCHOOL.hours,null],['🗺️','Xarita',L(SCHOOL.mapUrl)&&"Google Maps'da ochish",L(SCHOOL.mapUrl)]].filter(function(r){return r[2]});
     return '<div class="wrap"><section class="blk"><div class="hd"><h2>Aloqa</h2></div>'+(rows.length?'<div class="info">'+rows.map(function(r){return '<div class="irow"><i aria-hidden="true">'+r[0]+'</i><div><small>'+r[1]+'</small>'+(r[3]?'<a href="'+esc(r[3])+'"'+(/^http/.test(r[3])?' target="_blank" rel="noopener noreferrer"':'')+'>'+esc(r[2])+'</a>':'<b>'+esc(r[2])+'</b>')+'</div></div>'}).join('')+'</div>':empty("Aloqa ma'lumotlari tez orada qo'shiladi","Savollaringiz bo'lsa, maktab ma'muriyatiga murojaat qiling."))+'</section></div>';
   }
 
@@ -273,8 +324,12 @@ footer a{color:#fff;font-weight:700}
     draw();
     if(r!=='aloqa'&&news===null) load().then(function(){ var again=location.hash.replace(/^#\/?/,'').split('/')[0]||'home'; if(again===r) draw(); });
   }
-  window.addEventListener('hashchange',function(){route(); window.scrollTo(0,0)});
+  window.addEventListener('hashchange',function(){closeLB(); route(); window.scrollTo(0,0)});
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeLB(); else if(e.key==='ArrowRight') stepLB(1); else if(e.key==='ArrowLeft') stepLB(-1) });
   document.addEventListener('click',function(e){
+    var lbi=e.target.closest('[data-lb]'); if(lbi){ openLB(+lbi.getAttribute('data-lb')); return }
+    var lbn=e.target.closest('[data-lbn]'); if(lbn){ stepLB(+lbn.getAttribute('data-lbn')); return }
+    if(e.target.closest('[data-lbx]')||e.target.id==='lb'){ closeLB(); return }
     var c=e.target.closest('[data-cat]'); if(c){ cat=c.getAttribute('data-cat'); route(); return }
     if(e.target.closest('[data-retry]')){ news=null; load(true).then(route); route(); return }
     var cp=e.target.closest('[data-copy]'); if(cp){ var t=cp.getAttribute('data-copy'); (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){cp.textContent='Nusxalandi ✓'}).catch(function(){window.prompt('Havola:',t)}); }
@@ -320,7 +375,23 @@ footer a{color:#fff;font-weight:700}
     t=document.createElement('div'); t.id='tip'; t.innerHTML='<button type="button" onclick="this.parentNode.remove()">Yopish</button>Safari\'da pastdagi <b>Ulashish</b> (⬆️) tugmasini bosing, so\'ng <b>«Bosh ekranga qo\'shish»</b> ni tanlang.'; document.body.appendChild(t);
   });
   if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}) }); }
+  /* ====== Aloqa ma'lumotlari: platformadagi forma (Firestore: publicinfo/maktab) ====== */
+  var SKEYS=['intro','address','phone','email','hours','telegram','instagram','youtube','mapUrl'];
+  function mergeInfo(o){ SKEYS.forEach(function(k){ var v=typeof o[k]==='string'?o[k].trim().slice(0,400):''; SCHOOL[k]=(k==='intro')?(v||DEFAULT_INTRO):v }) }
+  try{ var cached=JSON.parse(localStorage.getItem('m28_site')||'null'); if(cached) mergeInfo(cached) }catch(e){}
+  function loadInfo(){
+    try{
+      if(!window.firebase||!firebase.firestore) return;
+      if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      firebase.firestore().collection('publicinfo').doc('maktab').get().then(function(d){
+        if(!d.exists) return; var o=d.data()||{}; mergeInfo(o);
+        try{ localStorage.setItem('m28_site',JSON.stringify(o)) }catch(e){}
+        route();
+      }).catch(function(){});
+    }catch(e){}
+  }
   route();
+  loadInfo();
 })();
 </script>
 </body>
