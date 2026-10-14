@@ -41,12 +41,12 @@ img{max-width:100%;display:block}
 
 /* sarlavha */
 header.top{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
-.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;height:64px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:64px;flex-wrap:wrap;padding:4px 0}
 .brand{display:flex;align-items:center;gap:11px;text-decoration:none}
 .brand b{font:700 15px/1 var(--head);color:var(--blue);letter-spacing:.01em;white-space:nowrap}
 .brand small{display:block;font:700 9.5px/1 var(--body);letter-spacing:.18em;color:var(--gold-d);margin-top:5px}
 nav.m{display:flex;gap:2px}
-nav.m a{text-decoration:none;font-weight:700;font-size:14.5px;color:var(--muted);padding:9px 13px;border-radius:10px;transition:background-color .15s,color .15s}
+nav.m a{white-space:nowrap;text-decoration:none;font-weight:700;font-size:14px;color:var(--muted);padding:9px 10px;border-radius:10px;transition:background-color .15s,color .15s}
 nav.m a:hover{background:#EEF2FA;color:var(--navy)}
 a.staff{border:1.5px solid var(--navy);color:var(--navy)!important;margin-left:6px;background:#fff}
 a.staff:hover{background:var(--navy)!important;color:#fff!important}
@@ -153,6 +153,38 @@ footer a{color:#fff;font-weight:700}
 #lb.one .lbn{display:none}
 .lbc{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:#fff;font-weight:700;background:rgba(0,0,0,.45);padding:5px 12px;border-radius:99px}
 @media (max-width:560px){.gal{grid-template-columns:repeat(2,1fr)}.vid.tg iframe{height:480px}}
+.nsq{width:100%;max-width:420px;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;font:500 15px var(--body);color:var(--ink);margin:0 0 14px}
+.nsq:focus{outline:none;border-color:var(--navy)}
+.morebtn{text-align:center;margin:22px 0 4px}
+.people{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.pc{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:22px 14px;text-align:center}
+.pc .av{width:112px;height:112px;border-radius:50%;margin:0 auto 12px;overflow:hidden;background:linear-gradient(135deg,#E9EFFA,#F7ECCB);display:grid;place-items:center;font:700 34px var(--head);color:var(--navy);border:3px solid var(--gold)}
+.pc .av img{width:100%;height:100%;object-fit:cover}
+.pc b{font:700 15.5px/1.3 var(--head);display:block}
+.pc span{color:var(--muted);font-weight:600;font-size:14px}
+.achs{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.ac{display:flex;gap:14px;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px;align-items:flex-start}
+.ac .pic{width:96px;height:96px;border-radius:14px;overflow:hidden;flex:none;background:linear-gradient(135deg,#E9EFFA,#F7ECCB);display:grid;place-items:center;font-size:34px}
+.ac .pic img{width:100%;height:100%;object-fit:cover}
+.ac h3{font:700 16px/1.3 var(--head);margin:0 0 6px}.ac p{margin:0;color:var(--muted);font-size:15px}
+.evl{display:grid;gap:12px}
+.ev{display:flex;gap:16px;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;align-items:center}
+.ev .dt{width:66px;flex:none;text-align:center;background:var(--navy);color:#fff;border-radius:14px;padding:9px 4px}
+.ev .dt b{display:block;font:700 24px/1 var(--head)}
+.ev .dt small{font:700 11px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.ev h3{font:700 16px/1.3 var(--head);margin:0 0 4px}.ev p{margin:0;color:var(--muted);font-size:14.5px}
+.ev.past{opacity:.72}.ev.past .dt{background:#8795ad}
+.sub{font:700 14px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:30px 0 12px}
+table.tt{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+table.tt th{background:var(--navy);color:#fff;text-align:left;padding:12px 16px;font:700 13px var(--body);letter-spacing:.06em;text-transform:uppercase}
+table.tt td{padding:12px 16px;border-top:1px solid var(--line)}
+table.tt tr.br td{color:var(--muted);background:#faf8f1}
+.lks{display:grid;gap:10px}
+.lks a{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;text-decoration:none;font-weight:700;color:var(--navy);transition:border-color .15s}
+.lks a:hover{border-color:var(--navy)}
+.pg-sub{color:var(--muted);margin:-8px 0 20px}
+@media (max-width:860px){.people{grid-template-columns:repeat(2,1fr)}.achs{grid-template-columns:1fr}}
+@media (max-width:420px){.pc .av{width:88px;height:88px;font-size:28px}.ev .dt{width:58px}}
 .view{animation:in .28s ease-out}
 @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
@@ -170,7 +202,7 @@ footer a{color:#fff;font-weight:700}
   nav.m a{padding:9px 10px;font-size:14px}
   .hd{align-items:flex-start;flex-direction:column}
 }
-@media (max-width:480px){.brand span{display:none}nav.m{margin-left:auto}}
+@media (max-width:1200px){nav.m{order:3;width:100%;overflow-x:auto;margin:0 0 6px;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}nav.m::-webkit-scrollbar{display:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -183,7 +215,7 @@ footer a{color:#fff;font-weight:700}
 
 <header class="top"><div class="wrap bar">
   <a class="brand" href="#/" aria-label="28-maktab, bosh sahifa"><svg class="emb" width="42" height="42" role="img" aria-label="28-maktab emblemasi"><use href="#emb"/></svg><span><b>28-MAKTAB</b><small>TARBIYA · BILIM · KELAJAK</small></span></a>
-  <nav class="m" aria-label="Asosiy menyu"><a href="#/" data-r="home">Bosh</a><a href="#/yangiliklar" data-r="news">Yangiliklar</a><a href="#/aloqa" data-r="contact">Aloqa</a><a class="staff" data-staff hidden href="/platforma">Platforma →</a></nav>
+  <nav class="m" aria-label="Asosiy menyu"><a href="#/" data-r="home">Bosh</a><a href="#/yangiliklar" data-r="news">Yangiliklar</a><a href="#/tadbirlar" data-r="events">Tadbirlar</a><a href="#/jamoa" data-r="team">Jamoa</a><a href="#/yutuqlar" data-r="ach">Yutuqlar</a><a href="#/jadval" data-r="schedule">Jadval</a><a href="#/galereya" data-r="gallery">Galereya</a><a href="#/aloqa" data-r="contact">Aloqa</a><a class="staff" data-staff hidden href="/platforma">Platforma →</a></nav>
 </div></header>
 
 <main id="app" tabindex="-1"></main>
@@ -221,7 +253,8 @@ footer a{color:#fff;font-weight:700}
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function fdate(s){var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s||''); return m?(+m[3])+' '+MON[+m[2]-1]+' '+m[1]:''}
   function okImg(s){return typeof s==='string'&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(s)?s:''}
-  function excerpt(t){t=String(t||'').replace(/\s+/g,' ').trim(); return t.length>150?t.slice(0,147)+'…':t}
+  function plain(t){ return String(t||'').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1').replace(/\*\*/g,'').replace(/^##\s+/gm,'').replace(/^[-•]\s+/gm,'').replace(/\*([^*\n]+)\*/g,'$1') }
+  function excerpt(t){t=plain(t).replace(/\s+/g,' ').trim(); return t.length>150?t.slice(0,147)+'…':t}
   function bodyHTML(t){
     return esc(t).split(/\n{2,}/).map(function(p){
       p=p.replace(/\n/g,'<br>').replace(/(https?:\/\/[^\s<]+)/g,function(u){return '<a href="'+u+'" target="_blank" rel="noopener noreferrer nofollow">'+u+'</a>'});
@@ -255,7 +288,7 @@ footer a{color:#fff;font-weight:700}
   var NOPH='<svg viewBox="0 0 240 240" aria-hidden="true"><use href="#emb"/></svg>';
   function card(n){
     var all=imgsOf(n), im=all[0]||'';
-    return '<a class="card" href="#/yangilik/'+esc(n.id)+'"><div class="ph">'+(im?'<img src="'+im+'" alt="" loading="lazy">':NOPH)+(all.length>1?'<span class="cnt">🖼 '+all.length+'</span>':'')+(n.video?'<span class="cnt v">▶</span>':'')+'</div><div class="cb"><div class="meta">'+(n.pinned?'<span class="chip pin">Muhim</span>':'')+'<span class="chip '+esc(n.cat)+'">'+esc(CATS[n.cat]||'Yangilik')+'</span><span>'+esc(fdate(n.date))+'</span></div><h3>'+esc(n.title)+'</h3><p>'+esc(excerpt(n.body))+'</p></div></a>';
+    return '<a class="card" href="/yangilik/'+esc(n.id)+'"><div class="ph">'+(im?'<img src="'+im+'" alt="" loading="lazy">':NOPH)+(all.length>1?'<span class="cnt">🖼 '+all.length+'</span>':'')+(n.video?'<span class="cnt v">▶</span>':'')+'</div><div class="cb"><div class="meta">'+(n.pinned?'<span class="chip pin">Muhim</span>':'')+'<span class="chip '+esc(n.cat)+'">'+esc(CATS[n.cat]||'Yangilik')+'</span><span>'+esc(fdate(n.date))+'</span></div><h3>'+esc(n.title)+'</h3><p>'+esc(excerpt(n.body))+'</p></div></a>';
   }
   var SK='<div class="grid"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>';
   function empty(t,d){return '<div class="state"><svg viewBox="0 0 240 240" aria-hidden="true"><use href="#emb"/></svg><b>'+t+'</b>'+d+'</div>'}
@@ -282,16 +315,69 @@ footer a{color:#fff;font-weight:700}
   function home(){
     var pin=news&&news.filter(function(n){return n.pinned})[0], rest=news?news.slice(0,3):[];
     return '<section class="hero"><div class="wrap"><div><div class="eyebrow">TARBIYA · BILIM · KELAJAK</div><h1>28-maktabga<br>xush kelibsiz</h1><p>'+esc(SCHOOL.intro)+'</p><div class="btns"><a class="btn gold" href="#/yangiliklar">Yangiliklar</a><a class="btn line" href="#/aloqa">Aloqa</a><button type="button" class="btn line" data-install hidden data-install-btn>📲 Ilovani o\'rnatish</button></div></div><div class="emb-box"><svg viewBox="0 0 240 240" role="img" aria-label="28-maktab emblemasi"><use href="#emb"/></svg></div></div></section>'+
-      '<div class="wrap">'+(pin?'<a class="alert" href="#/yangilik/'+esc(pin.id)+'"><div><span>Muhim e\'lon</span><br><b>'+esc(pin.title)+'</b></div></a>':'')+
+      '<div class="wrap">'+(pin?'<a class="alert" href="/yangilik/'+esc(pin.id)+'"><div><span>Muhim e\'lon</span><br><b>'+esc(pin.title)+'</b></div></a>':'')+
       '<section class="blk"><div class="hd"><h2>So\'nggi yangiliklar</h2><a href="#/yangiliklar">Hammasi →</a></div>'+
       (news===null?SK:err?errBox():rest.length?'<div class="grid">'+rest.map(card).join('')+'</div>':empty("Hozircha yangilik yo'q","Tez orada maktab yangiliklari shu yerda paydo bo'ladi."))+'</section></div>';
   }
+  var qs='', lim=9;
+  function filt(){ var q=qs.toLowerCase().trim(); return (news||[]).filter(function(n){ return (!cat||n.cat===cat)&&(!q||(String(n.title)+' '+plain(n.body)).toLowerCase().indexOf(q)>=0) }) }
+  function gridInner(){
+    var arr=filt();
+    return arr.length?'<div class="grid">'+arr.slice(0,lim).map(card).join('')+'</div>'+(arr.length>lim?'<div class="morebtn"><button type="button" class="btn out" data-more>Yana ko\'rsatish ('+(arr.length-lim)+')</button></div>':''):empty("Hech narsa topilmadi","Qidiruvni yoki kategoriyani o'zgartirib ko'ring.");
+  }
   function list(){
-    var arr=(news||[]).filter(function(n){return !cat||n.cat===cat});
     var FL=[['','Hammasi'],['yangilik','Yangiliklar'],['tadbir','Tadbirlar'],['yutuq','Yutuqlar'],['elon',"E'lonlar"]];
     var f='<div class="filters" role="group" aria-label="Kategoriya">'+FL.map(function(c){return '<button type="button" data-cat="'+c[0]+'" class="'+(cat===c[0]?'on':'')+'">'+c[1]+'</button>'}).join('')+'</div>';
-    return '<div class="wrap"><section class="blk"><div class="hd"><h2>Yangiliklar</h2><a class="btn navy" data-staff hidden href="/platforma#yangiliklar" style="color:#fff">＋ Yangilik qo\'shish</a></div>'+f+
-      (news===null?SK:err?errBox():arr.length?'<div class="grid">'+arr.map(card).join('')+'</div>':empty("Bu bo'limda yangilik yo'q","Boshqa kategoriyani tanlab ko'ring."))+'</section></div>';
+    return '<div class="wrap"><section class="blk"><div class="hd"><h2>Yangiliklar</h2><a class="btn navy" data-staff hidden href="/platforma#yangiliklar" style="color:#fff">＋ Yangilik qo\'shish</a></div>'+
+      '<input type="search" class="nsq" id="nsq" placeholder="Yangiliklardan qidirish..." value="'+esc(qs)+'" aria-label="Qidirish">'+f+
+      (news===null?SK:err?errBox():'<div id="ngrid">'+gridInner()+'</div>')+'</section></div>';
+  }
+  /* ====== Maktab bo'limlari (platformadagi formalardan: publicinfo/<nom>) ====== */
+  var SEC={};
+  function secLoad(name){
+    if(SEC[name]!==undefined) return Promise.resolve();
+    return new Promise(function(res){
+      try{
+        if(!window.firebase||!firebase.firestore) throw new Error('offline');
+        if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+        firebase.firestore().collection('publicinfo').doc(name).get().then(function(d){ var o=d.exists?d.data():{}; SEC[name]=Array.isArray(o.items)?o.items:[]; res() }).catch(function(){ SEC[name]=false; res() });
+      }catch(e){ SEC[name]=false; res() }
+    });
+  }
+  function pageWrap(title,sub,inner){ return '<div class="wrap"><section class="blk"><div class="hd"><h2>'+title+'</h2></div>'+(sub?'<p class="pg-sub">'+sub+'</p>':'')+inner+'</section></div>' }
+  function secState(names){ for(var i=0;i<names.length;i++){ if(SEC[names[i]]===undefined) return 'load'; if(SEC[names[i]]===false) return 'err' } return 'ok' }
+  function todayISO(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2) }
+  function team(){
+    var st=secState(['team']); if(st==='load') return pageWrap('Jamoa','',SK); if(st==='err') return '<div class="wrap">'+errBox()+'</div>';
+    var it=SEC.team.filter(function(x){return x&&x.name});
+    return pageWrap('Jamoa',"Maktab ma'muriyati va o'qituvchilar",it.length?'<div class="people">'+it.map(function(x){ var im=okImg(x.photo); return '<div class="pc"><div class="av">'+(im?'<img src="'+im+'" alt="'+esc(x.name)+'" loading="lazy">':esc(String(x.name).trim().charAt(0).toUpperCase()))+'</div><b>'+esc(x.name)+'</b><span>'+esc(x.role||'')+'</span></div>' }).join('')+'</div>':empty("Ma'lumot tez orada qo'shiladi",'Jamoa haqida ma\'lumot hozircha kiritilmagan.'));
+  }
+  function achievements(){
+    var st=secState(['achievements']); if(st==='load') return pageWrap('Yutuqlar','',SK); if(st==='err') return '<div class="wrap">'+errBox()+'</div>';
+    var it=SEC.achievements.filter(function(x){return x&&x.title}).sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))});
+    return pageWrap('Yutuqlar',"Olimpiadalar, tanlovlar va musobaqalardagi g'alabalar",it.length?'<div class="achs">'+it.map(function(x){ var im=okImg(x.photo); return '<div class="ac"><div class="pic">'+(im?'<img src="'+im+'" alt="" loading="lazy">':'🏆')+'</div><div><h3>'+esc(x.title)+'</h3>'+(x.date?'<div class="meta" style="margin-bottom:6px"><span>'+esc(fdate(x.date))+'</span></div>':'')+(x.text?'<p>'+esc(x.text)+'</p>':'')+'</div></div>' }).join('')+'</div>':empty("Ma'lumot tez orada qo'shiladi",'Yutuqlar hozircha kiritilmagan.'));
+  }
+  function evRow(x,past){
+    var mt=/^(\d{4})-(\d{2})-(\d{2})/.exec(x.date||''); var dt=mt?'<div class="dt"><b>'+(+mt[3])+'</b><small>'+MON[+mt[2]-1].slice(0,3)+'</small></div>':'<div class="dt"><b>—</b></div>';
+    return '<div class="ev'+(past?' past':'')+'">'+dt+'<div><h3>'+esc(x.title)+'</h3><p>'+[x.time?'🕘 '+esc(x.time):'',x.place?'📍 '+esc(x.place):''].filter(Boolean).join(' · ')+'</p>'+(x.note?'<p>'+esc(x.note)+'</p>':'')+'</div></div>';
+  }
+  function events(){
+    var st=secState(['events']); if(st==='load') return pageWrap('Tadbirlar','',SK); if(st==='err') return '<div class="wrap">'+errBox()+'</div>';
+    var t=todayISO(), it=SEC.events.filter(function(x){return x&&x.title}), up=it.filter(function(x){return (x.date||'9999')>=t}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))}), past=it.filter(function(x){return (x.date||'9999')<t}).sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))}).slice(0,8);
+    return pageWrap('Tadbirlar',"Yaqin kunlardagi tadbirlar, ota-onalar yig'ilishi va bayramlar",(up.length?'<div class="evl">'+up.map(function(x){return evRow(x,false)}).join('')+'</div>':empty("Yaqin tadbirlar yo'q","Yangi tadbirlar e'lon qilinganda shu yerda ko'rinadi."))+(past.length?'<div class="sub">O\'tgan tadbirlar</div><div class="evl">'+past.map(function(x){return evRow(x,true)}).join('')+'</div>':''));
+  }
+  function schedule(){
+    var st=secState(['bells','timetables']); if(st==='load') return pageWrap('Jadval','',SK); if(st==='err') return '<div class="wrap">'+errBox()+'</div>';
+    var bl=SEC.bells.filter(function(x){return x&&x.lesson}), tl=SEC.timetables.filter(function(x){return x&&x.title&&/^https:\/\//i.test(x.url||'')});
+    var h='';
+    if(bl.length) h+='<div class="sub" style="margin-top:0">Qo\'ng\'iroq jadvali</div><div style="overflow-x:auto"><table class="tt"><thead><tr><th>Dars</th><th>Boshlanishi</th><th>Tugashi</th></tr></thead><tbody>'+bl.map(function(x){ var br=/tanaffus|dam olish|tushlik/i.test(x.lesson); return '<tr'+(br?' class="br"':'')+'><td>'+esc(x.lesson)+'</td><td>'+esc(x.start||'')+'</td><td>'+esc(x.end||'')+'</td></tr>' }).join('')+'</tbody></table></div>';
+    if(tl.length) h+='<div class="sub">Dars jadvallari</div><div class="lks">'+tl.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer"><span>'+esc(x.title)+'</span><span>Ochish ↗</span></a>'}).join('')+'</div>';
+    return pageWrap('Jadval',"Qo'ng'iroq va dars jadvallari",h||empty("Jadval tez orada qo'shiladi","Jadvallar hozircha kiritilmagan."));
+  }
+  function gallery(){
+    if(news===null) return pageWrap('Galereya','',SK); if(err) return '<div class="wrap">'+errBox()+'</div>';
+    var it=news.filter(function(n){return imgsOf(n).length});
+    return pageWrap('Galereya','Tadbirlardan suratlar. Albomni ochish uchun bosing',it.length?'<div class="grid">'+it.map(card).join('')+'</div>':empty("Hozircha suratlar yo'q","Rasmli yangiliklar shu yerda albom bo'lib ko'rinadi."));
   }
   function article(id){
     var n=(news||[]).filter(function(x){return x.id===id})[0];
@@ -314,24 +400,29 @@ footer a{color:#fff;font-weight:700}
   /* ====== Yo'naltirish ====== */
   function route(){
     var h=location.hash.replace(/^#\/?/,''), p=h.split('/'), r=p[0]||'home';
+    if(r==='yangilik'&&p[1]){ location.replace('/yangilik/'+encodeURIComponent(decodeURIComponent(p[1]))); return }
     document.title='28-maktab · Tarbiya, bilim, kelajak';
-    var key={yangiliklar:'news',yangilik:'news',aloqa:'contact'}[r]||(r==='xodim'?'':'home');
-    Array.prototype.forEach.call(document.querySelectorAll('nav.m a'),function(a){ if(a.dataset.r===key) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current') });
+    var key={yangiliklar:'news',tadbirlar:'events',jamoa:'team',yutuqlar:'ach',jadval:'schedule',galereya:'gallery',aloqa:'contact'}[r]||(r==='xodim'?'':'home');
+    Array.prototype.forEach.call(document.querySelectorAll('nav.m a[data-r]'),function(a){ if(a.dataset.r===key) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current') });
+    var SD={jamoa:['team'],yutuqlar:['achievements'],tadbirlar:['events'],jadval:['bells','timetables']};
     function draw(){
-      var html= r==='xodim'?staffPage(): r==='yangiliklar'?list(): r==='yangilik'?article(decodeURIComponent(p[1]||'')): r==='aloqa'?contact(): home();
+      var html= r==='xodim'?staffPage(): r==='yangiliklar'?list(): r==='tadbirlar'?events(): r==='jamoa'?team(): r==='yutuqlar'?achievements(): r==='jadval'?schedule(): r==='galereya'?gallery(): r==='aloqa'?contact(): home();
       app.innerHTML='<div class="view">'+html+'</div>'; applyStaff(); applyInstall();
     }
     draw();
-    if(r!=='aloqa'&&news===null) load().then(function(){ var again=location.hash.replace(/^#\/?/,'').split('/')[0]||'home'; if(again===r) draw(); });
+    var tasks=[]; if(SD[r]) SD[r].forEach(function(n){tasks.push(secLoad(n))}); else if(r!=='aloqa'&&r!=='xodim'&&news===null) tasks.push(load());
+    if(tasks.length) Promise.all(tasks).then(function(){ var again=location.hash.replace(/^#\/?/,'').split('/')[0]||'home'; if(again===r) draw(); });
   }
+  document.addEventListener('input',function(e){ if(e.target.id!=='nsq') return; qs=e.target.value; lim=9; var g=document.getElementById('ngrid'); if(g) g.innerHTML=gridInner(); });
   window.addEventListener('hashchange',function(){closeLB(); route(); window.scrollTo(0,0)});
   document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeLB(); else if(e.key==='ArrowRight') stepLB(1); else if(e.key==='ArrowLeft') stepLB(-1) });
   document.addEventListener('click',function(e){
     var lbi=e.target.closest('[data-lb]'); if(lbi){ openLB(+lbi.getAttribute('data-lb')); return }
     var lbn=e.target.closest('[data-lbn]'); if(lbn){ stepLB(+lbn.getAttribute('data-lbn')); return }
     if(e.target.closest('[data-lbx]')||e.target.id==='lb'){ closeLB(); return }
-    var c=e.target.closest('[data-cat]'); if(c){ cat=c.getAttribute('data-cat'); route(); return }
-    if(e.target.closest('[data-retry]')){ news=null; load(true).then(route); route(); return }
+    var c=e.target.closest('[data-cat]'); if(c){ cat=c.getAttribute('data-cat'); lim=9; route(); return }
+    if(e.target.closest('[data-more]')){ lim+=9; var g=document.getElementById('ngrid'); if(g) g.innerHTML=gridInner(); return }
+    if(e.target.closest('[data-retry]')){ news=null; SEC={}; load(true).then(route); route(); return }
     var cp=e.target.closest('[data-copy]'); if(cp){ var t=cp.getAttribute('data-copy'); (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){cp.textContent='Nusxalandi ✓'}).catch(function(){window.prompt('Havola:',t)}); }
   });
   /* ====== Platforma tugmalari: faqat admin ro'yxatidagi hisoblarga ====== */
