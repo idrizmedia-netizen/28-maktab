@@ -855,6 +855,13 @@ i.hm.c-Kch{background:#f3d36b}
 @media (min-width:861px) and (max-width:1360px){.inst-row.inst-head .dd-btn .lbl{display:none}.inst-row.inst-head .dd-btn{padding:0 11px}}
 @media (min-width:861px) and (max-width:1200px){.brand span{display:none}}
 @media (min-width:861px) and (max-width:1000px){.dd-btn{padding:0 8px}.grp-btn>svg:first-child{display:none}.icon-btn.hd-web{display:none}}
+.nth{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 4px}
+.nt{position:relative;width:108px;height:80px;border-radius:12px;overflow:hidden;border:1.5px solid var(--line);background:var(--brand-soft)}
+.nt img{width:100%;height:100%;object-fit:cover;display:block}
+.nt span{position:absolute;left:5px;bottom:5px;background:var(--brand);color:var(--brand-ink);font-size:10.5px;font-weight:800;padding:3px 7px;border-radius:99px}
+.nt button{position:absolute;border:0;border-radius:99px;background:rgba(0,0,0,.62);color:#fff;font-weight:800;cursor:pointer;width:26px;height:26px;line-height:26px;padding:0;font-size:13px}
+.nt button.x{right:5px;top:5px}
+.nt button[data-nfirst]{left:5px;bottom:5px}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
@@ -1295,8 +1302,12 @@ i.hm.c-Kch{background:#f3d36b}
             </div>
             <label class="fl" for="nBody">Matn</label>
             <textarea class="inp" id="nBody" rows="9" maxlength="20000" placeholder="Yangilik matni. Bo'sh qator — yangi xatboshi. Havola (https://...) o'zi bosiladigan bo'ladi."></textarea>
-            <label class="fl">Rasm (ixtiyoriy)</label>
-            <div class="nf-img"><div id="nImgPrev" class="nf-prev">Rasm yo'q</div><div><input type="file" id="nImg" accept="image/*" hidden><button type="button" class="btn line sm" id="nImgBtn">📷 Rasm tanlash</button> <button type="button" class="mini hidden" id="nImgDel">Olib tashlash</button><p class="hint" id="nImgInfo" style="margin:6px 0 0"></p></div></div>
+            <label class="fl">Rasmlar (ixtiyoriy, 5 tagacha)</label>
+            <div class="nf-img"><div><input type="file" id="nImg" accept="image/*" multiple hidden><button type="button" class="btn line sm" id="nImgBtn">📷 Rasm qo'shish</button><p class="hint" id="nImgInfo" style="margin:6px 0 0"></p></div></div>
+            <div id="nImgPrev" class="nth"></div>
+            <label class="fl" for="nVideo">Video havolasi (ixtiyoriy)</label>
+            <input class="inp" id="nVideo" maxlength="200" placeholder="https://youtu.be/...  yoki  https://t.me/kanal/123">
+            <p class="hint">Videoni avval <b>YouTube</b> yoki <b>Telegram kanalga</b> joylang, so'ng uning havolasini shu yerga qo'ying. Sahifada video o'zi ochiladi.</p>
             <p class="hint">⚠️ Rasmda o'quvchilar bo'lsa, ota-onalarning roziligi olinganiga ishonch hosil qiling.</p>
             <label class="nf-chk"><input type="checkbox" id="nPin"> 📌 Muhim e'lon sifatida tepaga mahkamlash</label>
             <div class="nf-btns"><button type="button" class="btn" id="nPublish">E'lon qilish</button><button type="button" class="btn line" id="nDraft">Qoralama saqlash</button><button type="button" class="mini" id="nNew">Yangisini boshlash</button></div>
@@ -1304,6 +1315,29 @@ i.hm.c-Kch{background:#f3d36b}
           </div>
           <div class="news-side"><h3>Yozilgan yangiliklar</h3><div id="newsList"><p class="hint">Yuklanmoqda...</p></div></div>
         </div>
+      </div>
+      <div class="card" id="siteCard" style="margin-top:16px">
+        <h2>Aloqa ma'lumotlari</h2>
+        <p class="hint">Ochiq sahifadagi «Aloqa» bo'limida va bosh sahifadagi tanishtiruvda ko'rinadi. <b>Bo'sh qoldirilgan qatorlar sahifada ko'rinmaydi.</b></p>
+        <label class="fl" for="cIntro">Tanishtiruv matni (bosh sahifada)</label>
+        <textarea class="inp" id="cIntro" rows="3" maxlength="400" placeholder="Maktab haqida 1–2 gap"></textarea>
+        <div class="nf-row">
+          <div><label class="fl" for="cAddress">Manzil</label><input class="inp" id="cAddress" maxlength="200" placeholder="Toshkent sh., ... ko'chasi, 28-uy"></div>
+          <div><label class="fl" for="cPhone">Telefon</label><input class="inp" id="cPhone" maxlength="40" placeholder="+998 71 123 45 67"></div>
+        </div>
+        <div class="nf-row">
+          <div><label class="fl" for="cEmail">Email</label><input class="inp" id="cEmail" maxlength="120" placeholder="maktab28@mail.uz"></div>
+          <div><label class="fl" for="cHours">Ish vaqti</label><input class="inp" id="cHours" maxlength="120" placeholder="Dushanba–Shanba, 08:00–17:00"></div>
+        </div>
+        <label class="fl" for="cTg">Telegram kanal havolasi</label><input class="inp" id="cTg" maxlength="200" placeholder="https://t.me/maktab28">
+        <div class="nf-row">
+          <div><label class="fl" for="cIg">Instagram havolasi</label><input class="inp" id="cIg" maxlength="200" placeholder="https://instagram.com/..."></div>
+          <div><label class="fl" for="cYt">YouTube havolasi</label><input class="inp" id="cYt" maxlength="200" placeholder="https://youtube.com/@..."></div>
+        </div>
+        <label class="fl" for="cMap">Xarita havolasi (Google Maps)</label><input class="inp" id="cMap" maxlength="400" placeholder="https://maps.app.goo.gl/...">
+        <p class="hint">Xarita havolasi: Google Maps'da maktabni toping → «Ulashish» → «Havolani nusxalash».</p>
+        <div class="nf-btns"><button type="button" class="btn" id="siteSave">Saqlash</button><a class="mini" href="/#/aloqa" target="_blank" rel="noopener">Sahifada ko'rish</a></div>
+        <p id="siteMsg" class="hint"></p>
       </div>
     </section>
     <section id="tab-audit" class="hidden">
@@ -4227,12 +4261,32 @@ i.hm.c-Kch{background:#f3d36b}
   });
 
   /* ---- Maktab yangiliklari (ochiq sahifa uchun muharrir) ---- */
-  var newsUnsub=null, newsDocs=[], newsEditId=null, newsImg='';
-  var NCAT={yangilik:'Yangilik',tadbir:'Tadbir',yutuq:'Yutuq',elon:"E'lon"};
+  var newsUnsub=null, newsDocs=[], newsEditId=null, newsImgs=[];
+  var NCAT={yangilik:'Yangilik',tadbir:'Tadbir',yutuq:'Yutuq',elon:"E'lon"}, NMAX=5, NBUDGET=170000, NVIDEO=/^https:\/\/((www\.|m\.)?youtube\.com\/(watch\?|shorts\/|embed\/|live\/)|youtu\.be\/|t\.me\/[A-Za-z0-9_]{4,32}\/\d+)/;
   function newsAllowed(){ return myRole==='full'||myRole==='owner' }
   function newsApplyRole(){ var b=$('nav.tabs [data-tab="news"]'); if(b) b.classList.toggle('hidden',!newsAllowed()) }
-  function newsStop(){ if(newsUnsub){ try{newsUnsub()}catch(e){} newsUnsub=null } newsDocs=[]; }
+  function newsStop(){ siteLoaded=false; if(newsUnsub){ try{newsUnsub()}catch(e){} newsUnsub=null } newsDocs=[]; }
+  function newsLink(id){ return location.origin+'/yangilik/'+id }
+  var SITEF=[['intro','#cIntro'],['address','#cAddress'],['phone','#cPhone'],['email','#cEmail'],['hours','#cHours'],['telegram','#cTg'],['instagram','#cIg'],['youtube','#cYt'],['mapUrl','#cMap']], siteLoaded=false;
+  function siteMsg(t,err){ var e=$('#siteMsg'); e.textContent=t; e.style.color=err?'var(--danger)':'' }
+  function siteLoad(){
+    if(siteLoaded||!db||!curUser||!newsAllowed()) return; siteLoaded=true;
+    db.collection('publicinfo').doc('maktab').get().then(function(d){ var o=d.exists?d.data():{}; SITEF.forEach(function(x){ $(x[1]).value=o[x[0]]||'' }) })
+      .catch(function(e){ siteLoaded=false; siteMsg('Yuklab bo\'lmadi: '+(e.message||'xato'),true) });
+  }
+  function siteSave(){
+    var o={}; SITEF.forEach(function(x){ o[x[0]]=$(x[1]).value.trim() });
+    var linkBad=['telegram','instagram','youtube','mapUrl'].some(function(k){ return o[k]&&!/^https:\/\//i.test(o[k]) });
+    if(linkBad) return siteMsg("Havolalar «https://» bilan boshlanishi kerak",true);
+    if(o.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(o.email)) return siteMsg("Email noto'g'ri yozilgan",true);
+    if(!db||!curUser) return siteMsg("Internet yoki kirish yo'q",true);
+    o.by=(curUser.email||'').toLowerCase(); o.updated=firebase.firestore.FieldValue.serverTimestamp();
+    var b=$('#siteSave'); b.disabled=true;
+    db.collection('publicinfo').doc('maktab').set(o).then(function(){ siteMsg("✅ Saqlandi. Ochiq sahifada ko'rinadi."); toast('Saqlandi'); try{logAudit('site_info','Aloqa ma\'lumotlari')}catch(e){} })
+      .catch(function(e){ siteMsg('Saqlab bo\'lmadi: '+(e.message||'xato'),true) }).then(function(){ b.disabled=false });
+  }
   function newsStart(){
+    siteLoad();
     if(!newsEditId&&!$('#nDate').value) $('#nDate').value=dateISO(new Date());
     if(!db||!curUser||!newsAllowed()||newsUnsub) { newsRender(); return }
     newsUnsub=db.collection('news').onSnapshot(function(s){
@@ -4243,59 +4297,80 @@ i.hm.c-Kch{background:#f3d36b}
   function newsRender(){
     var box=$('#newsList'); if(!box) return;
     box.innerHTML=newsDocs.length?newsDocs.map(function(n){
-      return '<div class="nw-row'+(n.id===newsEditId?' on':'')+'"><div class="nw-t"><b>'+esc(n.title)+'</b><span class="hint">'+esc(fmtDate(n.date))+' · '+esc(NCAT[n.cat]||'')+'</span><span class="nw-chips"><i class="'+(n.status==='published'?'ok':'dr')+'">'+(n.status==='published'?"E'lon qilingan":'Qoralama')+'</i>'+(n.pinned?'<i class="pn">📌 Muhim</i>':'')+'</span></div><div class="nw-a"><button type="button" class="mini" data-nedit="'+esc(n.id)+'">Tahrirlash</button>'+(n.status==='published'?'<a class="mini" target="_blank" rel="noopener" href="/#/yangilik/'+esc(n.id)+'">Ko\'rish</a>':'')+'<button type="button" class="mini danger" data-ndel="'+esc(n.id)+'">O\'chirish</button></div></div>';
+      var ni=Array.isArray(n.imgs)?n.imgs.length:(n.img?1:0), pub=n.status==='published';
+      return '<div class="nw-row'+(n.id===newsEditId?' on':'')+'"><div class="nw-t"><b>'+esc(n.title)+'</b><span class="hint">'+esc(fmtDate(n.date))+' · '+esc(NCAT[n.cat]||'')+(ni?' · 🖼 '+ni:'')+(n.video?' · ▶ video':'')+'</span><span class="nw-chips"><i class="'+(pub?'ok':'dr')+'">'+(pub?"E'lon qilingan":'Qoralama')+'</i>'+(n.pinned?'<i class="pn">📌 Muhim</i>':'')+'</span></div><div class="nw-a"><button type="button" class="mini" data-nedit="'+esc(n.id)+'">Tahrirlash</button>'+(pub?'<button type="button" class="mini" data-ncopy="'+esc(n.id)+'" title="Telegram uchun havola">🔗 Havola</button><a class="mini" target="_blank" rel="noopener" href="/#/yangilik/'+esc(n.id)+'">Ko\'rish</a>':'')+'<button type="button" class="mini danger" data-ndel="'+esc(n.id)+'">O\'chirish</button></div></div>';
     }).join(''):'<p class="hint">Hali yangilik yozilmagan.</p>';
   }
   function newsMsg(t,err){ var m=$('#nMsg'); m.textContent=t; m.style.color=err?'var(--danger)':'' }
   function newsClear(){
-    newsEditId=null; newsImg=''; $('#nTitle').value=''; $('#nBody').value=''; $('#nCat').value='yangilik'; $('#nDate').value=dateISO(new Date()); $('#nPin').checked=false; newsPrev(); newsMsg(''); newsRender();
+    newsEditId=null; newsImgs=[]; $('#nTitle').value=''; $('#nBody').value=''; $('#nVideo').value=''; $('#nCat').value='yangilik'; $('#nDate').value=dateISO(new Date()); $('#nPin').checked=false; newsPrev(); newsMsg(''); newsRender();
   }
   function newsPrev(){
-    var p=$('#nImgPrev'); p.innerHTML=newsImg?'<img alt="" src="'+newsImg+'">':"Rasm yo'q"; $('#nImgDel').classList.toggle('hidden',!newsImg);
-    $('#nImgInfo').textContent=newsImg?('Hajmi: '+Math.round(newsImg.length*0.75/1024)+' KB'):'';
+    var tot=newsImgs.reduce(function(a,s){return a+s.length},0);
+    $('#nImgPrev').innerHTML=newsImgs.map(function(s,i){return '<div class="nt"><img alt="" src="'+s+'">'+(i?'<button type="button" data-nfirst="'+i+'" title="Asosiy qilish">★</button>':'<span>Asosiy</span>')+'<button type="button" class="x" data-nrm="'+i+'" title="Olib tashlash">✕</button></div>'}).join('');
+    $('#nImgInfo').textContent=newsImgs.length?(newsImgs.length+' ta rasm · '+Math.round(tot*0.75/1024)+' KB'):"Rasm tanlanmagan";
+    $('#nImgBtn').disabled=newsImgs.length>=NMAX;
   }
   function newsResize(file){
     return new Promise(function(res,rej){
       var fr=new FileReader(); fr.onerror=function(){rej(new Error('Fayl o\'qilmadi'))};
-      fr.onload=function(){ var im=new Image(); im.onerror=function(){rej(new Error('Rasm ochilmadi'))};
+      fr.onload=function(){ var im=new Image(); im.onerror=function(){rej(new Error(file.name+': rasm ochilmadi'))};
         im.onload=function(){
-          var out='', tries=[[1000,.78],[900,.68],[800,.6],[700,.5]];
+          var out='', tries=[[1000,.74],[900,.64],[800,.55],[700,.48],[600,.42]];
           for(var i=0;i<tries.length;i++){ var k=Math.min(1,tries[i][0]/Math.max(im.width,im.height)), c=document.createElement('canvas'); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k);
-            c.getContext('2d').drawImage(im,0,0,c.width,c.height); out=c.toDataURL('image/jpeg',tries[i][1]); if(out.length<=420000) break; }
-          out.length<=440000?res(out):rej(new Error('Rasm juda katta, kichikroq tanlang'));
+            c.getContext('2d').drawImage(im,0,0,c.width,c.height); out=c.toDataURL('image/jpeg',tries[i][1]); if(out.length<=NBUDGET) break; }
+          out.length<=NBUDGET?res(out):rej(new Error(file.name+': rasm juda murakkab, boshqasini tanlang'));
         }; im.src=fr.result; };
       fr.readAsDataURL(file);
     });
   }
+  function newsAddFiles(files){
+    var list=[].slice.call(files).filter(function(f){return /^image\//.test(f.type)}), room=NMAX-newsImgs.length, skipped=list.length-Math.min(list.length,room);
+    list=list.slice(0,Math.max(0,room)); if(!list.length) return newsMsg(room<=0?'Eng ko\'pi bilan '+NMAX+' ta rasm':'Rasm tanlang',true);
+    newsMsg('Rasmlar tayyorlanmoqda ('+list.length+')...');
+    list.reduce(function(p,f){ return p.then(function(){ return newsResize(f).then(function(d){ newsImgs.push(d); newsPrev() }).catch(function(e){ newsMsg(e.message,true); }) }) },Promise.resolve())
+      .then(function(){ if(!$('#nMsg').style.color) newsMsg(skipped>0?('Faqat '+NMAX+' tagacha rasm qo\'shiladi, '+skipped+' tasi tashlab yuborildi'):''); });
+  }
   function newsSave(status){
-    if(!db||!curUser) return newsMsg('Internet yoki kirish yo\'q',true);
-    var title=$('#nTitle').value.trim(), body=$('#nBody').value.trim();
+    var title=$('#nTitle').value.trim(), body=$('#nBody').value.trim(), video=$('#nVideo').value.trim();
     if(!title) return newsMsg('Sarlavhani yozing',true);
     if(!body) return newsMsg('Matnni yozing',true);
-    var data={title:title,body:body,cat:$('#nCat').value,date:$('#nDate').value||dateISO(new Date()),status:status,pinned:$('#nPin').checked,img:newsImg||'',by:(curUser.email||'').toLowerCase(),updated:firebase.firestore.FieldValue.serverTimestamp()};
+    if(video&&!NVIDEO.test(video)) return newsMsg("Video havolasi YouTube (youtube.com, youtu.be) yoki Telegram (t.me/kanal/123) bo'lishi kerak",true);
+    var tot=newsImgs.reduce(function(a,s){return a+s.length},0); if(tot>900000) return newsMsg('Rasmlar juda ko\'p joy egallaydi. Bir-ikkitasini olib tashlang',true);
+    if(!db||!curUser) return newsMsg('Internet yoki kirish yo\'q',true);
+    var data={title:title,body:body,cat:$('#nCat').value,date:$('#nDate').value||dateISO(new Date()),status:status,pinned:$('#nPin').checked,imgs:newsImgs.slice(),ni:newsImgs.length,video:video,by:(curUser.email||'').toLowerCase(),updated:firebase.firestore.FieldValue.serverTimestamp()};
     var ref=newsEditId?db.collection('news').doc(newsEditId).set(data):db.collection('news').add(data);
     var btns=[$('#nPublish'),$('#nDraft')]; btns.forEach(function(b){b.disabled=true});
     ref.then(function(r){ if(!newsEditId&&r&&r.id) newsEditId=r.id;
-      newsMsg(status==='published'?"✅ E'lon qilindi. Ochiq sahifada ko'rinadi.":'💾 Qoralama saqlandi.'); toast(status==='published'?"E'lon qilindi":'Saqlandi');
+      var link=newsEditId?newsLink(newsEditId):'';
+      newsMsg(status==='published'?"✅ E'lon qilindi. Telegram uchun havola: "+link:'💾 Qoralama saqlandi.'); toast(status==='published'?"E'lon qilindi":'Saqlandi');
+      if(status==='published'&&link){ try{ copyText(link,"Havola nusxalandi, Telegram'ga qo'yishingiz mumkin") }catch(e){} }
       try{ logAudit(status==='published'?'news_publish':'news_save',title) }catch(e){} newsRender();
     }).catch(function(e){ newsMsg('Saqlab bo\'lmadi: '+(e&&e.message||'xato'),true) }).then(function(){ btns.forEach(function(b){b.disabled=false}) });
   }
   (function(){
     var f=$('#nImg'); if(!f) return;
     $('#nImgBtn').addEventListener('click',function(){ f.click() });
-    $('#nImgDel').addEventListener('click',function(){ newsImg=''; f.value=''; newsPrev() });
-    f.addEventListener('change',function(){ var file=f.files&&f.files[0]; if(!file) return; newsMsg('Rasm tayyorlanmoqda...');
-      newsResize(file).then(function(d){ newsImg=d; newsPrev(); newsMsg('') }).catch(function(e){ newsMsg(e.message,true) }); });
+    f.addEventListener('change',function(){ if(f.files&&f.files.length) newsAddFiles(f.files); f.value='' });
+    $('#nImgPrev').addEventListener('click',function(e){
+      var rm=e.target.closest('[data-nrm]'), fs=e.target.closest('[data-nfirst]');
+      if(rm){ newsImgs.splice(+rm.getAttribute('data-nrm'),1); newsPrev() }
+      if(fs){ var i=+fs.getAttribute('data-nfirst'), x=newsImgs.splice(i,1)[0]; newsImgs.unshift(x); newsPrev() }
+    });
     $('#nPublish').addEventListener('click',function(){ newsSave('published') });
     $('#nDraft').addEventListener('click',function(){ newsSave('draft') });
     $('#nNew').addEventListener('click',newsClear);
+    $('#siteSave').addEventListener('click',siteSave);
     $('#newsList').addEventListener('click',function(e){
-      var ed=e.target.closest('[data-nedit]'), dl=e.target.closest('[data-ndel]');
+      var ed=e.target.closest('[data-nedit]'), dl=e.target.closest('[data-ndel]'), cp=e.target.closest('[data-ncopy]');
+      if(cp){ try{ copyText(newsLink(cp.getAttribute('data-ncopy')),"Havola nusxalandi, Telegram'ga qo'ying") }catch(er){} return }
       if(ed){ var n=newsDocs.filter(function(x){return x.id===ed.getAttribute('data-nedit')})[0]; if(!n) return;
-        newsEditId=n.id; $('#nTitle').value=n.title||''; $('#nBody').value=n.body||''; $('#nCat').value=n.cat||'yangilik'; $('#nDate').value=n.date||dateISO(new Date()); $('#nPin').checked=!!n.pinned; newsImg=n.img||''; newsPrev(); newsMsg('Tahrirlanmoqda: '+n.title); newsRender(); $('#nTitle').scrollIntoView({behavior:'smooth',block:'center'}); }
+        newsEditId=n.id; $('#nTitle').value=n.title||''; $('#nBody').value=n.body||''; $('#nCat').value=n.cat||'yangilik'; $('#nDate').value=n.date||dateISO(new Date()); $('#nPin').checked=!!n.pinned; $('#nVideo').value=n.video||'';
+        newsImgs=(Array.isArray(n.imgs)?n.imgs:(n.img?[n.img]:[])).slice(); newsPrev(); newsMsg('Tahrirlanmoqda: '+n.title); newsRender(); $('#nTitle').scrollIntoView({behavior:'smooth',block:'center'}); }
       if(dl){ var id=dl.getAttribute('data-ndel'), n2=newsDocs.filter(function(x){return x.id===id})[0]; if(!n2||!confirm('«'+n2.title+'» yangiligi o\'chirilsinmi? Bu qaytarilmaydi.')) return;
         db.collection('news').doc(id).delete().then(function(){ toast("O'chirildi"); try{logAudit('news_delete',n2.title)}catch(e){} if(newsEditId===id) newsClear(); }).catch(function(er){ toast('Xato: '+(er.message||'')) }); }
     });
+    newsPrev();
   })();
   function attAbsBuild(){
     var cl=$('#attCls').value||'*', st=attVisible().filter(function(s){return s.cls!==ATT_TCLS&&(cl==='*'||(s.cls||'—')===cl)}), R=attCalc(st,attRange()), cs=[], T={n:st.length,abs:0,sz:0,miss:0,e:0};
