@@ -862,6 +862,25 @@ i.hm.c-Kch{background:#f3d36b}
 .nt button{position:absolute;border:0;border-radius:99px;background:rgba(0,0,0,.62);color:#fff;font-weight:800;cursor:pointer;width:26px;height:26px;line-height:26px;padding:0;font-size:13px}
 .nt button.x{right:5px;top:5px}
 .nt button[data-nfirst]{left:5px;bottom:5px}
+.fmt-bar{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 6px}
+.fmt-bar button{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:9px;min-width:38px;height:34px;padding:0 10px;font-weight:700;cursor:pointer;transition:background-color .12s,border-color .12s}
+.fmt-bar button:hover{background:var(--brand-soft);border-color:var(--brand)}
+.fmt-bar .pv{margin-left:auto;color:var(--brand)}
+.np{border:1.5px dashed var(--brand);border-radius:14px;margin:8px 0;background:var(--card)}
+.np-in{padding:16px}
+.np-t{font-size:22px;margin:6px 0 10px}
+.np-cover{width:100%;max-height:260px;object-fit:cover;border-radius:12px;margin-bottom:10px}
+.np-body p{margin:0 0 .9em}.np-body h3{margin:1.1em 0 .4em;font-size:18px}.np-body ul{margin:0 0 .9em;padding-left:1.3em}.np-body a{color:var(--brand);font-weight:700}
+.np-g{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.np-g img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px}
+.nw-chips i.tgc{background:#dbeafe;color:#1d4ed8}
+.sl-row{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;display:grid;gap:10px}
+.sl-fields{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;align-items:end}
+.sl-w{grid-column:1/-1}
+.sl-ph{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sl-thumb{width:64px;height:64px;border-radius:50%;overflow:hidden;background:var(--brand-soft);display:grid;place-items:center;font-size:26px;flex:none}
+.sl-thumb img{width:100%;height:100%;object-fit:cover}
+.sl-ctl{display:flex;gap:6px;justify-content:flex-end}
+@media (max-width:860px){.sl-fields{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
@@ -1301,7 +1320,9 @@ i.hm.c-Kch{background:#f3d36b}
               <div><label class="fl" for="nDate">Sana</label><input class="inp" id="nDate" type="date"></div>
             </div>
             <label class="fl" for="nBody">Matn</label>
-            <textarea class="inp" id="nBody" rows="9" maxlength="20000" placeholder="Yangilik matni. Bo'sh qator — yangi xatboshi. Havola (https://...) o'zi bosiladigan bo'ladi."></textarea>
+            <div class="fmt-bar"><button type="button" data-fmt="b" title="Qalin"><b>B</b></button><button type="button" data-fmt="i" title="Qiyshiq"><i>I</i></button><button type="button" data-fmt="h" title="Sarlavha">H</button><button type="button" data-fmt="ul" title="Ro'yxat">• Ro'yxat</button><button type="button" data-fmt="a" title="Havola">🔗 Havola</button><button type="button" id="nPrevBtn" class="pv">👁 Ko'rish</button></div>
+            <textarea class="inp" id="nBody" rows="9" maxlength="20000" placeholder="Yangilik matni. Bo'sh qator — yangi xatboshi. Yuqoridagi tugmalar bilan qalin yozuv, sarlavha, ro'yxat va havola qo'shing."></textarea>
+            <div id="nPreview" class="np hidden"></div>
             <label class="fl">Rasmlar (ixtiyoriy, 5 tagacha)</label>
             <div class="nf-img"><div><input type="file" id="nImg" accept="image/*" multiple hidden><button type="button" class="btn line sm" id="nImgBtn">📷 Rasm qo'shish</button><p class="hint" id="nImgInfo" style="margin:6px 0 0"></p></div></div>
             <div id="nImgPrev" class="nth"></div>
@@ -1309,6 +1330,7 @@ i.hm.c-Kch{background:#f3d36b}
             <input class="inp" id="nVideo" maxlength="200" placeholder="https://youtu.be/...  yoki  https://t.me/kanal/123">
             <p class="hint">Videoni avval <b>YouTube</b> yoki <b>Telegram kanalga</b> joylang, so'ng uning havolasini shu yerga qo'ying. Sahifada video o'zi ochiladi.</p>
             <p class="hint">⚠️ Rasmda o'quvchilar bo'lsa, ota-onalarning roziligi olinganiga ishonch hosil qiling.</p>
+            <label class="nf-chk"><input type="checkbox" id="nTg" checked> ✈️ E'lon qilinganda Telegram kanalga ham joylash</label>
             <label class="nf-chk"><input type="checkbox" id="nPin"> 📌 Muhim e'lon sifatida tepaga mahkamlash</label>
             <div class="nf-btns"><button type="button" class="btn" id="nPublish">E'lon qilish</button><button type="button" class="btn line" id="nDraft">Qoralama saqlash</button><button type="button" class="mini" id="nNew">Yangisini boshlash</button></div>
             <p id="nMsg" class="hint"></p>
@@ -1329,6 +1351,8 @@ i.hm.c-Kch{background:#f3d36b}
           <div><label class="fl" for="cEmail">Email</label><input class="inp" id="cEmail" maxlength="120" placeholder="maktab28@mail.uz"></div>
           <div><label class="fl" for="cHours">Ish vaqti</label><input class="inp" id="cHours" maxlength="120" placeholder="Dushanba–Shanba, 08:00–17:00"></div>
         </div>
+        <label class="fl" for="cTgCh">Telegram kanal nomi (yangiliklarni avtomatik joylash uchun)</label><input class="inp" id="cTgCh" maxlength="40" placeholder="@maktab28">
+        <p class="hint">Botni shu kanalga <b>admin</b> qilib qo'shing («Xabar yuborish» ruxsati bilan). Ochiq sahifada ko'rinmaydi.</p>
         <label class="fl" for="cTg">Telegram kanal havolasi</label><input class="inp" id="cTg" maxlength="200" placeholder="https://t.me/maktab28">
         <div class="nf-row">
           <div><label class="fl" for="cIg">Instagram havolasi</label><input class="inp" id="cIg" maxlength="200" placeholder="https://instagram.com/..."></div>
@@ -4265,9 +4289,9 @@ i.hm.c-Kch{background:#f3d36b}
   var NCAT={yangilik:'Yangilik',tadbir:'Tadbir',yutuq:'Yutuq',elon:"E'lon"}, NMAX=5, NBUDGET=170000, NVIDEO=/^https:\/\/((www\.|m\.)?youtube\.com\/(watch\?|shorts\/|embed\/|live\/)|youtu\.be\/|t\.me\/[A-Za-z0-9_]{4,32}\/\d+)/;
   function newsAllowed(){ return myRole==='full'||myRole==='owner' }
   function newsApplyRole(){ var b=$('nav.tabs [data-tab="news"]'); if(b) b.classList.toggle('hidden',!newsAllowed()) }
-  function newsStop(){ siteLoaded=false; if(newsUnsub){ try{newsUnsub()}catch(e){} newsUnsub=null } newsDocs=[]; }
+  function newsStop(){ siteLoaded=false; secLoaded=false; if(newsUnsub){ try{newsUnsub()}catch(e){} newsUnsub=null } newsDocs=[]; }
   function newsLink(id){ return location.origin+'/yangilik/'+id }
-  var SITEF=[['intro','#cIntro'],['address','#cAddress'],['phone','#cPhone'],['email','#cEmail'],['hours','#cHours'],['telegram','#cTg'],['instagram','#cIg'],['youtube','#cYt'],['mapUrl','#cMap']], siteLoaded=false;
+  var SITEF=[['tgChannel','#cTgCh'],['intro','#cIntro'],['address','#cAddress'],['phone','#cPhone'],['email','#cEmail'],['hours','#cHours'],['telegram','#cTg'],['instagram','#cIg'],['youtube','#cYt'],['mapUrl','#cMap']], siteLoaded=false;
   function siteMsg(t,err){ var e=$('#siteMsg'); e.textContent=t; e.style.color=err?'var(--danger)':'' }
   function siteLoad(){
     if(siteLoaded||!db||!curUser||!newsAllowed()) return; siteLoaded=true;
@@ -4279,6 +4303,7 @@ i.hm.c-Kch{background:#f3d36b}
     var linkBad=['telegram','instagram','youtube','mapUrl'].some(function(k){ return o[k]&&!/^https:\/\//i.test(o[k]) });
     if(linkBad) return siteMsg("Havolalar «https://» bilan boshlanishi kerak",true);
     if(o.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(o.email)) return siteMsg("Email noto'g'ri yozilgan",true);
+    if(o.tgChannel&&!/^(@[A-Za-z][A-Za-z0-9_]{4,31}|-100\d{5,})$/.test(o.tgChannel)) return siteMsg("Telegram kanal nomi @ bilan boshlanishi kerak, masalan @maktab28",true);
     if(!db||!curUser) return siteMsg("Internet yoki kirish yo'q",true);
     o.by=(curUser.email||'').toLowerCase(); o.updated=firebase.firestore.FieldValue.serverTimestamp();
     var b=$('#siteSave'); b.disabled=true;
@@ -4286,7 +4311,7 @@ i.hm.c-Kch{background:#f3d36b}
       .catch(function(e){ siteMsg('Saqlab bo\'lmadi: '+(e.message||'xato'),true) }).then(function(){ b.disabled=false });
   }
   function newsStart(){
-    siteLoad();
+    siteLoad(); secLoadAll();
     if(!newsEditId&&!$('#nDate').value) $('#nDate').value=dateISO(new Date());
     if(!db||!curUser||!newsAllowed()||newsUnsub) { newsRender(); return }
     newsUnsub=db.collection('news').onSnapshot(function(s){
@@ -4298,7 +4323,7 @@ i.hm.c-Kch{background:#f3d36b}
     var box=$('#newsList'); if(!box) return;
     box.innerHTML=newsDocs.length?newsDocs.map(function(n){
       var ni=Array.isArray(n.imgs)?n.imgs.length:(n.img?1:0), pub=n.status==='published';
-      return '<div class="nw-row'+(n.id===newsEditId?' on':'')+'"><div class="nw-t"><b>'+esc(n.title)+'</b><span class="hint">'+esc(fmtDate(n.date))+' · '+esc(NCAT[n.cat]||'')+(ni?' · 🖼 '+ni:'')+(n.video?' · ▶ video':'')+'</span><span class="nw-chips"><i class="'+(pub?'ok':'dr')+'">'+(pub?"E'lon qilingan":'Qoralama')+'</i>'+(n.pinned?'<i class="pn">📌 Muhim</i>':'')+'</span></div><div class="nw-a"><button type="button" class="mini" data-nedit="'+esc(n.id)+'">Tahrirlash</button>'+(pub?'<button type="button" class="mini" data-ncopy="'+esc(n.id)+'" title="Telegram uchun havola">🔗 Havola</button><a class="mini" target="_blank" rel="noopener" href="/#/yangilik/'+esc(n.id)+'">Ko\'rish</a>':'')+'<button type="button" class="mini danger" data-ndel="'+esc(n.id)+'">O\'chirish</button></div></div>';
+      return '<div class="nw-row'+(n.id===newsEditId?' on':'')+'"><div class="nw-t"><b>'+esc(n.title)+'</b><span class="hint">'+esc(fmtDate(n.date))+' · '+esc(NCAT[n.cat]||'')+(ni?' · 🖼 '+ni:'')+(n.video?' · ▶ video':'')+(n.views?' · 👁 '+n.views:'')+'</span><span class="nw-chips"><i class="'+(pub?'ok':'dr')+'">'+(pub?"E'lon qilingan":'Qoralama')+'</i>'+(n.pinned?'<i class="pn">📌 Muhim</i>':'')+(n.tgAt?'<i class="tgc">✈️ Telegramga joylangan</i>':'')+'</span></div><div class="nw-a"><button type="button" class="mini" data-nedit="'+esc(n.id)+'">Tahrirlash</button>'+(pub?'<button type="button" class="mini" data-ntg="'+esc(n.id)+'" title="Telegram kanalga yuborish">✈️ Telegram</button><button type="button" class="mini" data-ncopy="'+esc(n.id)+'" title="Telegram uchun havola">🔗 Havola</button><a class="mini" target="_blank" rel="noopener" href="/#/yangilik/'+esc(n.id)+'">Ko\'rish</a>':'')+'<button type="button" class="mini danger" data-ndel="'+esc(n.id)+'">O\'chirish</button></div></div>';
     }).join(''):'<p class="hint">Hali yangilik yozilmagan.</p>';
   }
   function newsMsg(t,err){ var m=$('#nMsg'); m.textContent=t; m.style.color=err?'var(--danger)':'' }
@@ -4331,6 +4356,43 @@ i.hm.c-Kch{background:#f3d36b}
     list.reduce(function(p,f){ return p.then(function(){ return newsResize(f).then(function(d){ newsImgs.push(d); newsPrev() }).catch(function(e){ newsMsg(e.message,true); }) }) },Promise.resolve())
       .then(function(){ if(!$('#nMsg').style.color) newsMsg(skipped>0?('Faqat '+NMAX+' tagacha rasm qo\'shiladi, '+skipped+' tasi tashlab yuborildi'):''); });
   }
+  function fmtBodyC(t){
+    var toks=[]; function keep(h){ toks.push(h); return '\u0000'+(toks.length-1)+'\u0000' }
+    var x=esc(t);
+    x=x.replace(/\[([^\]\n]{1,120})\]\((https:\/\/[^\s)]+)\)/g,function(_,a,u){return keep('<a href="'+u+'" target="_blank" rel="noopener noreferrer nofollow">'+a+'</a>')});
+    x=x.replace(/(https?:\/\/[^\s<]+)/g,function(u){return keep('<a href="'+u+'" target="_blank" rel="noopener noreferrer nofollow">'+u+'</a>')});
+    x=x.replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,!?:;]|$)/g,'$1<i>$2</i>');
+    var out=[], list=false, para=[];
+    function flush(){ if(para.length){ out.push('<p>'+para.join('<br>')+'</p>'); para=[] } }
+    function endList(){ if(list){ out.push('</ul>'); list=false } }
+    x.split('\n').forEach(function(line){ var l=line.trim(), m;
+      if(!l){ flush(); endList(); return }
+      if((m=/^##\s+(.+)$/.exec(l))){ flush(); endList(); out.push('<h3>'+m[1]+'</h3>'); return }
+      if((m=/^[-•]\s+(.+)$/.exec(l))){ flush(); if(!list){ out.push('<ul>'); list=true } out.push('<li>'+m[1]+'</li>'); return }
+      endList(); para.push(l); });
+    flush(); endList();
+    return out.join('').replace(/\u0000(\d+)\u0000/g,function(_,i){return toks[+i]});
+  }
+  function newsFmt(kind){
+    var ta=$('#nBody'), st=ta.selectionStart, en=ta.selectionEnd, v=ta.value, sel=v.slice(st,en), rep, selFrom, selTo;
+    if(kind==='b'||kind==='i'){ var w=kind==='b'?'**':'*'; rep=w+(sel||'matn')+w; selFrom=st+w.length; selTo=selFrom+(sel||'matn').length }
+    else if(kind==='a'){ var u=prompt('Havola manzili (https:// bilan boshlansin):','https://'); if(!u) return; if(!/^https:\/\//i.test(u.trim())) return newsMsg("Havola https:// bilan boshlanishi kerak",true); rep='['+(sel||'havola matni')+']('+u.trim()+')'; selFrom=st+1; selTo=selFrom+(sel||'havola matni').length }
+    else { var ls=v.lastIndexOf('\n',st-1)+1, le=en; var blk=v.slice(ls,le||st), pre=kind==='h'?'## ':'- ';
+      rep=blk.split('\n').map(function(l){return l.replace(/^(##\s+|[-•]\s+)/,'')?pre+l.replace(/^(##\s+|[-•]\s+)/,''):l}).join('\n'); ta.value=v.slice(0,ls)+rep+v.slice(le||st); ta.focus(); ta.selectionStart=ls; ta.selectionEnd=ls+rep.length; return }
+    ta.value=v.slice(0,st)+rep+v.slice(en); ta.focus(); ta.selectionStart=selFrom; ta.selectionEnd=selTo;
+  }
+  function newsPreview(){
+    var box=$('#nPreview'); if(!box.classList.contains('hidden')){ box.classList.add('hidden'); $('#nPrevBtn').textContent="👁 Ko'rish"; return }
+    var t=$('#nTitle').value.trim()||'(sarlavha yo\'q)', body=$('#nBody').value, vid=$('#nVideo').value.trim();
+    box.innerHTML='<div class="np-in"><div class="hint">Ochiq sahifada shunday ko\'rinadi:</div><h3 class="np-t">'+esc(t)+'</h3>'+(newsImgs[0]?'<img class="np-cover" alt="" src="'+newsImgs[0]+'">':'')+'<div class="np-body">'+fmtBodyC(body||'(matn yo\'q)')+'</div>'+(newsImgs.length>1?'<div class="np-g">'+newsImgs.slice(1).map(function(x){return '<img alt="" src="'+x+'">'}).join('')+'</div>':'')+(vid?'<p class="hint">▶ Video: '+esc(vid)+'</p>':'')+'</div>';
+    box.classList.remove('hidden'); $('#nPrevBtn').textContent='✖ Ko\'rishni yopish';
+  }
+  function newsTelegram(id){
+    if(!curUser) return Promise.reject(new Error('Kirish yo\'q'));
+    return curUser.getIdToken().then(function(tok){ return fetch('/api/news-telegram',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,idToken:tok})}) })
+      .then(function(r){ return r.json().catch(function(){return {ok:false,error:'Server javobi noto\'g\'ri ('+r.status+')'}}) })
+      .then(function(j){ if(!j.ok) throw new Error(j.error||'Telegram xatosi'); return db.collection('news').doc(id).update({tgAt:new Date().toISOString()}).then(function(){return j}) });
+  }
   function newsSave(status){
     var title=$('#nTitle').value.trim(), body=$('#nBody').value.trim(), video=$('#nVideo').value.trim();
     if(!title) return newsMsg('Sarlavhani yozing',true);
@@ -4339,13 +4401,22 @@ i.hm.c-Kch{background:#f3d36b}
     var tot=newsImgs.reduce(function(a,s){return a+s.length},0); if(tot>900000) return newsMsg('Rasmlar juda ko\'p joy egallaydi. Bir-ikkitasini olib tashlang',true);
     if(!db||!curUser) return newsMsg('Internet yoki kirish yo\'q',true);
     var data={title:title,body:body,cat:$('#nCat').value,date:$('#nDate').value||dateISO(new Date()),status:status,pinned:$('#nPin').checked,imgs:newsImgs.slice(),ni:newsImgs.length,video:video,by:(curUser.email||'').toLowerCase(),updated:firebase.firestore.FieldValue.serverTimestamp()};
-    var ref=newsEditId?db.collection('news').doc(newsEditId).set(data):db.collection('news').add(data);
+    var old=newsEditId?newsDocs.filter(function(x){return x.id===newsEditId})[0]:null, wasTg=!!(old&&old.tgAt);
+    var ref;
+    if(newsEditId){ data.img=firebase.firestore.FieldValue.delete(); ref=db.collection('news').doc(newsEditId).set(data,{merge:true}); }   // merge: ko'rishlar soni va Telegram belgisi saqlanadi
+    else ref=db.collection('news').add(data);
     var btns=[$('#nPublish'),$('#nDraft')]; btns.forEach(function(b){b.disabled=true});
-    ref.then(function(r){ if(!newsEditId&&r&&r.id) newsEditId=r.id;
-      var link=newsEditId?newsLink(newsEditId):'';
-      newsMsg(status==='published'?"✅ E'lon qilindi. Telegram uchun havola: "+link:'💾 Qoralama saqlandi.'); toast(status==='published'?"E'lon qilindi":'Saqlandi');
-      if(status==='published'&&link){ try{ copyText(link,"Havola nusxalandi, Telegram'ga qo'yishingiz mumkin") }catch(e){} }
+    ref.then(function(r){
+      if(!newsEditId&&r&&r.id) newsEditId=r.id;
+      var id=newsEditId, link=id?newsLink(id):'';
+      newsMsg(status==='published'?"✅ E'lon qilindi. Havola: "+link:'💾 Qoralama saqlandi.'); toast(status==='published'?"E'lon qilindi":'Saqlandi');
       try{ logAudit(status==='published'?'news_publish':'news_save',title) }catch(e){} newsRender();
+      if(status==='published'&&$('#nTg').checked&&!wasTg&&id){
+        newsMsg("✅ E'lon qilindi. Telegram'ga yuborilmoqda...");
+        return newsTelegram(id).then(function(){ newsMsg("✅ E'lon qilindi va Telegram kanalga joylandi. Havola: "+link); toast("Telegram'ga joylandi") })
+          .catch(function(e){ newsMsg("✅ E'lon qilindi, lekin Telegram'ga yuborilmadi: "+(e.message||'xato'),true) });
+      }
+      if(status==='published'&&link){ try{ copyText(link,"Havola nusxalandi") }catch(e){} }
     }).catch(function(e){ newsMsg('Saqlab bo\'lmadi: '+(e&&e.message||'xato'),true) }).then(function(){ btns.forEach(function(b){b.disabled=false}) });
   }
   (function(){
@@ -4360,9 +4431,16 @@ i.hm.c-Kch{background:#f3d36b}
     $('#nPublish').addEventListener('click',function(){ newsSave('published') });
     $('#nDraft').addEventListener('click',function(){ newsSave('draft') });
     $('#nNew').addEventListener('click',newsClear);
+    $('#nPrevBtn').addEventListener('click',newsPreview);
+    $('#tab-news').addEventListener('click',function(e){ var fb=e.target.closest('[data-fmt]'); if(fb&&$('#nBody')) newsFmt(fb.getAttribute('data-fmt')) });
     $('#siteSave').addEventListener('click',siteSave);
     $('#newsList').addEventListener('click',function(e){
       var ed=e.target.closest('[data-nedit]'), dl=e.target.closest('[data-ndel]'), cp=e.target.closest('[data-ncopy]');
+      var tg=e.target.closest('[data-ntg]');
+      if(tg){ var tid=tg.getAttribute('data-ntg'), tn=newsDocs.filter(function(x){return x.id===tid})[0]; if(!tn) return;
+        if(tn.tgAt&&!confirm("Bu yangilik Telegram'ga allaqachon joylangan. Yana yuborilsinmi?")) return;
+        tg.disabled=true; newsMsg("Telegram'ga yuborilmoqda...");
+        newsTelegram(tid).then(function(){ newsMsg("✅ Telegram kanalga joylandi"); toast("Telegram'ga joylandi") }).catch(function(er){ newsMsg("Telegram'ga yuborilmadi: "+(er.message||'xato'),true) }).then(function(){ tg.disabled=false }); return }
       if(cp){ try{ copyText(newsLink(cp.getAttribute('data-ncopy')),"Havola nusxalandi, Telegram'ga qo'ying") }catch(er){} return }
       if(ed){ var n=newsDocs.filter(function(x){return x.id===ed.getAttribute('data-nedit')})[0]; if(!n) return;
         newsEditId=n.id; $('#nTitle').value=n.title||''; $('#nBody').value=n.body||''; $('#nCat').value=n.cat||'yangilik'; $('#nDate').value=n.date||dateISO(new Date()); $('#nPin').checked=!!n.pinned; $('#nVideo').value=n.video||'';
@@ -4371,6 +4449,78 @@ i.hm.c-Kch{background:#f3d36b}
         db.collection('news').doc(id).delete().then(function(){ toast("O'chirildi"); try{logAudit('news_delete',n2.title)}catch(e){} if(newsEditId===id) newsClear(); }).catch(function(er){ toast('Xato: '+(er.message||'')) }); }
     });
     newsPrev();
+  })();
+  /* ---- Maktab sahifasi bo'limlari: Jamoa, Yutuqlar, Tadbirlar, Qo'ng'iroq, Dars jadvallari ---- */
+  var SECDEF=[
+    {k:'team',t:'Jamoa',doc:'team',h:"Direktor, o'rinbosarlar va o'qituvchilar. Ro'yxat shu tartibda ko'rinadi (↑ ↓ bilan almashtiring).",add:"＋ A'zo qo'shish",main:'name',f:[['name','Ism-familiya','text',120],['role','Lavozimi','text',100],['photo','Rasm','photo']]},
+    {k:'ach',t:'Yutuqlar',doc:'achievements',h:"Olimpiada va tanlov g'oliblari.",add:"＋ Yutuq qo'shish",main:'title',f:[['title','Sarlavha','text',160],['date','Sana','date'],['text','Qisqacha','area',400],['photo','Rasm','photo']]},
+    {k:'events',t:'Tadbirlar',doc:'events',h:"Yaqin tadbirlar. Sanasi o'tganlar «O'tgan tadbirlar»ga o'zi tushadi.",add:"＋ Tadbir qo'shish",main:'title',f:[['title','Tadbir nomi','text',160],['date','Sana','date'],['time','Vaqti (masalan 15:00)','text',30],['place','Joyi','text',100],['note','Izoh','area',300]]},
+    {k:'bells',t:"Qo'ng'iroq",doc:'bells',h:"Qo'ng'iroq jadvali. «Tanaffus» deb yozilgan qatorlar xira ko'rinadi.",add:"＋ Qator qo'shish",main:'lesson',f:[['lesson','Dars yoki tanaffus','text',60],['start','Boshlanishi','text',8],['end','Tugashi','text',8]]},
+    {k:'tt',t:'Dars jadvallari',doc:'timetables',h:"Har bir sinf uchun dars jadvali havolasi (Google Drive, PDF yoki Google Sheets). Havola «Hamma kim ko'ra oladi» rejimida bo'lsin.",add:"＋ Havola qo'shish",main:'title',f:[['title','Nomi (masalan: 5-sinf)','text',80],['url','Havola (https://...)','url',400]]}
+  ], secData={}, secLoaded=false;
+  function secPhoto(file){
+    return new Promise(function(res,rej){
+      var fr=new FileReader(); fr.onerror=function(){rej(new Error('Fayl o\'qilmadi'))};
+      fr.onload=function(){ var im=new Image(); im.onerror=function(){rej(new Error('Rasm ochilmadi'))};
+        im.onload=function(){ var out='', q=[.72,.6,.5,.4], sz=240, side=Math.min(im.width,im.height), sx=(im.width-side)/2, sy=(im.height-side)/2;
+          for(var i=0;i<q.length;i++){ var c=document.createElement('canvas'); c.width=sz; c.height=sz; c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,sz,sz); out=c.toDataURL('image/jpeg',q[i]); if(out.length<=30000) break }
+          out.length<=30000?res(out):rej(new Error('Rasm juda murakkab')) }; im.src=fr.result };
+      fr.readAsDataURL(file);
+    });
+  }
+  function secRow(d,it,i,n){
+    var h='<div class="sl-row" data-i="'+i+'"><div class="sl-fields">';
+    d.f.forEach(function(fd){
+      var k=fd[0], v=it[k]||'';
+      if(fd[2]==='photo') h+='<div class="sl-ph"><div class="sl-thumb">'+(v?'<img alt="" src="'+v+'">':'👤')+'</div><button type="button" class="mini" data-sph="'+i+'">📷 Rasm</button>'+(v?'<button type="button" class="mini" data-sphx="'+i+'">✕</button>':'')+'</div>';
+      else if(fd[2]==='area') h+='<div class="sl-w"><label class="fl">'+esc(fd[1])+'</label><textarea class="inp" rows="2" maxlength="'+fd[3]+'" data-sf="'+k+'">'+esc(v)+'</textarea></div>';
+      else h+='<div><label class="fl">'+esc(fd[1])+'</label><input class="inp" '+(fd[2]==='date'?'type="date"':'')+' maxlength="'+(fd[3]||40)+'" data-sf="'+k+'" value="'+esc(v)+'"></div>';
+    });
+    return h+'</div><div class="sl-ctl"><button type="button" class="mini" data-smv="-1" '+(i?'':'disabled')+'>↑</button><button type="button" class="mini" data-smv="1" '+(i<n-1?'':'disabled')+'>↓</button><button type="button" class="mini danger" data-sdel>O\'chirish</button></div></div>';
+  }
+  function secDraw(d){
+    var card=$('[data-sec="'+d.k+'"]'), items=secData[d.k]; $('.sl-list',card).innerHTML=items.length?items.map(function(it,i){return secRow(d,it,i,items.length)}).join(''):'<p class="hint">Hali hech narsa qo\'shilmagan.</p>';
+  }
+  function secMsg(d,t,err){ var m=$('.sl-msg',$('[data-sec="'+d.k+'"]')); m.textContent=t; m.style.color=err?'var(--danger)':'' }
+  function secLoadAll(){
+    if(secLoaded||!db||!curUser||!newsAllowed()) return; secLoaded=true;
+    SECDEF.forEach(function(d){ db.collection('publicinfo').doc(d.doc).get().then(function(x){ var o=x.exists?x.data():{}; secData[d.k]=Array.isArray(o.items)?o.items.map(function(r){return Object.assign({},r)}):[]; secDraw(d) }).catch(function(e){ secLoaded=false; secMsg(d,'Yuklab bo\'lmadi: '+(e.message||'xato'),true) }) });
+  }
+  function secSave(d){
+    var items=(secData[d.k]||[]).filter(function(it){return String(it[d.main]||'').trim()}).map(function(it){ var o={}; d.f.forEach(function(fd){ var v=String(it[fd[0]]||'').trim(); if(v) o[fd[0]]=v }); return o });
+    for(var i=0;i<items.length;i++){ var bad=d.f.some(function(fd){ return fd[2]==='url'&&items[i][fd[0]]&&!/^https:\/\//i.test(items[i][fd[0]]) }); if(bad) return secMsg(d,(i+1)+"-qatorda havola «https://» bilan boshlanishi kerak",true) }
+    var size=JSON.stringify(items).length; if(size>950000) return secMsg(d,"Ma'lumot juda katta, ba'zi rasmlarni olib tashlang",true);
+    if(!db||!curUser) return secMsg(d,"Internet yoki kirish yo'q",true);
+    var b=$('.sl-save',$('[data-sec="'+d.k+'"]')); b.disabled=true;
+    db.collection('publicinfo').doc(d.doc).set({items:items,by:(curUser.email||'').toLowerCase(),updated:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){ secData[d.k]=items; secDraw(d); secMsg(d,"✅ Saqlandi ("+items.length+" ta). Ochiq sahifada ko'rinadi."); toast('Saqlandi'); try{logAudit('site_'+d.doc,d.t)}catch(e){} })
+      .catch(function(e){ secMsg(d,'Saqlab bo\'lmadi: '+(e.message||'xato'),true) }).then(function(){ b.disabled=false });
+  }
+  (function(){
+    var tab=$('#tab-news'); if(!tab) return;
+    var cards=$$('#tab-news > .card'); if(cards.length<2) return;
+    cards[0].setAttribute('data-sec','news'); cards[1].setAttribute('data-sec','site');
+    SECDEF.forEach(function(d){
+      secData[d.k]=[];
+      var c=document.createElement('div'); c.className='card st-off'; c.style.marginTop='16px'; c.setAttribute('data-sec',d.k);
+      c.innerHTML='<h2>'+esc(d.t)+'</h2><p class="hint">'+esc(d.h)+'</p><div class="sl-list"><p class="hint">Yuklanmoqda...</p></div><div class="nf-btns"><button type="button" class="btn line sl-add">'+esc(d.add)+'</button><button type="button" class="btn sl-save">Saqlash</button></div><p class="hint sl-msg"></p>';
+      tab.appendChild(c);
+      c.addEventListener('click',function(e){
+        var row=e.target.closest('.sl-row'), i=row?+row.getAttribute('data-i'):-1, arr=secData[d.k];
+        if(e.target.closest('.sl-add')){ var it={}; arr.push(it); secDraw(d); var last=c.querySelector('.sl-row:last-child input'); if(last) last.focus(); return }
+        if(e.target.closest('.sl-save')){ secSave(d); return }
+        if(i<0) return;
+        if(e.target.closest('[data-sdel]')){ if(confirm("Bu qator o'chirilsinmi?")){ arr.splice(i,1); secDraw(d) } return }
+        var mv=e.target.closest('[data-smv]'); if(mv){ var j=i+(+mv.getAttribute('data-smv')); if(j>=0&&j<arr.length){ var t=arr[i]; arr[i]=arr[j]; arr[j]=t; secDraw(d) } return }
+        if(e.target.closest('[data-sphx]')){ delete arr[i].photo; secDraw(d); return }
+        if(e.target.closest('[data-sph]')){ var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange=function(){ var file=inp.files&&inp.files[0]; if(!file) return; secPhoto(file).then(function(x){ arr[i].photo=x; secDraw(d) }).catch(function(er){ secMsg(d,er.message,true) }) }; inp.click() }
+      });
+      c.addEventListener('input',function(e){ var fld=e.target.getAttribute&&e.target.getAttribute('data-sf'); if(!fld) return; var row=e.target.closest('.sl-row'); if(row) secData[d.k][+row.getAttribute('data-i')][fld]=e.target.value });
+      secDraw(d);
+    });
+    var bar=document.createElement('div'); bar.className='set-tabs'; bar.innerHTML='<button type="button" data-ns="news" class="on">Yangiliklar</button><button type="button" data-ns="site">Aloqa</button>'+SECDEF.map(function(d){return '<button type="button" data-ns="'+d.k+'">'+esc(d.t)+'</button>'}).join('');
+    tab.insertBefore(bar,cards[0]);
+    function show(k){ $$('#tab-news > .card').forEach(function(c){ c.classList.toggle('st-off',c.getAttribute('data-sec')!==k) }); $$('button',bar).forEach(function(b){ b.classList.toggle('on',b.getAttribute('data-ns')===k) }) }
+    bar.addEventListener('click',function(e){ var b=e.target.closest('button'); if(b) show(b.getAttribute('data-ns')) }); show('news');
   })();
   function attAbsBuild(){
     var cl=$('#attCls').value||'*', st=attVisible().filter(function(s){return s.cls!==ATT_TCLS&&(cl==='*'||(s.cls||'—')===cl)}), R=attCalc(st,attRange()), cs=[], T={n:st.length,abs:0,sz:0,miss:0,e:0};
