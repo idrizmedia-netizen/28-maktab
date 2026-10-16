@@ -3,4 +3,4 @@ Allow: /
 Disallow: /platforma
 Disallow: /platforma.html
 
-Sitemap: https://28-maktab.vercel.app/sitemap.xml
+Sitemap: https://28maktab.uz/sitemap.xml
