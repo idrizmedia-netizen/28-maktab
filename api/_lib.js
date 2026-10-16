@@ -1,7 +1,7 @@
 /* 28-maktab: server funksiyalari uchun umumiy yordamchilar (api/_lib.js: bu fayl o'zi alohida manzil bo'lmaydi) */
 const PROJECT = 'maktab-49da5';
 const API_KEY = 'AIzaSyCyY4iguO742_S9Io843WK5GGHZFSYDPOc';   // Firebase veb-kalit: ochiq ma'lumot, maxfiy emas
-const ORIGIN = 'https://28-maktab.vercel.app';
+const ORIGIN = 'https://28maktab.uz';
 const OWNER = 'idrizmedia@gmail.com';
 const FS = 'https://firestore.googleapis.com/v1/projects/' + PROJECT + '/databases/(default)/documents';
 const CATS = { yangilik: 'Yangilik', tadbir: 'Tadbir', yutuq: 'Yutuq', elon: "E'lon" };
