@@ -1,11 +1,50 @@
 {
   "rewrites": [
-    { "source": "/platforma", "destination": "/platforma.html" },
-    { "source": "/yangilik/:id", "destination": "/api/yangilik?id=:id" },
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" }
+    {
+      "source": "/platforma",
+      "destination": "/platforma.html"
+    },
+    {
+      "source": "/yangilik/:id",
+      "destination": "/api/yangilik?id=:id"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    }
   ],
   "redirects": [
-    { "source": "/maktab.html", "destination": "/", "permanent": false },
-    { "source": "/maktab", "destination": "/", "permanent": false }
+    {
+      "source": "/((?!api/).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "28-maktab.vercel.app"
+        }
+      ],
+      "destination": "https://28maktab.uz/$1",
+      "permanent": false
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.28maktab.uz"
+        }
+      ],
+      "destination": "https://28maktab.uz/$1",
+      "permanent": false
+    },
+    {
+      "source": "/maktab.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/maktab",
+      "destination": "/",
+      "permanent": false
+    }
   ]
 }
