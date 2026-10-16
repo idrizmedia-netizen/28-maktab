@@ -3,7 +3,7 @@
    /api/rasm?id=<yangilik>&i=<rasm raqami, 0 dan> */
 const PROJECT = 'maktab-49da5';
 const API_KEY = 'AIzaSyCyY4iguO742_S9Io843WK5GGHZFSYDPOc';
-const ORIGIN = 'https://28-maktab.vercel.app';
+const ORIGIN = 'https://28maktab.uz';
 
 module.exports = async function (req, res) {
   const id = String((req.query && req.query.id) || '');
