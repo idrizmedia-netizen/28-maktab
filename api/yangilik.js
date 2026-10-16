@@ -1,4 +1,4 @@
-/* 28-maktab: yangilikning to'liq sahifasi  https://28-maktab.vercel.app/yangilik/<id>
+/* 28-maktab: yangilikning to'liq sahifasi  https://28maktab.uz/yangilik/<id>
    Google, Telegram va boshqa ilovalar matnni, rasmni va sarlavhani darrov ko'radi (server tomonida tayyorlanadi). */
 const L = require('./_lib.js');
 const esc = L.esc;
