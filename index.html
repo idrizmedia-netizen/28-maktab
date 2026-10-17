@@ -186,6 +186,29 @@ table.tt tr.br td{color:var(--muted);background:#faf8f1}
 .pg-sub{color:var(--muted);margin:-8px 0 20px}
 @media (max-width:860px){.people{grid-template-columns:repeat(2,1fr)}.achs{grid-template-columns:1fr}}
 @media (max-width:420px){.pc .av{width:88px;height:88px;font-size:28px}.ev .dt{width:58px}}
+.evlink{text-decoration:none;color:inherit;display:block;border-radius:var(--r);transition:transform .15s,box-shadow .15s}
+.evlink:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(15,61,122,.12)}
+.evi{width:84px;height:64px;border-radius:10px;object-fit:cover;flex:none}
+.evgo{color:var(--blue);font-weight:800;font-size:14px}
+.gridwrap{overflow-x:auto}
+table.gt{min-width:760px;table-layout:fixed}
+table.gt td{vertical-align:top;font-size:14.5px;line-height:1.35}
+table.gt td b{display:block}
+table.gt td small{display:block;color:var(--muted);font-weight:600;font-size:12px;margin-top:2px}
+table.gt td.ln{width:92px;background:#faf8f1}
+table.gt td.ln small{color:var(--gold-d)}
+table.gt .nil{color:#c8c4b4}
+table.tt th.td,table.tt td.td{background:#FFF6DC}
+table.tt th.td{background:var(--gold);color:#3b2a00}
+.dcards{display:none;gap:12px}
+.dcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.dcard.td{border-color:var(--gold);background:#FFFBEE}
+.dcard h4{margin:0 0 8px;font:700 15px var(--head);color:var(--navy)}
+.dcard ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.dcard li{display:flex;gap:10px;align-items:flex-start}
+.dcard .n{width:26px;height:26px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+.dcard li b{display:block;line-height:1.3}.dcard li small{display:block;color:var(--muted);font-size:12.5px}.dcard li em{font-style:normal;color:var(--gold-d);font-size:12px;font-weight:700}
+@media (max-width:760px){.gridwrap{display:none}.dcards{display:grid}.evi{width:64px;height:52px}}
 .view{animation:in .28s ease-out}
 @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
@@ -341,7 +364,7 @@ table.tt tr.br td{color:var(--muted);background:#faf8f1}
       try{
         if(!window.firebase||!firebase.firestore) throw new Error('offline');
         if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-        firebase.firestore().collection('publicinfo').doc(name).get().then(function(d){ var o=d.exists?d.data():{}; SEC[name]=Array.isArray(o.items)?o.items:[]; res() }).catch(function(){ SEC[name]=false; res() });
+        firebase.firestore().collection('publicinfo').doc(name).get().then(function(d){ var o=d.exists?d.data():{}; SEC[name]=(name==='bellsets'||name==='lessons')?o:(Array.isArray(o.items)?o.items:[]); res() }).catch(function(){ SEC[name]=false; res() });
       }catch(e){ SEC[name]=false; res() }
     });
   }
@@ -360,20 +383,60 @@ table.tt tr.br td{color:var(--muted);background:#faf8f1}
   }
   function evRow(x,past){
     var mt=/^(\d{4})-(\d{2})-(\d{2})/.exec(x.date||''); var dt=mt?'<div class="dt"><b>'+(+mt[3])+'</b><small>'+MON[+mt[2]-1].slice(0,3)+'</small></div>':'<div class="dt"><b>—</b></div>';
-    return '<div class="ev'+(past?' past':'')+'">'+dt+'<div><h3>'+esc(x.title)+'</h3><p>'+[x.time?'🕘 '+esc(x.time):'',x.place?'📍 '+esc(x.place):''].filter(Boolean).join(' · ')+'</p>'+(x.note?'<p>'+esc(x.note)+'</p>':'')+'</div></div>';
+    var inner='<div class="ev'+(past?' past':'')+'">'+dt+(x.img?'<img class="evi" src="'+x.img+'" alt="" loading="lazy">':'')+'<div><h3>'+esc(x.title)+'</h3><p>'+[x.time?'🕘 '+esc(x.time):'',x.place?'📍 '+esc(x.place):''].filter(Boolean).join(' · ')+'</p>'+(x.note?'<p>'+esc(x.note)+'</p>':'')+(x.href?'<p><b class="evgo">Batafsil o\'qish →</b></p>':'')+'</div></div>';
+    return x.href?'<a class="evlink" href="'+esc(x.href)+'">'+inner+'</a>':inner;
   }
   function events(){
     var st=secState(['events']); if(st==='load') return pageWrap('Tadbirlar','',SK); if(st==='err') return '<div class="wrap">'+errBox()+'</div>';
-    var t=todayISO(), it=SEC.events.filter(function(x){return x&&x.title}), up=it.filter(function(x){return (x.date||'9999')>=t}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))}), past=it.filter(function(x){return (x.date||'9999')<t}).sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))}).slice(0,8);
-    return pageWrap('Tadbirlar',"Yaqin kunlardagi tadbirlar, ota-onalar yig'ilishi va bayramlar",(up.length?'<div class="evl">'+up.map(function(x){return evRow(x,false)}).join('')+'</div>':empty("Yaqin tadbirlar yo'q","Yangi tadbirlar e'lon qilinganda shu yerda ko'rinadi."))+(past.length?'<div class="sub">O\'tgan tadbirlar</div><div class="evl">'+past.map(function(x){return evRow(x,true)}).join('')+'</div>':''));
+    var t=todayISO(), it=SEC.events.filter(function(x){return x&&x.title}).slice();
+    (news||[]).filter(function(n){return n.cat==='tadbir'}).forEach(function(n){ it.push({title:n.title,date:n.date,note:excerpt(n.body),href:'/yangilik/'+n.id,img:imgsOf(n)[0]||''}) });
+    var up=it.filter(function(x){return (x.date||'9999')>=t}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))}), past=it.filter(function(x){return (x.date||'9999')<t}).sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))}).slice(0,10);
+    return pageWrap('Tadbirlar',"Yaqin kunlardagi tadbirlar, ota-onalar yig'ilishi va bayramlar. «Tadbir» deb belgilangan yangiliklar ham shu yerda ko'rinadi",(up.length?'<div class="evl">'+up.map(function(x){return evRow(x,false)}).join('')+'</div>':empty("Yaqin tadbirlar yo'q","Yangi tadbirlar e'lon qilinganda shu yerda ko'rinadi."))+(past.length?'<div class="sub">O\'tgan tadbirlar</div><div class="evl">'+past.map(function(x){return evRow(x,true)}).join('')+'</div>':''));
+  }
+  var LDAYS=['Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba'], scCls='', scVar='';
+  function inRange(md,f,t){ if(!f||!t) return false; return f<=t?(md>=f&&md<=t):(md>=f||md<=t) }
+  function activeVariant(vs,smena){ var md=todayISO().slice(5), c=vs.filter(function(v){return String(v.smena||'1')===String(smena)}); return c.filter(function(v){return inRange(md,v.from,v.to)})[0]||c[0]||null }
+  function mdTxt(s){ var x=/^(\d{2})-(\d{2})$/.exec(s||''); return x?(+x[2])+'-'+MON[+x[1]-1]:'' }
+  function mins(s){ var x=/^(\d{1,2}):(\d{2})$/.exec(s||''); return x?(+x[1])*60+(+x[2]):null }
+  function bellTable(v){
+    var rows=(v.rows||[]).filter(function(r){return r&&r.start}), h='<div style="overflow-x:auto"><table class="tt"><thead><tr><th>Dars</th><th>Boshlanishi</th><th>Tugashi</th></tr></thead><tbody>';
+    rows.forEach(function(r,i){ h+='<tr><td><b>'+(i+1)+'-dars</b></td><td>'+esc(r.start)+'</td><td>'+esc(r.end||'')+'</td></tr>';
+      var nx=rows[i+1]; if(nx){ var d=mins(nx.start)-mins(r.end); if(d>0) h+='<tr class="br"><td>Tanaffus</td><td colspan="2">'+d+' daqiqa</td></tr>' } });
+    return h+'</tbody></table></div>';
+  }
+  function classGrid(cn,c,vs){
+    var cells=c.cells||{}, maxL=0, d, l;
+    for(d=0;d<6;d++){ var col=cells['d'+d]||{}; Object.keys(col).forEach(function(k){ if(col[k]&&col[k][0]&&+k>maxL) maxL=+k }) }
+    if(!maxL) return '<p class="hint">Bu sinf uchun jadval kiritilmagan.</p>';
+    var v=activeVariant(vs,c.smena||'1'), rows=v?(v.rows||[]):[], today=(new Date().getDay()+6)%7;
+    var tm=function(n){ var r=rows[n-1]; return r&&r.start?esc(r.start)+(r.end?'–'+esc(r.end):''):'' };
+    var cell=function(x){ return x&&x[0]?'<b>'+esc(x[0])+'</b>'+((x[1]||x[2])?'<small>'+[x[1]?esc(x[1]):'',x[2]?esc(x[2])+'-xona':''].filter(Boolean).join(' · ')+'</small>':''):'<span class="nil">—</span>' };
+    var h='<div class="gridwrap"><table class="tt gt"><thead><tr><th>№</th>'+LDAYS.map(function(n,i){return '<th'+(i===today?' class="td"':'')+'>'+n+'</th>'}).join('')+'</tr></thead><tbody>';
+    for(l=1;l<=maxL;l++){ h+='<tr><td class="ln"><b>'+l+'</b><small>'+tm(l)+'</small></td>'; for(d=0;d<6;d++) h+='<td'+(d===today?' class="td"':'')+'>'+cell((cells['d'+d]||{})[l])+'</td>'; h+='</tr>' }
+    h+='</tbody></table></div><div class="dcards">';
+    for(d=0;d<6;d++){ var col2=cells['d'+d]||{}, any=false, li='';
+      for(l=1;l<=maxL;l++){ var x=col2[l]; if(x&&x[0]){ any=true; li+='<li><span class="n">'+l+'</span><div>'+cell(x)+'<em>'+tm(l)+'</em></div></li>' } }
+      if(any) h+='<div class="dcard'+(d===today?' td':'')+'"><h4>'+LDAYS[d]+(d===today?' · bugun':'')+'</h4><ul>'+li+'</ul></div>' }
+    return h+'</div>'+(v?'<p class="hint">Qo\'ng\'iroq: '+esc(v.name||'')+(v.from&&v.to?' ('+mdTxt(v.from)+' — '+mdTxt(v.to)+')':'')+'</p>':'');
   }
   function schedule(){
-    var st=secState(['bells','timetables']); if(st==='load') return pageWrap('Jadval','',SK); if(st==='err') return '<div class="wrap">'+errBox()+'</div>';
-    var bl=SEC.bells.filter(function(x){return x&&x.lesson}), tl=SEC.timetables.filter(function(x){return x&&x.title&&/^https:\/\//i.test(x.url||'')});
-    var h='';
-    if(bl.length) h+='<div class="sub" style="margin-top:0">Qo\'ng\'iroq jadvali</div><div style="overflow-x:auto"><table class="tt"><thead><tr><th>Dars</th><th>Boshlanishi</th><th>Tugashi</th></tr></thead><tbody>'+bl.map(function(x){ var br=/tanaffus|dam olish|tushlik/i.test(x.lesson); return '<tr'+(br?' class="br"':'')+'><td>'+esc(x.lesson)+'</td><td>'+esc(x.start||'')+'</td><td>'+esc(x.end||'')+'</td></tr>' }).join('')+'</tbody></table></div>';
-    if(tl.length) h+='<div class="sub">Dars jadvallari</div><div class="lks">'+tl.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer"><span>'+esc(x.title)+'</span><span>Ochish ↗</span></a>'}).join('')+'</div>';
-    return pageWrap('Jadval',"Qo'ng'iroq va dars jadvallari",h||empty("Jadval tez orada qo'shiladi","Jadvallar hozircha kiritilmagan."));
+    var st=secState(['bellsets','lessons','timetables','bells']); if(st==='load') return pageWrap('Jadval','',SK); if(st==='err') return '<div class="wrap">'+errBox()+'</div>';
+    var vs=((SEC.bellsets&&SEC.bellsets.variants)||[]).filter(function(v){return v&&(v.rows||[]).length}), cls=(SEC.lessons&&SEC.lessons.classes)||{}, names=Object.keys(cls).filter(function(k){return cls[k]&&cls[k].cells}).sort(function(a,b){return parseInt(a)-parseInt(b)||a.localeCompare(b)});
+    var tl=SEC.timetables.filter(function(x){return x&&x.title&&/^https:\/\//i.test(x.url||'')}), old=SEC.bells.filter(function(x){return x&&x.lesson}), h='';
+    if(names.length){
+      if(names.indexOf(scCls)<0) scCls=names[0];
+      h+='<div class="sub" style="margin-top:0">Dars jadvali</div><div class="filters" role="group" aria-label="Sinf">'+names.map(function(n){return '<button type="button" data-sc="'+esc(n)+'" class="'+(n===scCls?'on':'')+'">'+esc(n)+'</button>'}).join('')+'</div>'+classGrid(scCls,cls[scCls],vs);
+    }
+    if(vs.length){
+      var ids=vs.map(function(v){return v.id}); if(ids.indexOf(scVar)<0){ var av=activeVariant(vs,'1')||vs[0]; scVar=av.id }
+      var cur=vs.filter(function(v){return v.id===scVar})[0], act=activeVariant(vs,cur.smena||'1');
+      h+='<div class="sub">Qo\'ng\'iroq jadvali</div>'+(vs.length>1?'<div class="filters" role="group" aria-label="Qo\'ng\'iroq turi">'+vs.map(function(v){return '<button type="button" data-sv="'+esc(v.id)+'" class="'+(v.id===scVar?'on':'')+'">'+esc(v.name||'Jadval')+'</button>'}).join('')+'</div>':'')+
+        (act&&act.id===cur.id&&vs.length>1?'<p class="hint">✅ Hozir shu jadval amal qilmoqda</p>':'')+(cur.from&&cur.to?'<p class="hint">Amal qilish davri: '+mdTxt(cur.from)+' — '+mdTxt(cur.to)+'</p>':'')+bellTable(cur);
+    } else if(old.length){
+      h+='<div class="sub">Qo\'ng\'iroq jadvali</div><div style="overflow-x:auto"><table class="tt"><thead><tr><th>Dars</th><th>Boshlanishi</th><th>Tugashi</th></tr></thead><tbody>'+old.map(function(x){ var br=/tanaffus|dam olish|tushlik/i.test(x.lesson); return '<tr'+(br?' class="br"':'')+'><td>'+esc(x.lesson)+'</td><td>'+esc(x.start||'')+'</td><td>'+esc(x.end||'')+'</td></tr>' }).join('')+'</tbody></table></div>';
+    }
+    if(tl.length) h+='<div class="sub">Boshqa jadvallar</div><div class="lks">'+tl.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer"><span>'+esc(x.title)+'</span><span>Ochish ↗</span></a>'}).join('')+'</div>';
+    return pageWrap('Jadval',"Dars va qo'ng'iroq jadvallari",h||empty("Jadval tez orada qo'shiladi","Jadvallar hozircha kiritilmagan."));
   }
   function gallery(){
     if(news===null) return pageWrap('Galereya','',SK); if(err) return '<div class="wrap">'+errBox()+'</div>';
@@ -405,13 +468,14 @@ table.tt tr.br td{color:var(--muted);background:#faf8f1}
     document.title='28-maktab · Tarbiya, bilim, kelajak';
     var key={yangiliklar:'news',tadbirlar:'events',jamoa:'team',yutuqlar:'ach',jadval:'schedule',galereya:'gallery',aloqa:'contact'}[r]||(r==='xodim'?'':'home');
     Array.prototype.forEach.call(document.querySelectorAll('nav.m a[data-r]'),function(a){ if(a.dataset.r===key) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current') });
-    var SD={jamoa:['team'],yutuqlar:['achievements'],tadbirlar:['events'],jadval:['bells','timetables']};
+    var SD={jamoa:['team'],yutuqlar:['achievements'],tadbirlar:['events'],jadval:['bellsets','lessons','bells','timetables']};
     function draw(){
       var html= r==='xodim'?staffPage(): r==='yangiliklar'?list(): r==='tadbirlar'?events(): r==='jamoa'?team(): r==='yutuqlar'?achievements(): r==='jadval'?schedule(): r==='galereya'?gallery(): r==='aloqa'?contact(): home();
       app.innerHTML='<div class="view">'+html+'</div>'; applyStaff(); applyInstall();
     }
     draw();
     var tasks=[]; if(SD[r]) SD[r].forEach(function(n){tasks.push(secLoad(n))}); else if(r!=='aloqa'&&r!=='xodim'&&news===null) tasks.push(load());
+    if(r==='tadbirlar'&&news===null) tasks.push(load());
     if(tasks.length) Promise.all(tasks).then(function(){ var again=location.hash.replace(/^#\/?/,'').split('/')[0]||'home'; if(again===r) draw(); });
   }
   document.addEventListener('input',function(e){ if(e.target.id!=='nsq') return; qs=e.target.value; lim=9; var g=document.getElementById('ngrid'); if(g) g.innerHTML=gridInner(); });
@@ -422,6 +486,8 @@ table.tt tr.br td{color:var(--muted);background:#faf8f1}
     var lbn=e.target.closest('[data-lbn]'); if(lbn){ stepLB(+lbn.getAttribute('data-lbn')); return }
     if(e.target.closest('[data-lbx]')||e.target.id==='lb'){ closeLB(); return }
     var c=e.target.closest('[data-cat]'); if(c){ cat=c.getAttribute('data-cat'); lim=9; route(); return }
+    var sc=e.target.closest('[data-sc]'); if(sc){ scCls=sc.getAttribute('data-sc'); route(); return }
+    var sv=e.target.closest('[data-sv]'); if(sv){ scVar=sv.getAttribute('data-sv'); route(); return }
     if(e.target.closest('[data-more]')){ lim+=9; var g=document.getElementById('ngrid'); if(g) g.innerHTML=gridInner(); return }
     if(e.target.closest('[data-retry]')){ news=null; SEC={}; load(true).then(route); route(); return }
     var cp=e.target.closest('[data-copy]'); if(cp){ var t=cp.getAttribute('data-copy'); (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){cp.textContent='Nusxalandi ✓'}).catch(function(){window.prompt('Havola:',t)}); }
