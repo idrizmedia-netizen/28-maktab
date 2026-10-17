@@ -14,13 +14,13 @@ const CSS = ':root{--navy:#0F3D7A;--blue:#1A3E8C;--gold:#F2B632;--gold-d:#7A5B12
   'h1{font:700 clamp(24px,4.4vw,38px)/1.18 var(--head);margin:12px 0 18px;color:var(--navy)}.cover{border-radius:18px;overflow:hidden;margin:0 0 24px;border:1px solid var(--line);background:#fff}.cover img{width:100%;max-height:480px;object-fit:cover}' +
   '.body{font-size:17.5px;line-height:1.75}.body p{margin:0 0 1.1em}.body h3{font:700 21px/1.3 var(--head);color:var(--navy);margin:1.4em 0 .5em}.body ul{margin:0 0 1.1em;padding-left:1.3em}.body li{margin:.3em 0}.body a{color:var(--blue);font-weight:700;word-break:break-word}' +
   '.gal{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0}.gal img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;border:1px solid var(--line)}' +
-  '.vid{margin:24px 0;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#000}.vid iframe{display:block;width:100%;border:0;aspect-ratio:16/9}.vid.tg{background:#fff}.vid.tg iframe{aspect-ratio:auto;height:560px}' +
+  '.vid video{display:block;width:100%;max-height:560px;background:#000}.vid.tall iframe{aspect-ratio:auto;height:680px;background:#fff}.vnote{margin:-14px 0 20px;color:var(--muted);font-size:14px}.vnote a{color:var(--blue);font-weight:700}.vid{margin:24px 0;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#000}.vid iframe{display:block;width:100%;border:0;aspect-ratio:16/9}.vid.tg{background:#fff}.vid.tg iframe{aspect-ratio:auto;height:560px}' +
   '.share{display:flex;gap:10px;flex-wrap:wrap;margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}.btn{display:inline-flex;text-decoration:none;font:700 15px/1 var(--body);padding:13px 20px;border-radius:12px;border:2px solid var(--navy);cursor:pointer;background:var(--navy);color:#fff}.btn.out{background:#fff;color:var(--navy);border-color:var(--line)}' +
   '.more{max-width:760px;margin:30px auto 0}.more h2{font:700 20px var(--head);color:var(--navy);margin:0 0 12px}.more a{display:block;padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;text-decoration:none;font-weight:700}.more small{display:block;color:var(--muted);font-weight:600}' +
-  'footer{margin-top:50px;background:var(--ink);color:#B8C6E0;padding:30px 0}footer b{font:700 15px var(--head);color:#fff}footer a{color:#fff;font-weight:700}' +
+  '.ft{margin-top:50px;background:var(--ink);color:#B8C6E0}.ft-grid{display:grid;grid-template-columns:1.3fr 1fr 1.3fr;gap:30px;padding:40px 18px 28px}.ft h4{margin:0 0 12px;color:#fff;font:700 13px var(--body);letter-spacing:.12em;text-transform:uppercase}.ft-b{display:flex;gap:12px;align-items:center}.ft-b b{display:block;font:700 16px var(--head);color:#fff}.ft-b small{display:block;color:var(--gold);letter-spacing:.18em;font-weight:700;font-size:10.5px;margin-top:5px}.ft-l{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:15px}.ft a{color:#DCE6F7;text-decoration:none}.ft a:hover{color:#fff;text-decoration:underline}.soc{display:flex;gap:10px;margin-top:18px}.soc-a{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.1);display:grid;place-items:center;color:#fff!important}.soc-a:hover{background:var(--gold);color:#3b2a00!important;text-decoration:none!important}.ft-bot{border-top:1px solid rgba(255,255,255,.12);padding:16px 0 20px;font-size:14px}.ft-bot .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}.ft-legal{display:flex;gap:16px;flex-wrap:wrap}@media(max-width:760px){.ft-grid{grid-template-columns:1fr}}' +
   '@media(max-width:560px){.gal{grid-template-columns:repeat(2,1fr)}.brand small{display:none}.vid.tg iframe{height:480px}}';
 
-function shell(title, desc, image, canonical, extraHead, inner) {
+function shell(title, desc, image, canonical, extraHead, inner, info) {
   return '<!doctype html><html lang="uz"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
     '<title>' + esc(title) + '</title><meta name="description" content="' + esc(desc) + '"><link rel="canonical" href="' + esc(canonical) + '">' +
     '<meta property="og:type" content="article"><meta property="og:site_name" content="28-maktab"><meta property="og:locale" content="uz_UZ">' +
@@ -30,22 +30,22 @@ function shell(title, desc, image, canonical, extraHead, inner) {
     '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap">' +
     '<style>' + CSS + '</style>' + extraHead + '</head><body>' +
     '<header><div class="wrap bar"><a class="brand" href="/"><img src="/logo-28.svg" width="42" height="42" alt="28-maktab"><span><b>28-MAKTAB</b><small>TARBIYA · BILIM · KELAJAK</small></span></a>' +
-    '<nav aria-label="Menyu"><a href="/">Bosh</a><a href="/#/yangiliklar">Yangiliklar</a><a href="/#/tadbirlar">Tadbirlar</a><a href="/#/jamoa">Jamoa</a><a href="/#/jadval">Jadval</a><a href="/#/galereya">Galereya</a><a href="/#/aloqa">Aloqa</a></nav></div></header>' +
+    '<nav aria-label="Menyu"><a href="/">Bosh</a><a href="/#/yangiliklar">Yangiliklar</a><a href="/#/tadbirlar">Tadbirlar</a><a href="/#/jamoa">Jamoa</a><a href="/#/yutuqlar">Yutuqlar</a><a href="/#/jadval">Jadval</a><a href="/#/galereya">Galereya</a><a href="/#/aloqa">Aloqa</a></nav></div></header>' +
     '<main class="wrap">' + inner + '</main>' +
-    '<footer><div class="wrap"><b>28-MAKTAB</b> · Tarbiya · Bilim · Kelajak · <a href="/">Bosh sahifa</a></div></footer></body></html>';
+    L.footerHTML(info) + '</body></html>';
 }
 
 module.exports = async function (req, res) {
   const id = String((req.query && req.query.id) || '').trim();
   let n = null;
   try {
-    if (/^[A-Za-z0-9_-]{6,40}$/.test(id)) n = await L.getDoc('news/' + id, { mask: ['title', 'body', 'status', 'cat', 'date', 'ni', 'pinned', 'video'] });
+    if (/^[A-Za-z0-9_-]{6,40}$/.test(id)) n = await L.getDoc('news/' + id, { mask: ['title', 'body', 'status', 'cat', 'date', 'ni', 'pinned', 'video', 'videos'] });
   } catch (e) { n = null; }
   if (n && n.status !== 'published') n = null;
 
   if (!n) {
     const html = shell('Yangilik topilmadi · 28-maktab', 'Bu yangilik topilmadi.', L.ORIGIN + '/og-default.png', L.ORIGIN + '/', '<meta name="robots" content="noindex">',
-      '<div style="text-align:center;padding:60px 0"><h1>Yangilik topilmadi</h1><p>U olib tashlangan yoki hali e\'lon qilinmagan bo\'lishi mumkin.</p><p><a class="btn" href="/#/yangiliklar">Barcha yangiliklar</a></p></div>');
+      '<div style="text-align:center;padding:60px 0"><h1>Yangilik topilmadi</h1><p>U olib tashlangan yoki hali e\'lon qilinmagan bo\'lishi mumkin.</p><p><a class="btn" href="/#/yangiliklar">Barcha yangiliklar</a></p></div>', {});
     res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.setHeader('Cache-Control', 'public, s-maxage=60');
     return res.status(404).send(html);
   }
@@ -55,7 +55,9 @@ module.exports = async function (req, res) {
   const img = function (i) { return L.ORIGIN + '/api/rasm?id=' + encodeURIComponent(id) + '&i=' + i; };
   const desc = L.plain(n.body, 200) || 'Maktab yangiliklari';
   const image = ni ? img(0) : L.ORIGIN + '/og-default.png';
-  const vid = L.videoEmbed(n.video);
+  const vids = L.videosOf(n);
+  let info = {};
+  try { info = (await L.getDoc('publicinfo/maktab', { mask: ['intro', 'address', 'phone', 'email', 'hours', 'telegram', 'instagram', 'youtube'] })) || {}; } catch (e) { info = {}; }
   let others = [];
   try { others = (await L.publishedNews(['title', 'date'], 12)).filter(function (x) { return x.id !== id; }).slice(0, 3); } catch (e) { others = []; }
 
@@ -76,11 +78,11 @@ module.exports = async function (req, res) {
   if (ni) inner += '<div class="cover"><a href="' + esc(img(0)) + '" target="_blank" rel="noopener"><img src="' + esc(img(0)) + '" alt="' + esc(n.title) + '"></a></div>';
   inner += '<div class="body">' + L.fmtBody(n.body) + '</div>';
   if (ni > 1) { inner += '<div class="gal">'; for (let i = 1; i < ni; i++) inner += '<a href="' + esc(img(i)) + '" target="_blank" rel="noopener"><img src="' + esc(img(i)) + '" alt="' + esc(n.title) + ' — rasm ' + (i + 1) + '" loading="lazy"></a>'; inner += '</div>'; }
-  if (vid) inner += '<div class="vid' + (vid.tg ? ' tg' : '') + '"><iframe src="' + esc(vid.src) + '" title="Video" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>';
+  vids.forEach(function (u) { inner += L.videoHTML(u); });
   inner += '<div class="share"><a class="btn" target="_blank" rel="noopener" href="https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(n.title) + '">Telegram\'da ulashish</a><button type="button" class="btn out" data-copy="' + esc(url) + '">Havolani nusxalash</button></div></article>';
   if (others.length) inner += '<section class="more"><h2>Boshqa yangiliklar</h2>' + others.map(function (o) { return '<a href="/yangilik/' + esc(o.id) + '">' + esc(o.title) + '<small>' + esc(L.fdate(o.date)) + '</small></a>'; }).join('') + '</section>';
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
-  res.status(200).send(shell(n.title + ' · 28-maktab', desc, image, url, ldTag, inner + viewJs));
+  res.status(200).send(shell(n.title + ' · 28-maktab', desc, image, url, ldTag, inner + viewJs, info));
 };
