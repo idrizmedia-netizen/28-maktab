@@ -127,11 +127,6 @@ section.blk{padding:44px 0 8px}
 .state svg{width:96px;height:auto;margin:0 auto 12px;opacity:.9}
 .state b{display:block;font:700 18px/1.3 var(--head);color:var(--navy);margin-bottom:6px}
 
-footer{margin-top:60px;background:var(--ink);color:#B8C6E0;padding:34px 0 40px}
-footer .wrap{display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-footer b{font:700 15px var(--head);color:#fff}
-footer small{display:block;letter-spacing:.18em;color:var(--gold);font-weight:700;font-size:10.5px;margin-top:5px}
-footer a{color:#fff;font-weight:700}
 #tip{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;background:var(--ink);color:#fff;border-radius:14px;padding:14px 16px;font-size:14.5px;box-shadow:0 12px 30px rgba(0,0,0,.35)}
 #tip button{float:right;margin-left:10px;border:0;background:rgba(255,255,255,.15);color:#fff;border-radius:8px;padding:4px 10px;font-weight:700;cursor:pointer}
 .linkbtn{border:0;background:none;color:#fff;font:700 14px var(--body);text-decoration:underline;cursor:pointer;padding:0}
@@ -209,6 +204,23 @@ table.tt th.td{background:var(--gold);color:#3b2a00}
 .dcard .n{width:26px;height:26px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
 .dcard li b{display:block;line-height:1.3}.dcard li small{display:block;color:var(--muted);font-size:12.5px}.dcard li em{font-style:normal;color:var(--gold-d);font-size:12px;font-weight:700}
 @media (max-width:760px){.gridwrap{display:none}.dcards{display:grid}.evi{width:64px;height:52px}}
+.ft{margin-top:60px;background:var(--ink);color:#B8C6E0}
+.ft-grid{display:grid;grid-template-columns:1.3fr 1fr 1.3fr;gap:30px;padding:42px 18px 28px}
+.ft h4{margin:0 0 12px;color:#fff;font:700 13px var(--body);letter-spacing:.12em;text-transform:uppercase}
+.ft-b{display:flex;gap:12px;align-items:center}.ft-b b{display:block;font:700 16px var(--head);color:#fff}
+.ft-b small{display:block;color:var(--gold);letter-spacing:.18em;font-weight:700;font-size:10.5px;margin-top:5px}
+.ft-p{margin:14px 0 0;font-size:14.5px;max-width:340px;line-height:1.6}
+.ft-l{list-style:none;margin:0;padding:0;display:grid;gap:9px;font-size:15px}
+.ft a{color:#DCE6F7;text-decoration:none}.ft a:hover{color:#fff;text-decoration:underline}
+.soc{display:flex;gap:10px;margin-top:18px}
+.soc-a{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.1);display:grid;place-items:center;color:#fff!important;transition:background-color .15s,transform .15s}
+.soc-a:hover{background:var(--gold);color:#3b2a00!important;transform:translateY(-2px);text-decoration:none!important}
+.ft-bot{border-top:1px solid rgba(255,255,255,.12);padding:16px 0 20px;font-size:14px}
+.ft-bot .wrap{display:flex;justify-content:space-between;gap:10px 20px;flex-wrap:wrap;align-items:center}
+.ft-legal{display:flex;gap:6px 18px;flex-wrap:wrap;align-items:center}
+.legal{max-width:780px}.legal h3{font:700 19px/1.3 var(--head);color:var(--navy);margin:1.6em 0 .5em}.legal p{margin:0 0 1em;font-size:16.5px;line-height:1.75}
+.legal .upd{color:var(--muted);font-size:14px}
+@media (max-width:760px){.ft-grid{grid-template-columns:1fr;gap:24px;padding:34px 18px 18px}}
 .view{animation:in .28s ease-out}
 @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
@@ -244,10 +256,7 @@ table.tt th.td{background:var(--gold);color:#3b2a00}
 
 <main id="app" tabindex="-1"></main>
 
-<footer><div class="wrap">
-  <div style="display:flex;gap:12px;align-items:center"><svg class="emb" width="44" height="44" aria-hidden="true"><use href="#emb"/></svg><div><b>28-MAKTAB</b><small>TARBIYA · BILIM · KELAJAK</small></div></div>
-  <div>© <span id="yr"></span> 28-maktab<span data-install hidden> · <button type="button" class="linkbtn" data-install-btn>📲 Ilovani o'rnatish</button></span><span data-staff hidden> · <a href="/platforma">Platformaga o'tish →</a></span></div>
-</div></footer>
+<footer class="ft" id="ft"></footer>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -264,7 +273,9 @@ table.tt th.td{background:var(--gold);color:#3b2a00}
     hours:"",        // masalan: "Dushanba–Shanba, 08:00–17:00"
     mapUrl:"",       // Google Maps havolasi
     instagram:"",
-    youtube:""
+    youtube:"",
+    terms:"",
+    privacy:""
   };
   var DEFAULT_INTRO=SCHOOL.intro;
   var FIREBASE_CONFIG={apiKey:"AIzaSyCyY4iguO742_S9Io843WK5GGHZFSYDPOc",authDomain:"maktab-49da5.firebaseapp.com",projectId:"maktab-49da5",storageBucket:"maktab-49da5.firebasestorage.app",messagingSenderId:"437130046048",appId:"1:437130046048:web:27b0a43304507a1bc57105"};
@@ -272,7 +283,6 @@ table.tt th.td{background:var(--gold);color:#3b2a00}
   var MON=["yanvar","fevral","mart","aprel","may","iyun","iyul","avgust","sentabr","oktyabr","noyabr","dekabr"];
   var $=function(s,r){return (r||document).querySelector(s)};
   var app=$('#app'), news=null, err=null, cat='';
-  $('#yr').textContent=new Date().getFullYear();
 
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function fdate(s){var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s||''); return m?(+m[3])+' '+MON[+m[2]-1]+' '+m[1]:''}
@@ -462,6 +472,30 @@ table.tt th.td{background:var(--gold);color:#3b2a00}
   }
 
   /* ====== Yo'naltirish ====== */
+  /* ====== Pastki panel, foydalanish shartlari va maxfiylik siyosati ====== */
+  var ICONS={
+    telegram:'<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M21.7 3.5 2.9 10.8c-1.3.5-1.3 1.2-.2 1.5l4.8 1.5 1.9 5.8c.2.6.1.8.7.8.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8L22.9 5c.3-1.3-.5-1.9-1.2-1.5zM8.5 13.3l9.6-6c.5-.3.9-.1.5.2l-7.9 7.1-.3 3.3-1.9-4.6z"/></svg>',
+    instagram:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>',
+    youtube:'<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3z"/></svg>'};
+  var DEF_TERMS="1. Umumiy qoidalar\nUshbu sayt (28maktab.uz) — 28-sonli umumiy o'rta ta'lim maktabining rasmiy axborot sahifasi. Saytdan foydalanish orqali siz quyidagi shartlarga rozilik bildirasiz. Rozi bo'lmasangiz, iltimos, saytdan foydalanmang.\n\n2. Saytning maqsadi\nSayt maktab yangiliklari, e'lonlar, tadbirlar, jadval va aloqa ma'lumotlarini hamma uchun ochiq e'lon qilish uchun mo'ljallangan. Ma'lumotlar axborot maqsadida beriladi. Ularning to'g'riligi va dolzarbligini ta'minlashga harakat qilamiz, lekin xato yoki kechikish bo'lishi mumkin. Rasmiy ma'lumot uchun maktab ma'muriyatiga murojaat qiling.\n\n3. Mualliflik huquqi\nSaytdagi matn, rasm va videolar maktabga yoki ularning mualliflariga tegishli. Ulardan noshirlik va axborot maqsadlarida, manba sifatida 28maktab.uz ga havola qilgan holda foydalanish mumkin. Tijorat maqsadida foydalanish uchun maktabning yozma roziligi kerak.\n\n4. Foydalanuvchi majburiyatlari\nSayt ishiga xalaqit berish, uni buzishga urinish, zararli kod yoki avtomatlashtirilgan hujumlar yuborish, shuningdek saytdan qonunga xilof maqsadlarda foydalanish taqiqlanadi.\n\n5. Rasm va videolar\nO'quvchilarning tasvirlari saytga ota-onalarning (qonuniy vakillarning) roziligi bilan joylanadi. Rasm yoki videoni olib tashlashni xohlasangiz, «Aloqa» bo'limidagi manzillar orqali murojaat qiling. U imkon qadar tezroq olib tashlanadi.\n\n6. Tashqi havolalar va videolar\nSayt uchinchi tomon xizmatlariga (YouTube, Telegram, Instagram va boshqalar) havolalar va ularning videolarini o'z ichiga olishi mumkin. Ularning mazmuni va qoidalari uchun maktab javobgar emas.\n\n7. Javobgarlikni cheklash\nSayt «mavjud holicha» taqdim etiladi. Texnik uzilishlar, ma'lumot yo'qolishi yoki uchinchi tomon xizmatlaridagi nosozliklar tufayli yetkazilgan zarar uchun maktab javobgar bo'lmaydi.\n\n8. Shartlarning o'zgarishi\nShartlar o'zgartirilishi mumkin. Yangi versiya shu sahifada e'lon qilinadi va e'lon qilingan paytdan kuchga kiradi.\n\n9. Aloqa\nSavollar bo'lsa, «Aloqa» bo'limidagi ma'lumotlar orqali murojaat qiling.";
+  var DEF_PRIV="1. Qanday ma'lumot to'planadi\nSaytdan foydalanish uchun ro'yxatdan o'tish talab qilinmaydi. Biz sizdan ism, telefon raqami yoki email so'ramaymiz.\n\n2. Texnik ma'lumotlar\nSayt xizmat ko'rsatish jarayonida brauzer va qurilma turi, IP manzil kabi texnik ma'lumotlar hosting (Vercel) va ma'lumotlar bazasi xizmati (Google Firebase) tomonidan avtomatik qayd etilishi mumkin. Ular saytni ishlatish va himoyalash uchun kerak.\n\n3. Ko'rishlar soni\nYangilik o'qilganda anonim hisoblagich oshiriladi. Shu qurilmadan bugun o'qilganini eslab qolish uchun brauzeringizda kichik belgi (localStorage) saqlanadi. U shaxsni aniqlash uchun ishlatilmaydi.\n\n4. Uchinchi tomon xizmatlari\nSaytda Google Fonts (shriftlar) ishlatiladi. YouTube, Vimeo, Facebook, Instagram, TikTok kabi xizmatlarning videolari ochilganda ular o'z cookie-fayllarini qo'yishi va ma'lumot yig'ishi mumkin. Bu xizmatlarning o'z maxfiylik qoidalari amal qiladi. Telegram orqali ulashganingizda Telegram qoidalari amal qiladi.\n\n5. Xodimlar uchun platforma\nXodimlar platformasi faqat maktab xodimlari uchun, Google hisobi orqali kiriladi va ochiq saytdan alohida ishlaydi. O'quvchilar va ota-onalar haqidagi shaxsiy ma'lumotlar ochiq saytda e'lon qilinmaydi.\n\n6. Cookie va reklama\nSayt reklama yoki kuzatuv maqsadidagi cookie-fayllarni o'zi ishlatmaydi.\n\n7. O'quvchilar tasvirlari\nBolalarning rasm va videolari faqat ota-onalarning (qonuniy vakillarning) roziligi bilan joylanadi. Olib tashlashni so'rash uchun «Aloqa» bo'limidagi manzillarga murojaat qiling.\n\n8. Sizning huquqlaringiz\nSiz o'zingiz haqingizdagi ma'lumotni so'rash, tuzatish yoki o'chirishni talab qilishingiz mumkin. Buning uchun «Aloqa» bo'limi orqali murojaat qiling.\n\n9. Qonunchilik\nMa'lumotlar bilan ishlashda O'zbekiston Respublikasining shaxsga doir ma'lumotlar to'g'risidagi qonunchiligi talablariga amal qilinadi.\n\n10. O'zgarishlar\nUshbu siyosat o'zgartirilishi mumkin. Yangi versiya shu sahifada e'lon qilinadi.";
+  function legalHTML(t){
+    return String(t||'').split(/\n{2,}/).map(function(b){
+      var ls=b.split('\n'), h=/^\d+\.\s/.test(ls[0])&&ls[0].length<=70;
+      return (h?'<h3>'+esc(ls[0])+'</h3>':'')+((h?ls.slice(1):ls).length?'<p>'+esc((h?ls.slice(1):ls).join('\n')).replace(/\n/g,'<br>').replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>')+'</p>':'');
+    }).join('');
+  }
+  function legal(title,text){ return '<div class="wrap"><section class="blk"><div class="hd"><h2>'+title+'</h2></div><div class="legal">'+legalHTML(text)+'</div><p><a class="btn out" href="#/">← Bosh sahifaga</a></p></section></div>' }
+  function renderFooter(){
+    var ft=document.getElementById('ft'); if(!ft) return;
+    var Lk=function(u){return /^https:\/\//i.test(u||'')?u:''}, tel=(SCHOOL.phone||'').replace(/[^\d+]/g,''), mail=/^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(SCHOOL.email||'')?SCHOOL.email:'';
+    var soc=[['telegram','Telegram',Lk(SCHOOL.telegram)],['instagram','Instagram',Lk(SCHOOL.instagram)],['youtube','YouTube',Lk(SCHOOL.youtube)]].filter(function(x){return x[2]}).map(function(x){return '<a class="soc-a" href="'+esc(x[2])+'" target="_blank" rel="noopener noreferrer" aria-label="'+x[1]+'" title="'+x[1]+'">'+ICONS[x[0]]+'</a>'}).join('');
+    var rows=[]; if(SCHOOL.address) rows.push('<li>📍 '+esc(SCHOOL.address)+'</li>'); if(tel) rows.push('<li>📞 <a href="tel:'+esc(tel)+'">'+esc(SCHOOL.phone)+'</a></li>'); if(mail) rows.push('<li>✉️ <a href="mailto:'+esc(mail)+'">'+esc(mail)+'</a></li>'); if(SCHOOL.hours) rows.push('<li>🕘 '+esc(SCHOOL.hours)+'</li>');
+    ft.innerHTML='<div class="wrap ft-grid"><div><div class="ft-b"><img src="logo-28.svg" width="46" height="46" alt="28-maktab"><div><b>28-MAKTAB</b><small>TARBIYA · BILIM · KELAJAK</small></div></div>'+(soc?'<div class="soc">'+soc+'</div>':'')+'</div>'+
+      '<div><h4>Sahifalar</h4><ul class="ft-l"><li><a href="#/">Bosh sahifa</a></li><li><a href="#/yangiliklar">Yangiliklar</a></li><li><a href="#/tadbirlar">Tadbirlar</a></li><li><a href="#/jamoa">Jamoa</a></li><li><a href="#/jadval">Jadval</a></li><li><a href="#/aloqa">Aloqa</a></li></ul></div>'+
+      '<div><h4>Aloqa</h4>'+(rows.length?'<ul class="ft-l">'+rows.join('')+'</ul>':'<ul class="ft-l"><li><a href="#/aloqa">Aloqa ma\'lumotlari</a></li></ul>')+'</div></div>'+
+      '<div class="ft-bot"><div class="wrap"><span>© '+new Date().getFullYear()+' 28-maktab. Barcha huquqlar himoyalangan.</span><span class="ft-legal"><a href="#/shartlar">Foydalanish shartlari</a><a href="#/maxfiylik">Maxfiylik siyosati</a><span data-install hidden><button type="button" class="linkbtn" data-install-btn>📲 Ilovani o\'rnatish</button></span><span data-staff hidden><a href="/platforma">Platformaga o\'tish →</a></span></span></div></div>';
+  }
   function route(){
     var h=location.hash.replace(/^#\/?/,''), p=h.split('/'), r=p[0]||'home';
     if(r==='yangilik'&&p[1]){ location.replace('/yangilik/'+encodeURIComponent(decodeURIComponent(p[1]))); return }
@@ -470,11 +504,11 @@ table.tt th.td{background:var(--gold);color:#3b2a00}
     Array.prototype.forEach.call(document.querySelectorAll('nav.m a[data-r]'),function(a){ if(a.dataset.r===key) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current') });
     var SD={jamoa:['team'],yutuqlar:['achievements'],tadbirlar:['events'],jadval:['bellsets','lessons','bells','timetables']};
     function draw(){
-      var html= r==='xodim'?staffPage(): r==='yangiliklar'?list(): r==='tadbirlar'?events(): r==='jamoa'?team(): r==='yutuqlar'?achievements(): r==='jadval'?schedule(): r==='galereya'?gallery(): r==='aloqa'?contact(): home();
-      app.innerHTML='<div class="view">'+html+'</div>'; applyStaff(); applyInstall();
+      var html= r==='shartlar'?legal('Foydalanish shartlari',SCHOOL.terms||DEF_TERMS): r==='maxfiylik'?legal('Maxfiylik siyosati',SCHOOL.privacy||DEF_PRIV): r==='xodim'?staffPage(): r==='yangiliklar'?list(): r==='tadbirlar'?events(): r==='jamoa'?team(): r==='yutuqlar'?achievements(): r==='jadval'?schedule(): r==='galereya'?gallery(): r==='aloqa'?contact(): home();
+      app.innerHTML='<div class="view">'+html+'</div>'; renderFooter(); applyStaff(); applyInstall();
     }
     draw();
-    var tasks=[]; if(SD[r]) SD[r].forEach(function(n){tasks.push(secLoad(n))}); else if(r!=='aloqa'&&r!=='xodim'&&news===null) tasks.push(load());
+    var tasks=[]; if(SD[r]) SD[r].forEach(function(n){tasks.push(secLoad(n))}); else if(r!=='aloqa'&&r!=='xodim'&&r!=='shartlar'&&r!=='maxfiylik'&&news===null) tasks.push(load());
     if(r==='tadbirlar'&&news===null) tasks.push(load());
     if(tasks.length) Promise.all(tasks).then(function(){ var again=location.hash.replace(/^#\/?/,'').split('/')[0]||'home'; if(again===r) draw(); });
   }
@@ -534,8 +568,8 @@ table.tt th.td{background:var(--gold);color:#3b2a00}
   });
   if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}) }); }
   /* ====== Aloqa ma'lumotlari: platformadagi forma (Firestore: publicinfo/maktab) ====== */
-  var SKEYS=['intro','address','phone','email','hours','telegram','instagram','youtube','mapUrl'];
-  function mergeInfo(o){ SKEYS.forEach(function(k){ var v=typeof o[k]==='string'?o[k].trim().slice(0,400):''; SCHOOL[k]=(k==='intro')?(v||DEFAULT_INTRO):v }) }
+  var SKEYS=['intro','address','phone','email','hours','telegram','instagram','youtube','mapUrl','terms','privacy'];
+  function mergeInfo(o){ SKEYS.forEach(function(k){ var v=typeof o[k]==='string'?o[k].trim().slice(0,(k==='terms'||k==='privacy')?8000:400):''; SCHOOL[k]=(k==='intro')?(v||DEFAULT_INTRO):v }) }
   try{ var cached=JSON.parse(localStorage.getItem('m28_site')||'null'); if(cached) mergeInfo(cached) }catch(e){}
   function loadInfo(){
     try{
