@@ -881,6 +881,24 @@ i.hm.c-Kch{background:#f3d36b}
 .sl-thumb img{width:100%;height:100%;object-fit:cover}
 .sl-ctl{display:flex;gap:6px;justify-content:flex-end}
 @media (max-width:860px){.sl-fields{grid-template-columns:1fr}}
+.bv{border:1.5px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;background:var(--card)}
+.bv-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}
+.bv-gen{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--brand-soft);border-radius:12px;padding:10px;margin:8px 0;font-size:14px}
+.bv-gen input{width:84px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:inherit}
+.br-row{display:flex;gap:10px;align-items:center;margin-bottom:6px}.br-row b{width:64px;font-size:14px}.br-row .inp{width:128px}
+.les-top{display:grid;grid-template-columns:200px 140px 1fr;gap:12px;align-items:end;margin-bottom:12px}
+.les-btns{display:flex;gap:8px;flex-wrap:wrap}
+.les-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table.les-t{border-collapse:collapse;min-width:980px;width:100%}
+table.les-t th{background:var(--brand-soft);padding:9px;font-size:13px;text-align:left;position:sticky;top:0}
+table.les-t td{border-top:1px solid var(--line);padding:6px;vertical-align:top;min-width:150px}
+table.les-t td.ln{min-width:0;width:34px;text-align:center;font-weight:800;color:var(--muted)}
+table.les-t .inp{padding:6px 8px;font-size:13.5px;height:auto;border-radius:8px}
+table.les-t .inp.s{font-weight:700;margin-bottom:4px}
+table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}table.les-t .tr .r{max-width:56px;flex:none}
+.bv-top>div,.les-top>div{min-width:0}.bv-top .inp,.les-top .inp{min-width:0;width:100%}
+@media (max-width:860px){.bv-top,.les-top{grid-template-columns:1fr 1fr}.br-row .inp{width:100px;min-width:0}.bv-gen input[type=number]{width:64px}}
+@media (max-width:480px){.bv-top,.les-top{grid-template-columns:1fr}.br-row{flex-wrap:wrap}.br-row b{width:100%}}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
@@ -1317,7 +1335,7 @@ i.hm.c-Kch{background:#f3d36b}
             <input class="inp" id="nTitle" maxlength="160" placeholder="Masalan: Ota-onalar yig'ilishi 20-oktyabrda">
             <div class="nf-row">
               <div><label class="fl" for="nCat">Kategoriya</label><select class="inp" id="nCat"><option value="yangilik">Yangilik</option><option value="tadbir">Tadbir</option><option value="yutuq">Yutuq</option><option value="elon">E'lon</option></select></div>
-              <div><label class="fl" for="nDate">Sana</label><input class="inp" id="nDate" type="date"></div>
+              <div><label class="fl" for="nDate">Sana <small style="font-weight:500">(tadbir bo'lsa — tadbir kuni)</small></label><input class="inp" id="nDate" type="date"></div>
             </div>
             <label class="fl" for="nBody">Matn</label>
             <div class="fmt-bar"><button type="button" data-fmt="b" title="Qalin"><b>B</b></button><button type="button" data-fmt="i" title="Qiyshiq"><i>I</i></button><button type="button" data-fmt="h" title="Sarlavha">H</button><button type="button" data-fmt="ul" title="Ro'yxat">• Ro'yxat</button><button type="button" data-fmt="a" title="Havola">🔗 Havola</button><button type="button" id="nPrevBtn" class="pv">👁 Ko'rish</button></div>
@@ -4289,7 +4307,7 @@ i.hm.c-Kch{background:#f3d36b}
   var NCAT={yangilik:'Yangilik',tadbir:'Tadbir',yutuq:'Yutuq',elon:"E'lon"}, NMAX=5, NBUDGET=170000, NVIDEO=/^https:\/\/((www\.|m\.)?youtube\.com\/(watch\?|shorts\/|embed\/|live\/)|youtu\.be\/|t\.me\/[A-Za-z0-9_]{4,32}\/\d+)/;
   function newsAllowed(){ return myRole==='full'||myRole==='owner' }
   function newsApplyRole(){ var b=$('nav.tabs [data-tab="news"]'); if(b) b.classList.toggle('hidden',!newsAllowed()) }
-  function newsStop(){ siteLoaded=false; secLoaded=false; if(newsUnsub){ try{newsUnsub()}catch(e){} newsUnsub=null } newsDocs=[]; }
+  function newsStop(){ siteLoaded=false; secLoaded=false; custLoaded=false; if(newsUnsub){ try{newsUnsub()}catch(e){} newsUnsub=null } newsDocs=[]; }
   function newsLink(id){ return location.origin+'/yangilik/'+id }
   var SITEF=[['tgChannel','#cTgCh'],['intro','#cIntro'],['address','#cAddress'],['phone','#cPhone'],['email','#cEmail'],['hours','#cHours'],['telegram','#cTg'],['instagram','#cIg'],['youtube','#cYt'],['mapUrl','#cMap']], siteLoaded=false;
   function siteMsg(t,err){ var e=$('#siteMsg'); e.textContent=t; e.style.color=err?'var(--danger)':'' }
@@ -4455,8 +4473,7 @@ i.hm.c-Kch{background:#f3d36b}
     {k:'team',t:'Jamoa',doc:'team',h:"Direktor, o'rinbosarlar va o'qituvchilar. Ro'yxat shu tartibda ko'rinadi (↑ ↓ bilan almashtiring).",add:"＋ A'zo qo'shish",main:'name',f:[['name','Ism-familiya','text',120],['role','Lavozimi','text',100],['photo','Rasm','photo']]},
     {k:'ach',t:'Yutuqlar',doc:'achievements',h:"Olimpiada va tanlov g'oliblari.",add:"＋ Yutuq qo'shish",main:'title',f:[['title','Sarlavha','text',160],['date','Sana','date'],['text','Qisqacha','area',400],['photo','Rasm','photo']]},
     {k:'events',t:'Tadbirlar',doc:'events',h:"Yaqin tadbirlar. Sanasi o'tganlar «O'tgan tadbirlar»ga o'zi tushadi.",add:"＋ Tadbir qo'shish",main:'title',f:[['title','Tadbir nomi','text',160],['date','Sana','date'],['time','Vaqti (masalan 15:00)','text',30],['place','Joyi','text',100],['note','Izoh','area',300]]},
-    {k:'bells',t:"Qo'ng'iroq",doc:'bells',h:"Qo'ng'iroq jadvali. «Tanaffus» deb yozilgan qatorlar xira ko'rinadi.",add:"＋ Qator qo'shish",main:'lesson',f:[['lesson','Dars yoki tanaffus','text',60],['start','Boshlanishi','text',8],['end','Tugashi','text',8]]},
-    {k:'tt',t:'Dars jadvallari',doc:'timetables',h:"Har bir sinf uchun dars jadvali havolasi (Google Drive, PDF yoki Google Sheets). Havola «Hamma kim ko'ra oladi» rejimida bo'lsin.",add:"＋ Havola qo'shish",main:'title',f:[['title','Nomi (masalan: 5-sinf)','text',80],['url','Havola (https://...)','url',400]]}
+    {k:'tt',t:'Jadval havolalari',doc:'timetables',h:"Qo'shimcha jadvallar (masalan, imtihon jadvali yoki to'garaklar) uchun havola: Google Drive, PDF yoki Google Sheets. Havola «Hamma ko'ra oladi» rejimida bo'lsin.",add:"＋ Havola qo'shish",main:'title',f:[['title','Nomi (masalan: 5-sinf)','text',80],['url','Havola (https://...)','url',400]]}
   ], secData={}, secLoaded=false;
   function secPhoto(file){
     return new Promise(function(res,rej){
@@ -4483,6 +4500,7 @@ i.hm.c-Kch{background:#f3d36b}
   }
   function secMsg(d,t,err){ var m=$('.sl-msg',$('[data-sec="'+d.k+'"]')); m.textContent=t; m.style.color=err?'var(--danger)':'' }
   function secLoadAll(){
+    custLoad();
     if(secLoaded||!db||!curUser||!newsAllowed()) return; secLoaded=true;
     SECDEF.forEach(function(d){ db.collection('publicinfo').doc(d.doc).get().then(function(x){ var o=x.exists?x.data():{}; secData[d.k]=Array.isArray(o.items)?o.items.map(function(r){return Object.assign({},r)}):[]; secDraw(d) }).catch(function(e){ secLoaded=false; secMsg(d,'Yuklab bo\'lmadi: '+(e.message||'xato'),true) }) });
   }
@@ -4517,10 +4535,120 @@ i.hm.c-Kch{background:#f3d36b}
       c.addEventListener('input',function(e){ var fld=e.target.getAttribute&&e.target.getAttribute('data-sf'); if(!fld) return; var row=e.target.closest('.sl-row'); if(row) secData[d.k][+row.getAttribute('data-i')][fld]=e.target.value });
       secDraw(d);
     });
-    var bar=document.createElement('div'); bar.className='set-tabs'; bar.innerHTML='<button type="button" data-ns="news" class="on">Yangiliklar</button><button type="button" data-ns="site">Aloqa</button>'+SECDEF.map(function(d){return '<button type="button" data-ns="'+d.k+'">'+esc(d.t)+'</button>'}).join('');
+    var bar=document.createElement('div'); bar.className='set-tabs'; var order=[['news','Yangiliklar'],['site','Aloqa'],['team','Jamoa'],['ach','Yutuqlar'],['events','Tadbirlar'],['bellsets',"Qo'ng'iroq"],['lessons','Dars jadvali'],['tt','Havolalar']];
+    bar.innerHTML=order.map(function(o,i){return '<button type="button" data-ns="'+o[0]+'"'+(i===0?' class="on"':'')+'>'+esc(o[1])+'</button>'}).join('');
     tab.insertBefore(bar,cards[0]);
     function show(k){ $$('#tab-news > .card').forEach(function(c){ c.classList.toggle('st-off',c.getAttribute('data-sec')!==k) }); $$('button',bar).forEach(function(b){ b.classList.toggle('on',b.getAttribute('data-ns')===k) }) }
     bar.addEventListener('click',function(e){ var b=e.target.closest('button'); if(b) show(b.getAttribute('data-ns')) }); show('news');
+  })();
+  /* ---- Qo'ng'iroq jadvallari (smena va fasllar) va E-maktab uslubidagi dars jadvali ---- */
+  var belData=[], lesData={}, lesCur='', custLoaded=false, LDAYS=['Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba'], LMAX=8;
+  var SUBJ=['Ona tili','Adabiyot',"O'qish",'Matematika','Algebra','Geometriya','Fizika','Kimyo','Biologiya','Tarix','Geografiya','Ingliz tili','Rus tili','Informatika','Jismoniy tarbiya','Tasviriy san\'at','Musiqa','Texnologiya','Chizmachilik','Tarbiya','Tabiatshunoslik','Huquq','Iqtisodiyot','Chaqiruvgacha tayyorgarlik','Sinf soati'];
+  function vid(){ return 'v'+Math.random().toString(36).slice(2,8) }
+  function mdToDate(md){ return /^\d{2}-\d{2}$/.test(md||'')?'2000-'+md:'' }
+  function pad2(n){ return (n<10?'0':'')+n }
+  function toMin(t){ var x=/^(\d{1,2}):(\d{2})$/.exec(t||''); return x?(+x[1])*60+(+x[2]):null }
+  function fromMin(m){ return pad2(Math.floor(m/60)%24)+':'+pad2(m%60) }
+  function belMsg(t,err){ var e=$('[data-sec="bellsets"] .sl-msg'); e.textContent=t; e.style.color=err?'var(--danger)':'' }
+  function lesMsg(t,err){ var e=$('[data-sec="lessons"] .sl-msg'); e.textContent=t; e.style.color=err?'var(--danger)':'' }
+  function belDraw(){
+    var box=$('[data-sec="bellsets"] .bel-list'); if(!box) return;
+    box.innerHTML=belData.length?belData.map(function(v,i){
+      return '<div class="bv" data-vi="'+i+'"><div class="bv-top">'+
+        '<div><label class="fl">Nomi</label><input class="inp" data-bf="name" maxlength="60" value="'+esc(v.name||'')+'" placeholder="1-smena · Qishki"></div>'+
+        '<div><label class="fl">Smena</label><select class="inp" data-bf="smena"><option value="1"'+(String(v.smena)!=='2'?' selected':'')+'>1-smena</option><option value="2"'+(String(v.smena)==='2'?' selected':'')+'>2-smena</option></select></div>'+
+        '<div><label class="fl">Amal qiladi: dan</label><input class="inp" type="date" data-bf="from" value="'+mdToDate(v.from)+'"></div>'+
+        '<div><label class="fl">gacha</label><input class="inp" type="date" data-bf="to" value="'+mdToDate(v.to)+'"></div></div>'+
+        '<p class="hint" style="margin:4px 0 8px">Davr ixtiyoriy. Masalan, qishki: 1-noyabr — 31-mart, yozgi: 1-aprel — 31-oktyabr. Sana yil emas, faqat kun va oyga qarab hisoblanadi, har yili takrorlanadi.</p>'+
+        '<div class="bv-gen"><b>Avtomatik:</b> boshlanishi <input type="time" data-g="start" value="08:00"> dars <input type="number" data-g="len" value="45" min="20" max="90"> daq · tanaffus <input type="number" data-g="brk" value="10" min="0" max="40"> daq · <input type="number" data-g="cnt" value="6" min="1" max="10"> ta dars <button type="button" class="mini" data-bgen>To\'ldirish</button></div>'+
+        '<div class="bv-rows">'+(v.rows||[]).map(function(r,j){ return '<div class="br-row" data-ri="'+j+'"><b>'+(j+1)+'-dars</b><input class="inp" type="time" data-rf="start" value="'+esc(r.start||'')+'"><span>—</span><input class="inp" type="time" data-rf="end" value="'+esc(r.end||'')+'"><button type="button" class="mini danger" data-brd>✕</button></div>' }).join('')+'</div>'+
+        '<div class="nf-btns"><button type="button" class="mini" data-bra>＋ Dars qo\'shish</button><button type="button" class="mini danger" data-bvd>Bu jadvalni o\'chirish</button></div></div>';
+    }).join(''):'<p class="hint">Hali qo\'ng\'iroq jadvali yo\'q. «＋ Yangi qo\'ng\'iroq jadvali» ni bosing.</p>';
+  }
+  function belSave(){
+    var vs=belData.map(function(v){ return {id:v.id||vid(),name:String(v.name||'').trim(),smena:String(v.smena)==='2'?'2':'1',from:v.from||'',to:v.to||'',rows:(v.rows||[]).filter(function(r){return r.start}).map(function(r,j){return {n:j+1,start:r.start,end:r.end||''}})} }).filter(function(v){return v.rows.length});
+    for(var i=0;i<vs.length;i++){ if(!vs[i].name) return belMsg((i+1)+'-jadvalga nom bering (masalan: 1-smena · Qishki)',true); if((vs[i].from&&!vs[i].to)||(!vs[i].from&&vs[i].to)) return belMsg('«'+vs[i].name+'»: davrning ikkala sanasini ham kiriting yoki ikkalasini ham bo\'sh qoldiring',true) }
+    if(!db||!curUser) return belMsg("Internet yoki kirish yo'q",true);
+    var b=$('[data-sec="bellsets"] .sl-save'); b.disabled=true;
+    db.collection('publicinfo').doc('bellsets').set({variants:vs,by:(curUser.email||'').toLowerCase(),updated:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){ belData=vs; belDraw(); belMsg('✅ Saqlandi ('+vs.length+' ta jadval)'); toast('Saqlandi'); try{logAudit('site_bellsets','Qo\'ng\'iroq jadvali')}catch(e){} })
+      .catch(function(e){ belMsg('Saqlab bo\'lmadi: '+(e.message||'xato'),true) }).then(function(){ b.disabled=false });
+  }
+  function lesClasses(){
+    var o={}; Object.keys(lesData).forEach(function(c){o[c]=1});
+    try{ attClasses().forEach(function(c){ if(c&&c!==ATT_TCLS) o[normClass(c)]=1 }) }catch(e){}
+    try{ loadLog().forEach(function(e){ if(e.cls) o[normClass(e.cls)]=1 }) }catch(e){}
+    return Object.keys(o).filter(Boolean).sort(function(a,b){return parseInt(a)-parseInt(b)||a.localeCompare(b)});
+  }
+  function lesDraw(){
+    var box=$('[data-sec="lessons"] .les-body'); if(!box) return;
+    var cls=lesClasses(); if(!lesCur||cls.indexOf(lesCur)<0) lesCur=cls[0]||'';
+    var c=lesCur?(lesData[lesCur]=lesData[lesCur]||{smena:'1',cells:{}}):null;
+    var h='<div class="les-top"><div><label class="fl">Sinf</label><select class="inp" id="lesCls">'+(cls.length?cls.map(function(x){return '<option'+(x===lesCur?' selected':'')+'>'+esc(x)+'</option>'}).join(''):'<option value="">— sinf yo\'q —</option>')+'</select></div>'+
+      '<div><label class="fl">Smena</label><select class="inp" id="lesSm"><option value="1"'+(c&&String(c.smena)!=='2'?' selected':'')+'>1-smena</option><option value="2"'+(c&&String(c.smena)==='2'?' selected':'')+'>2-smena</option></select></div>'+
+      '<div class="les-btns"><button type="button" class="mini" id="lesAdd">＋ Sinf qo\'shish</button><button type="button" class="mini" id="lesCopy">📋 Boshqa sinfdan nusxa</button><button type="button" class="mini danger" id="lesClr">Tozalash</button></div></div>';
+    if(c){
+      h+='<datalist id="subjList">'+SUBJ.map(function(x){return '<option value="'+esc(x)+'">'}).join('')+'</datalist><div class="les-wrap"><table class="les-t"><thead><tr><th>№</th>'+LDAYS.map(function(d){return '<th>'+d+'</th>'}).join('')+'</tr></thead><tbody>';
+      for(var l=1;l<=LMAX;l++){ h+='<tr><td class="ln">'+l+'</td>'; for(var d=0;d<6;d++){ var x=((c.cells['d'+d]||{})[l])||['','','']; h+='<td><input class="inp s" list="subjList" data-ld="'+d+'" data-ll="'+l+'" data-lk="0" placeholder="Fan" value="'+esc(x[0]||'')+'"><div class="tr"><input class="inp" data-ld="'+d+'" data-ll="'+l+'" data-lk="1" placeholder="O\'qituvchi" value="'+esc(x[1]||'')+'"><input class="inp r" data-ld="'+d+'" data-ll="'+l+'" data-lk="2" placeholder="Xona" value="'+esc(x[2]||'')+'"></div></td>' } h+='</tr>' }
+      h+='</tbody></table></div>';
+    } else h+='<p class="hint">Avval sinf qo\'shing yoki davomat bo\'limiga o\'quvchilar ro\'yxatini yuklang.</p>';
+    box.innerHTML=h;
+  }
+  function lesSave(){
+    var out={}, n=0;
+    Object.keys(lesData).forEach(function(cn){ var c=lesData[cn], cells={}, any=false;
+      Object.keys(c.cells||{}).forEach(function(dk){ Object.keys(c.cells[dk]).forEach(function(lk){ var x=c.cells[dk][lk]; if(x&&String(x[0]||'').trim()){ (cells[dk]=cells[dk]||{})[lk]=[String(x[0]).trim(),String(x[1]||'').trim(),String(x[2]||'').trim()]; any=true } }) });
+      if(any){ out[cn]={smena:String(c.smena)==='2'?'2':'1',cells:cells}; n++ } });
+    if(JSON.stringify(out).length>950000) return lesMsg("Ma'lumot juda katta",true);
+    if(!db||!curUser) return lesMsg("Internet yoki kirish yo'q",true);
+    var b=$('[data-sec="lessons"] .sl-save'); b.disabled=true;
+    db.collection('publicinfo').doc('lessons').set({classes:out,by:(curUser.email||'').toLowerCase(),updated:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){ lesData=out; lesDraw(); lesMsg('✅ Saqlandi ('+n+' ta sinf jadvali). Ochiq sahifada ko\'rinadi.'); toast('Saqlandi'); try{logAudit('site_lessons','Dars jadvali')}catch(e){} })
+      .catch(function(e){ lesMsg('Saqlab bo\'lmadi: '+(e.message||'xato'),true) }).then(function(){ b.disabled=false });
+  }
+  function custLoad(){
+    if(custLoaded||!db||!curUser||!newsAllowed()) return; custLoaded=true;
+    db.collection('publicinfo').doc('bellsets').get().then(function(x){ var o=x.exists?x.data():{}; belData=Array.isArray(o.variants)?o.variants.map(function(v){return JSON.parse(JSON.stringify(v))}):[]; belDraw() }).catch(function(e){ custLoaded=false; belMsg('Yuklab bo\'lmadi: '+(e.message||'xato'),true) });
+    db.collection('publicinfo').doc('lessons').get().then(function(x){ var o=x.exists?x.data():{}; lesData=(o.classes&&typeof o.classes==='object')?JSON.parse(JSON.stringify(o.classes)):{}; lesDraw() }).catch(function(e){ custLoaded=false; lesMsg('Yuklab bo\'lmadi: '+(e.message||'xato'),true) });
+  }
+  (function(){
+    var tab=$('#tab-news'); if(!tab) return;
+    var bc=document.createElement('div'); bc.className='card st-off'; bc.style.marginTop='16px'; bc.setAttribute('data-sec','bellsets');
+    bc.innerHTML='<h2>Qo\'ng\'iroq jadvali</h2><p class="hint">Smenalar va fasllar bo\'yicha alohida jadval yarating: masalan «1-smena · Qishki», «1-smena · Yozgi», «2-smena». Ochiq sahifada hozir amal qilayotgani avtomatik tanlanadi.</p><div class="bel-list"><p class="hint">Yuklanmoqda...</p></div><div class="nf-btns"><button type="button" class="btn line bel-add">＋ Yangi qo\'ng\'iroq jadvali</button><button type="button" class="btn sl-save">Saqlash</button></div><p class="hint sl-msg"></p>';
+    tab.appendChild(bc);
+    bc.addEventListener('click',function(e){
+      if(e.target.closest('.bel-add')){ belData.push({id:vid(),name:'',smena:'1',from:'',to:'',rows:[]}); belDraw(); return }
+      if(e.target.closest('.sl-save')){ belSave(); return }
+      var v=e.target.closest('.bv'); if(!v) return; var i=+v.getAttribute('data-vi'), vr=belData[i];
+      if(e.target.closest('[data-bvd]')){ if(confirm("Bu qo'ng'iroq jadvali o'chirilsinmi?")){ belData.splice(i,1); belDraw() } return }
+      if(e.target.closest('[data-bra]')){ var last=(vr.rows||[]).slice(-1)[0]; vr.rows=vr.rows||[]; var st=last&&last.end?toMin(last.end)+10:480; vr.rows.push({start:fromMin(st),end:fromMin(st+45)}); belDraw(); return }
+      var rd=e.target.closest('[data-brd]'); if(rd){ vr.rows.splice(+rd.closest('.br-row').getAttribute('data-ri'),1); belDraw(); return }
+      if(e.target.closest('[data-bgen]')){ var g=function(k){return v.querySelector('[data-g="'+k+'"]').value}, st0=toMin(g('start')), len=+g('len'), brk=+g('brk'), cnt=+g('cnt'); if(st0==null||!len||!cnt) return belMsg('Avtomatik to\'ldirish uchun boshlanish vaqti, dars davomiyligi va darslar sonini kiriting',true);
+        vr.rows=[]; var cur=st0; for(var k=0;k<cnt;k++){ vr.rows.push({start:fromMin(cur),end:fromMin(cur+len)}); cur+=len+brk } belDraw(); belMsg(''); }
+    });
+    bc.addEventListener('input',function(e){
+      var v=e.target.closest('.bv'); if(!v) return; var vr=belData[+v.getAttribute('data-vi')], bf=e.target.getAttribute('data-bf'), rf=e.target.getAttribute('data-rf');
+      if(bf){ vr[bf]=(bf==='from'||bf==='to')?String(e.target.value||'').slice(5):e.target.value }
+      else if(rf){ var r=vr.rows[+e.target.closest('.br-row').getAttribute('data-ri')]; r[rf]=e.target.value }
+    });
+    var lc=document.createElement('div'); lc.className='card st-off'; lc.style.marginTop='16px'; lc.setAttribute('data-sec','lessons');
+    lc.innerHTML='<h2>Dars jadvali</h2><p class="hint">Sinfni tanlang, har bir katakka fan, o\'qituvchi va xonani yozing (E-maktabdagi kabi). Fan nomini yozishni boshlasangiz, takliflar chiqadi. Hammasini kiritgach «Saqlash» ni bosing: barcha sinflar birdan saqlanadi.</p><div class="les-body"><p class="hint">Yuklanmoqda...</p></div><div class="nf-btns"><button type="button" class="btn sl-save">Saqlash</button></div><p class="hint sl-msg"></p>';
+    tab.appendChild(lc);
+    lc.addEventListener('change',function(e){
+      if(e.target.id==='lesCls'){ lesCur=e.target.value; lesDraw() }
+      if(e.target.id==='lesSm'&&lesCur){ lesData[lesCur].smena=e.target.value }
+    });
+    lc.addEventListener('click',function(e){
+      if(e.target.closest('.sl-save')){ lesSave(); return }
+      if(e.target.id==='lesAdd'){ var n=prompt("Sinf nomi (masalan: 5-A):",''); if(!n) return; n=normClass(n.trim()); if(!n) return; lesData[n]=lesData[n]||{smena:'1',cells:{}}; lesCur=n; lesDraw(); return }
+      if(e.target.id==='lesClr'){ if(lesCur&&confirm(lesCur+" sinf jadvali tozalansinmi?")){ lesData[lesCur]={smena:lesData[lesCur].smena||'1',cells:{}}; lesDraw() } return }
+      if(e.target.id==='lesCopy'){ var others=Object.keys(lesData).filter(function(k){return k!==lesCur&&lesData[k]&&Object.keys(lesData[k].cells||{}).length}); if(!lesCur||!others.length) return lesMsg("Nusxa olish uchun boshqa sinfning jadvali kiritilgan bo'lishi kerak",true);
+        var from=prompt('Qaysi sinfdan nusxa olinsin? ('+others.join(', ')+')',others[0]); from=from&&normClass(from.trim()); if(!from||!lesData[from]) return; if(Object.keys(lesData[lesCur].cells||{}).length&&!confirm(lesCur+" sinfdagi hozirgi jadval almashtiriladi. Davom etasizmi?")) return;
+        lesData[lesCur].cells=JSON.parse(JSON.stringify(lesData[from].cells||{})); lesData[lesCur].smena=lesData[from].smena||'1'; lesDraw(); lesMsg('Nusxa olindi. Kerakli kataklarni o\'zgartirib, «Saqlash» ni bosing.') }
+    });
+    lc.addEventListener('input',function(e){
+      var d=e.target.getAttribute('data-ld'); if(d==null||!lesCur) return; var l=e.target.getAttribute('data-ll'), k=+e.target.getAttribute('data-lk'), c=lesData[lesCur];
+      var col=c.cells['d'+d]=c.cells['d'+d]||{}, x=col[l]=col[l]||['','','']; x[k]=e.target.value;
+    });
+    belDraw(); lesDraw();
   })();
   function attAbsBuild(){
     var cl=$('#attCls').value||'*', st=attVisible().filter(function(s){return s.cls!==ATT_TCLS&&(cl==='*'||(s.cls||'—')===cl)}), R=attCalc(st,attRange()), cs=[], T={n:st.length,abs:0,sz:0,miss:0,e:0};
