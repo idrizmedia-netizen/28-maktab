@@ -87,11 +87,61 @@ async function publishedNews(select, limit) {
   return rows.filter(function (x) { return x.document; }).map(function (x) { return toObj(x.document); })
     .sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
 }
+/* Havola bo'yicha videoni sayt ichida ochish. Qo'llab-quvvatlanadi: YouTube, Vimeo, Rutube, OK.ru, Google Drive,
+   Facebook, Instagram, TikTok, Telegram (cheklangan), to'g'ridan-to'g'ri video fayl (.mp4 .webm .ogg .mov .m4v). */
 function videoEmbed(u) {
   u = String(u || '').trim(); let x;
+  if (!/^https:\/\//i.test(u) || u.length > 400) return null;
   if ((x = /^https:\/\/(?:www\.|m\.)?youtube\.com\/(?:watch\?(?:[^#]*&)?v=|shorts\/|embed\/|live\/)([A-Za-z0-9_-]{11})/.exec(u)) || (x = /^https:\/\/youtu\.be\/([A-Za-z0-9_-]{11})/.exec(u)))
-    return { src: 'https://www.youtube-nocookie.com/embed/' + x[1], tg: false };
-  if ((x = /^https:\/\/t\.me\/([A-Za-z0-9_]{4,32})\/(\d+)/.exec(u))) return { src: 'https://t.me/' + x[1] + '/' + x[2] + '?embed=1&mode=tme', tg: true };
-  return null;
+    return { kind: 'iframe', src: 'https://www.youtube-nocookie.com/embed/' + x[1], cls: '' };
+  if ((x = /^https:\/\/(?:www\.)?vimeo\.com\/(?:[^\/?#]+\/)*(\d{6,12})/.exec(u))) return { kind: 'iframe', src: 'https://player.vimeo.com/video/' + x[1], cls: '' };
+  if ((x = /^https:\/\/(?:www\.)?rutube\.ru\/(?:video|play\/embed)\/([A-Fa-f0-9]{32})/.exec(u))) return { kind: 'iframe', src: 'https://rutube.ru/play/embed/' + x[1], cls: '' };
+  if ((x = /^https:\/\/(?:www\.)?ok\.ru\/video(?:embed)?\/(\d{6,20})/.exec(u))) return { kind: 'iframe', src: 'https://ok.ru/videoembed/' + x[1], cls: '' };
+  if ((x = /^https:\/\/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]{10,80})/.exec(u)) || (x = /^https:\/\/drive\.google\.com\/open\?(?:[^#]*&)?id=([A-Za-z0-9_-]{10,80})/.exec(u)))
+    return { kind: 'iframe', src: 'https://drive.google.com/file/d/' + x[1] + '/preview', cls: '' };
+  if (/^https:\/\/(?:www\.|m\.|web\.)?facebook\.com\/.+\/(?:videos|reel)\/|^https:\/\/fb\.watch\//i.test(u))
+    return { kind: 'iframe', src: 'https://www.facebook.com/plugins/video.php?show_text=false&href=' + encodeURIComponent(u), cls: '' };
+  if ((x = /^https:\/\/(?:www\.)?instagram\.com\/(reel|p|tv)\/([A-Za-z0-9_-]{5,20})/.exec(u))) return { kind: 'iframe', src: 'https://www.instagram.com/' + x[1] + '/' + x[2] + '/embed', cls: 'tall' };
+  if ((x = /^https:\/\/(?:www\.)?tiktok\.com\/@[^\/]+\/video\/(\d{8,25})/.exec(u))) return { kind: 'iframe', src: 'https://www.tiktok.com/embed/v2/' + x[1], cls: 'tall' };
+  if ((x = /^https:\/\/t\.me\/([A-Za-z0-9_]{4,32})\/(\d+)/.exec(u))) return { kind: 'iframe', src: 'https://t.me/' + x[1] + '/' + x[2] + '?embed=1&mode=tme', cls: 'tg', open: u };
+  if (/^https:\/\/[^\s?#]+\.(?:mp4|webm|ogg|mov|m4v)(?:[?#]\S*)?$/i.test(u)) return { kind: 'video', src: u, cls: '' };
+  return { kind: 'link', href: u };
 }
-module.exports = { PROJECT, API_KEY, ORIGIN, OWNER, FS, CATS, esc, fdate, fmtBody, plain, getDoc, publishedNews, videoEmbed, toObj };
+function videosOf(n) {
+  const a = Array.isArray(n.videos) ? n.videos : (n.video ? String(n.video).split(/\s+/) : []);
+  return a.map(function (u) { return String(u || '').trim(); }).filter(Boolean).slice(0, 3);
+}
+function videoHTML(u) {
+  const v = videoEmbed(u);
+  if (!v) return '';
+  if (v.kind === 'link') return '<p><a class="btn out" target="_blank" rel="noopener noreferrer" href="' + esc(v.href) + '">▶ Videoni ko\'rish ↗</a></p>';
+  if (v.kind === 'video') return '<div class="vid"><video controls playsinline preload="metadata" src="' + esc(v.src) + '"></video></div>';
+  return '<div class="vid ' + v.cls + '"><iframe src="' + esc(v.src) + '" title="Video" loading="lazy" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>' +
+    (v.open ? '<p class="vnote">Video ko\'rinmasa: <a href="' + esc(v.open) + '" target="_blank" rel="noopener noreferrer">Telegram\'da ochish ↗</a></p>' : '');
+}
+
+/* Ijtimoiy tarmoq belgilari va saytning pastki paneli (server sahifalari uchun) */
+const ICONS = {
+  telegram: '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M21.7 3.5 2.9 10.8c-1.3.5-1.3 1.2-.2 1.5l4.8 1.5 1.9 5.8c.2.6.1.8.7.8.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8L22.9 5c.3-1.3-.5-1.9-1.2-1.5zM8.5 13.3l9.6-6c.5-.3.9-.1.5.2l-7.9 7.1-.3 3.3-1.9-4.6z"/></svg>',
+  instagram: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>',
+  youtube: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3z"/></svg>'
+};
+function footerHTML(info) {
+  info = info || {};
+  const httpsOnly = function (u) { return /^https:\/\//i.test(u || '') ? u : ''; };
+  const soc = [['telegram', httpsOnly(info.telegram), 'Telegram'], ['instagram', httpsOnly(info.instagram), 'Instagram'], ['youtube', httpsOnly(info.youtube), 'YouTube']]
+    .filter(function (x) { return x[1]; })
+    .map(function (x) { return '<a class="soc-a" href="' + esc(x[1]) + '" target="_blank" rel="noopener noreferrer" aria-label="' + x[2] + '" title="' + x[2] + '">' + ICONS[x[0]] + '</a>'; }).join('');
+  const tel = String(info.phone || '').replace(/[^\d+]/g, '');
+  const rows = [];
+  if (info.address) rows.push('<li>📍 ' + esc(info.address) + '</li>');
+  if (tel) rows.push('<li>📞 <a href="tel:' + esc(tel) + '">' + esc(info.phone) + '</a></li>');
+  if (/^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(info.email || '')) rows.push('<li>✉️ <a href="mailto:' + esc(info.email) + '">' + esc(info.email) + '</a></li>');
+  if (info.hours) rows.push('<li>🕘 ' + esc(info.hours) + '</li>');
+  return '<footer class="ft"><div class="wrap ft-grid"><div><div class="ft-b"><img src="/logo-28.svg" width="46" height="46" alt="28-maktab"><div><b>28-MAKTAB</b><small>TARBIYA · BILIM · KELAJAK</small></div></div>' +
+    (soc ? '<div class="soc">' + soc + '</div>' : '') + '</div>' +
+    '<div><h4>Sahifalar</h4><ul class="ft-l"><li><a href="/">Bosh sahifa</a></li><li><a href="/#/yangiliklar">Yangiliklar</a></li><li><a href="/#/tadbirlar">Tadbirlar</a></li><li><a href="/#/jamoa">Jamoa</a></li><li><a href="/#/jadval">Jadval</a></li><li><a href="/#/aloqa">Aloqa</a></li></ul></div>' +
+    '<div><h4>Aloqa</h4>' + (rows.length ? '<ul class="ft-l">' + rows.join('') + '</ul>' : '<ul class="ft-l"><li><a href="/#/aloqa">Aloqa ma\'lumotlari</a></li></ul>') + '</div></div>' +
+    '<div class="ft-bot"><div class="wrap"><span>© ' + new Date().getFullYear() + ' 28-maktab. Barcha huquqlar himoyalangan.</span><span class="ft-legal"><a href="/#/shartlar">Foydalanish shartlari</a><a href="/#/maxfiylik">Maxfiylik siyosati</a></span></div></div></footer>';
+}
+module.exports = { PROJECT, API_KEY, ORIGIN, OWNER, FS, CATS, esc, fdate, fmtBody, plain, getDoc, publishedNews, videoEmbed, videosOf, videoHTML, footerHTML, toObj };
