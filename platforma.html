@@ -1344,11 +1344,11 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
             <label class="fl">Rasmlar (ixtiyoriy, 5 tagacha)</label>
             <div class="nf-img"><div><input type="file" id="nImg" accept="image/*" multiple hidden><button type="button" class="btn line sm" id="nImgBtn">📷 Rasm qo'shish</button><p class="hint" id="nImgInfo" style="margin:6px 0 0"></p></div></div>
             <div id="nImgPrev" class="nth"></div>
-            <label class="fl" for="nVideo">Video havolasi (ixtiyoriy)</label>
-            <input class="inp" id="nVideo" maxlength="200" placeholder="https://youtu.be/...  yoki  https://t.me/kanal/123">
-            <p class="hint">Videoni avval <b>YouTube</b> yoki <b>Telegram kanalga</b> joylang, so'ng uning havolasini shu yerga qo'ying. Sahifada video o'zi ochiladi.</p>
+            <label class="fl" for="nVideo">Video havolalari (ixtiyoriy, 3 tagacha, har biri alohida qatorda)</label>
+            <textarea class="inp" id="nVideo" rows="3" maxlength="1200" placeholder="https://youtu.be/...&#10;https://drive.google.com/file/d/.../view&#10;https://sayt.uz/video.mp4"></textarea>
+            <p class="hint">Havola qo'yilsa, video <b>saytning o'zida</b> ochiladi. Qo'llab-quvvatlanadi: <b>YouTube, Vimeo, Rutube, OK.ru, Google Drive</b> (faylni «Havola bor hamma ko'ra oladi» qiling), <b>Facebook, Instagram, TikTok</b> va to'g'ridan-to'g'ri video fayl (<b>.mp4, .webm</b>). Telegram kanal postining havolasi ham qabul qilinadi, lekin Telegram uni ko'p hollarda saytda ko'rsatishga ruxsat bermaydi. Eng ishonchli yo'l: YouTube yoki Google Drive.</p>
             <p class="hint">⚠️ Rasmda o'quvchilar bo'lsa, ota-onalarning roziligi olinganiga ishonch hosil qiling.</p>
-            <label class="nf-chk"><input type="checkbox" id="nTg" checked> ✈️ E'lon qilinganda Telegram kanalga ham joylash</label>
+            <label class="nf-chk"><input type="checkbox" id="nTg" checked> <span id="nTgTxt">✈️ E'lon qilinganda Telegram kanalga ham joylash</span></label>
             <label class="nf-chk"><input type="checkbox" id="nPin"> 📌 Muhim e'lon sifatida tepaga mahkamlash</label>
             <div class="nf-btns"><button type="button" class="btn" id="nPublish">E'lon qilish</button><button type="button" class="btn line" id="nDraft">Qoralama saqlash</button><button type="button" class="mini" id="nNew">Yangisini boshlash</button></div>
             <p id="nMsg" class="hint"></p>
@@ -1378,6 +1378,11 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
         </div>
         <label class="fl" for="cMap">Xarita havolasi (Google Maps)</label><input class="inp" id="cMap" maxlength="400" placeholder="https://maps.app.goo.gl/...">
         <p class="hint">Xarita havolasi: Google Maps'da maktabni toping → «Ulashish» → «Havolani nusxalash».</p>
+        <label class="fl" for="cTerms">Foydalanish shartlari matni (ixtiyoriy)</label>
+        <textarea class="inp" id="cTerms" rows="5" maxlength="8000" placeholder="Bo'sh qoldirsangiz, tayyor namunaviy matn ko'rsatiladi. Bo'sh qator — yangi xatboshi."></textarea>
+        <label class="fl" for="cPrivacy">Maxfiylik siyosati matni (ixtiyoriy)</label>
+        <textarea class="inp" id="cPrivacy" rows="5" maxlength="8000" placeholder="Bo'sh qoldirsangiz, tayyor namunaviy matn ko'rsatiladi."></textarea>
+        <p class="hint">Ular sayt pastidagi «Foydalanish shartlari» va «Maxfiylik siyosati» sahifalarida chiqadi. Namunaviy matnni o'qib chiqib, maktabingizga moslang.</p>
         <div class="nf-btns"><button type="button" class="btn" id="siteSave">Saqlash</button><a class="mini" href="/#/aloqa" target="_blank" rel="noopener">Sahifada ko'rish</a></div>
         <p id="siteMsg" class="hint"></p>
       </div>
@@ -4304,12 +4309,15 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
 
   /* ---- Maktab yangiliklari (ochiq sahifa uchun muharrir) ---- */
   var newsUnsub=null, newsDocs=[], newsEditId=null, newsImgs=[];
-  var NCAT={yangilik:'Yangilik',tadbir:'Tadbir',yutuq:'Yutuq',elon:"E'lon"}, NMAX=5, NBUDGET=170000, NVIDEO=/^https:\/\/((www\.|m\.)?youtube\.com\/(watch\?|shorts\/|embed\/|live\/)|youtu\.be\/|t\.me\/[A-Za-z0-9_]{4,32}\/\d+)/;
+  var NCAT={yangilik:'Yangilik',tadbir:'Tadbir',yutuq:'Yutuq',elon:"E'lon"}, NMAX=5, NBUDGET=170000;
+  function newsVideos(){ return String($('#nVideo').value||'').split(/\s+/).map(function(x){return x.trim()}).filter(Boolean) }
+  function newsVidsOf(n){ return Array.isArray(n.videos)?n.videos:(n.video?String(n.video).split(/\s+/).filter(Boolean):[]) }
+  function newsTgTxt(){ var o=newsEditId?newsDocs.filter(function(x){return x.id===newsEditId})[0]:null, t=$('#nTgTxt'); if(t) t.textContent=(o&&o.tg)?"✈️ Telegramdagi postni ham yangilash":"✈️ E'lon qilinganda Telegram kanalga ham joylash" }
   function newsAllowed(){ return myRole==='full'||myRole==='owner' }
   function newsApplyRole(){ var b=$('nav.tabs [data-tab="news"]'); if(b) b.classList.toggle('hidden',!newsAllowed()) }
   function newsStop(){ siteLoaded=false; secLoaded=false; custLoaded=false; if(newsUnsub){ try{newsUnsub()}catch(e){} newsUnsub=null } newsDocs=[]; }
   function newsLink(id){ return location.origin+'/yangilik/'+id }
-  var SITEF=[['tgChannel','#cTgCh'],['intro','#cIntro'],['address','#cAddress'],['phone','#cPhone'],['email','#cEmail'],['hours','#cHours'],['telegram','#cTg'],['instagram','#cIg'],['youtube','#cYt'],['mapUrl','#cMap']], siteLoaded=false;
+  var SITEF=[['terms','#cTerms'],['privacy','#cPrivacy'],['tgChannel','#cTgCh'],['intro','#cIntro'],['address','#cAddress'],['phone','#cPhone'],['email','#cEmail'],['hours','#cHours'],['telegram','#cTg'],['instagram','#cIg'],['youtube','#cYt'],['mapUrl','#cMap']], siteLoaded=false;
   function siteMsg(t,err){ var e=$('#siteMsg'); e.textContent=t; e.style.color=err?'var(--danger)':'' }
   function siteLoad(){
     if(siteLoaded||!db||!curUser||!newsAllowed()) return; siteLoaded=true;
@@ -4341,12 +4349,12 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     var box=$('#newsList'); if(!box) return;
     box.innerHTML=newsDocs.length?newsDocs.map(function(n){
       var ni=Array.isArray(n.imgs)?n.imgs.length:(n.img?1:0), pub=n.status==='published';
-      return '<div class="nw-row'+(n.id===newsEditId?' on':'')+'"><div class="nw-t"><b>'+esc(n.title)+'</b><span class="hint">'+esc(fmtDate(n.date))+' · '+esc(NCAT[n.cat]||'')+(ni?' · 🖼 '+ni:'')+(n.video?' · ▶ video':'')+(n.views?' · 👁 '+n.views:'')+'</span><span class="nw-chips"><i class="'+(pub?'ok':'dr')+'">'+(pub?"E'lon qilingan":'Qoralama')+'</i>'+(n.pinned?'<i class="pn">📌 Muhim</i>':'')+(n.tgAt?'<i class="tgc">✈️ Telegramga joylangan</i>':'')+'</span></div><div class="nw-a"><button type="button" class="mini" data-nedit="'+esc(n.id)+'">Tahrirlash</button>'+(pub?'<button type="button" class="mini" data-ntg="'+esc(n.id)+'" title="Telegram kanalga yuborish">✈️ Telegram</button><button type="button" class="mini" data-ncopy="'+esc(n.id)+'" title="Telegram uchun havola">🔗 Havola</button><a class="mini" target="_blank" rel="noopener" href="/#/yangilik/'+esc(n.id)+'">Ko\'rish</a>':'')+'<button type="button" class="mini danger" data-ndel="'+esc(n.id)+'">O\'chirish</button></div></div>';
+      return '<div class="nw-row'+(n.id===newsEditId?' on':'')+'"><div class="nw-t"><b>'+esc(n.title)+'</b><span class="hint">'+esc(fmtDate(n.date))+' · '+esc(NCAT[n.cat]||'')+(ni?' · 🖼 '+ni:'')+(newsVidsOf(n).length?' · ▶ video':'')+(n.views?' · 👁 '+n.views:'')+'</span><span class="nw-chips"><i class="'+(pub?'ok':'dr')+'">'+(pub?"E'lon qilingan":'Qoralama')+'</i>'+(n.pinned?'<i class="pn">📌 Muhim</i>':'')+((n.tg||n.tgAt)?'<i class="tgc">✈️ Telegramga joylangan</i>':'')+'</span></div><div class="nw-a"><button type="button" class="mini" data-nedit="'+esc(n.id)+'">Tahrirlash</button>'+(pub?'<button type="button" class="mini" data-ntg="'+esc(n.id)+'" title="Telegram kanal">'+(n.tg?'↻ Telegramni yangilash':(n.tgAt?'✈️ Qayta yuborish':'✈️ Telegram'))+'</button><button type="button" class="mini" data-ncopy="'+esc(n.id)+'" title="Telegram uchun havola">🔗 Havola</button><a class="mini" target="_blank" rel="noopener" href="/#/yangilik/'+esc(n.id)+'">Ko\'rish</a>':'')+'<button type="button" class="mini danger" data-ndel="'+esc(n.id)+'">O\'chirish</button></div></div>';
     }).join(''):'<p class="hint">Hali yangilik yozilmagan.</p>';
   }
   function newsMsg(t,err){ var m=$('#nMsg'); m.textContent=t; m.style.color=err?'var(--danger)':'' }
   function newsClear(){
-    newsEditId=null; newsImgs=[]; $('#nTitle').value=''; $('#nBody').value=''; $('#nVideo').value=''; $('#nCat').value='yangilik'; $('#nDate').value=dateISO(new Date()); $('#nPin').checked=false; newsPrev(); newsMsg(''); newsRender();
+    newsEditId=null; newsImgs=[]; $('#nTitle').value=''; $('#nBody').value=''; $('#nVideo').value=''; newsTgTxt(); $('#nCat').value='yangilik'; $('#nDate').value=dateISO(new Date()); $('#nPin').checked=false; newsPrev(); newsMsg(''); newsRender();
   }
   function newsPrev(){
     var tot=newsImgs.reduce(function(a,s){return a+s.length},0);
@@ -4405,23 +4413,26 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     box.innerHTML='<div class="np-in"><div class="hint">Ochiq sahifada shunday ko\'rinadi:</div><h3 class="np-t">'+esc(t)+'</h3>'+(newsImgs[0]?'<img class="np-cover" alt="" src="'+newsImgs[0]+'">':'')+'<div class="np-body">'+fmtBodyC(body||'(matn yo\'q)')+'</div>'+(newsImgs.length>1?'<div class="np-g">'+newsImgs.slice(1).map(function(x){return '<img alt="" src="'+x+'">'}).join('')+'</div>':'')+(vid?'<p class="hint">▶ Video: '+esc(vid)+'</p>':'')+'</div>';
     box.classList.remove('hidden'); $('#nPrevBtn').textContent='✖ Ko\'rishni yopish';
   }
-  function newsTelegram(id){
+  function newsTelegram(id,action){
     if(!curUser) return Promise.reject(new Error('Kirish yo\'q'));
-    return curUser.getIdToken().then(function(tok){ return fetch('/api/news-telegram',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,idToken:tok})}) })
+    return curUser.getIdToken().then(function(tok){ return fetch('/api/news-telegram',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,idToken:tok,action:action||'post'})}) })
       .then(function(r){ return r.json().catch(function(){return {ok:false,error:'Server javobi noto\'g\'ri ('+r.status+')'}}) })
-      .then(function(j){ if(!j.ok) throw new Error(j.error||'Telegram xatosi'); return db.collection('news').doc(id).update({tgAt:new Date().toISOString()}).then(function(){return j}) });
+      .then(function(j){ if(!j.ok) throw new Error(j.error||'Telegram xatosi');
+        var upd={tgAt:(j.tg&&j.tg.at)||new Date().toISOString()}; if(j.tg) upd.tg=j.tg;
+        return db.collection('news').doc(id).update(upd).then(function(){return j}) });
   }
   function newsSave(status){
-    var title=$('#nTitle').value.trim(), body=$('#nBody').value.trim(), video=$('#nVideo').value.trim();
+    var title=$('#nTitle').value.trim(), body=$('#nBody').value.trim(), videos=newsVideos();
     if(!title) return newsMsg('Sarlavhani yozing',true);
     if(!body) return newsMsg('Matnni yozing',true);
-    if(video&&!NVIDEO.test(video)) return newsMsg("Video havolasi YouTube (youtube.com, youtu.be) yoki Telegram (t.me/kanal/123) bo'lishi kerak",true);
+    if(videos.length>3) return newsMsg("Eng ko'pi bilan 3 ta video havolasi",true);
+    if(videos.some(function(u){return !/^https:\/\/[^\s]{4,400}$/i.test(u)})) return newsMsg("Video havolasi «https://» bilan boshlanishi kerak (har biri alohida qatorda)",true);
     var tot=newsImgs.reduce(function(a,s){return a+s.length},0); if(tot>900000) return newsMsg('Rasmlar juda ko\'p joy egallaydi. Bir-ikkitasini olib tashlang',true);
     if(!db||!curUser) return newsMsg('Internet yoki kirish yo\'q',true);
-    var data={title:title,body:body,cat:$('#nCat').value,date:$('#nDate').value||dateISO(new Date()),status:status,pinned:$('#nPin').checked,imgs:newsImgs.slice(),ni:newsImgs.length,video:video,by:(curUser.email||'').toLowerCase(),updated:firebase.firestore.FieldValue.serverTimestamp()};
-    var old=newsEditId?newsDocs.filter(function(x){return x.id===newsEditId})[0]:null, wasTg=!!(old&&old.tgAt);
+    var data={title:title,body:body,cat:$('#nCat').value,date:$('#nDate').value||dateISO(new Date()),status:status,pinned:$('#nPin').checked,imgs:newsImgs.slice(),ni:newsImgs.length,videos:videos,by:(curUser.email||'').toLowerCase(),updated:firebase.firestore.FieldValue.serverTimestamp()};
+    var old=newsEditId?newsDocs.filter(function(x){return x.id===newsEditId})[0]:null, hadTg=!!(old&&old.tg), legacyTg=!!(old&&!old.tg&&old.tgAt);
     var ref;
-    if(newsEditId){ data.img=firebase.firestore.FieldValue.delete(); ref=db.collection('news').doc(newsEditId).set(data,{merge:true}); }   // merge: ko'rishlar soni va Telegram belgisi saqlanadi
+    if(newsEditId){ data.img=firebase.firestore.FieldValue.delete(); data.video=firebase.firestore.FieldValue.delete(); ref=db.collection('news').doc(newsEditId).set(data,{merge:true}); }   // merge: ko'rishlar soni va Telegram belgisi saqlanadi
     else ref=db.collection('news').add(data);
     var btns=[$('#nPublish'),$('#nDraft')]; btns.forEach(function(b){b.disabled=true});
     ref.then(function(r){
@@ -4429,11 +4440,13 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       var id=newsEditId, link=id?newsLink(id):'';
       newsMsg(status==='published'?"✅ E'lon qilindi. Havola: "+link:'💾 Qoralama saqlandi.'); toast(status==='published'?"E'lon qilindi":'Saqlandi');
       try{ logAudit(status==='published'?'news_publish':'news_save',title) }catch(e){} newsRender();
-      if(status==='published'&&$('#nTg').checked&&!wasTg&&id){
-        newsMsg("✅ E'lon qilindi. Telegram'ga yuborilmoqda...");
-        return newsTelegram(id).then(function(){ newsMsg("✅ E'lon qilindi va Telegram kanalga joylandi. Havola: "+link); toast("Telegram'ga joylandi") })
-          .catch(function(e){ newsMsg("✅ E'lon qilindi, lekin Telegram'ga yuborilmadi: "+(e.message||'xato'),true) });
+      if(status==='published'&&$('#nTg').checked&&id&&!legacyTg){
+        var act=hadTg?'edit':'post';
+        newsMsg("✅ E'lon qilindi. Telegram'da "+(hadTg?'post yangilanmoqda':'post joylanmoqda')+"...");
+        return newsTelegram(id,act).then(function(j){ newsMsg("✅ E'lon qilindi"+(j.mode==='edited'?" va Telegramdagi post yangilandi":(j.mode==='reposted'?" va Telegramdagi post yangisi bilan almashtirildi (rasmlar tuzilishi o'zgargani uchun)":" va Telegram kanalga joylandi"))+". Havola: "+link); toast(hadTg?"Telegram yangilandi":"Telegram'ga joylandi"); newsTgTxt() })
+          .catch(function(e){ newsMsg("✅ E'lon qilindi, lekin Telegram'ga "+(hadTg?'yangilanmadi':'yuborilmadi')+": "+(e.message||'xato'),true) });
       }
+      if(legacyTg&&status==='published') newsMsg("✅ E'lon qilindi. Telegramdagi eski post bu usulda yuborilmagani uchun avtomatik yangilanmadi. Ro'yxatdagi «✈️ Qayta yuborish» tugmasi yangisini joylaydi.");
       if(status==='published'&&link){ try{ copyText(link,"Havola nusxalandi") }catch(e){} }
     }).catch(function(e){ newsMsg('Saqlab bo\'lmadi: '+(e&&e.message||'xato'),true) }).then(function(){ btns.forEach(function(b){b.disabled=false}) });
   }
@@ -4456,12 +4469,13 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       var ed=e.target.closest('[data-nedit]'), dl=e.target.closest('[data-ndel]'), cp=e.target.closest('[data-ncopy]');
       var tg=e.target.closest('[data-ntg]');
       if(tg){ var tid=tg.getAttribute('data-ntg'), tn=newsDocs.filter(function(x){return x.id===tid})[0]; if(!tn) return;
-        if(tn.tgAt&&!confirm("Bu yangilik Telegram'ga allaqachon joylangan. Yana yuborilsinmi?")) return;
-        tg.disabled=true; newsMsg("Telegram'ga yuborilmoqda...");
-        newsTelegram(tid).then(function(){ newsMsg("✅ Telegram kanalga joylandi"); toast("Telegram'ga joylandi") }).catch(function(er){ newsMsg("Telegram'ga yuborilmadi: "+(er.message||'xato'),true) }).then(function(){ tg.disabled=false }); return }
+        var act2=tn.tg?'edit':'post';
+        if(act2==='post'&&tn.tgAt&&!confirm("Bu yangilik Telegram'ga eski usulda joylangan. Yangi post sifatida yana yuborilsinmi? (Eskisi kanalda qoladi, uni o'zingiz o'chirasiz.)")) return;
+        tg.disabled=true; newsMsg(act2==='edit'?"Telegramdagi post yangilanmoqda...":"Telegram'ga yuborilmoqda...");
+        newsTelegram(tid,act2).then(function(j){ newsMsg(act2==='edit'?"✅ Telegramdagi post yangilandi":"✅ Telegram kanalga joylandi"); toast(act2==='edit'?"Telegram yangilandi":"Telegram'ga joylandi") }).catch(function(er){ newsMsg("Telegram: "+(er.message||'xato'),true) }).then(function(){ tg.disabled=false }); return }
       if(cp){ try{ copyText(newsLink(cp.getAttribute('data-ncopy')),"Havola nusxalandi, Telegram'ga qo'ying") }catch(er){} return }
       if(ed){ var n=newsDocs.filter(function(x){return x.id===ed.getAttribute('data-nedit')})[0]; if(!n) return;
-        newsEditId=n.id; $('#nTitle').value=n.title||''; $('#nBody').value=n.body||''; $('#nCat').value=n.cat||'yangilik'; $('#nDate').value=n.date||dateISO(new Date()); $('#nPin').checked=!!n.pinned; $('#nVideo').value=n.video||'';
+        newsEditId=n.id; $('#nTitle').value=n.title||''; $('#nBody').value=n.body||''; $('#nCat').value=n.cat||'yangilik'; $('#nDate').value=n.date||dateISO(new Date()); $('#nPin').checked=!!n.pinned; $('#nVideo').value=newsVidsOf(n).join('\n'); newsTgTxt();
         newsImgs=(Array.isArray(n.imgs)?n.imgs:(n.img?[n.img]:[])).slice(); newsPrev(); newsMsg('Tahrirlanmoqda: '+n.title); newsRender(); $('#nTitle').scrollIntoView({behavior:'smooth',block:'center'}); }
       if(dl){ var id=dl.getAttribute('data-ndel'), n2=newsDocs.filter(function(x){return x.id===id})[0]; if(!n2||!confirm('«'+n2.title+'» yangiligi o\'chirilsinmi? Bu qaytarilmaydi.')) return;
         db.collection('news').doc(id).delete().then(function(){ toast("O'chirildi"); try{logAudit('news_delete',n2.title)}catch(e){} if(newsEditId===id) newsClear(); }).catch(function(er){ toast('Xato: '+(er.message||'')) }); }
