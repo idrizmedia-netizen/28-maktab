@@ -1,11 +1,11 @@
 /* 28-maktab: Firestore'ga SERVER huquqi bilan kirish (qoidalarni chetlab o'tadi, faqat serverda ishlatiladi).
    Kalit KODDA YOZILMAYDI. Vercel -> Settings -> Environment Variables:
-     FIREBASE_SERVICE_ACCOUNT  =  Firebase "service account" kalitining JSON matni (butunlay, yoki base64 ko'rinishida).
+     FIREBASE_SERVICE_ACCOUNT_JSON (yoki FIREBASE_SERVICE_ACCOUNT)  =  Firebase "service account" kalitining JSON matni (butunlay, yoki base64 ko'rinishida).
    (Agar sizda ota-onaga xabar yuborish funksiyasi uchun shunday kalit allaqachon boshqa nom bilan saqlangan bo'lsa, quyidagi nomlardan biri ham qabul qilinadi.) */
 const crypto = require('crypto');
 const L = require('./_lib.js');
 
-const ENV_NAMES = ['FIREBASE_SERVICE_ACCOUNT', 'FIREBASE_SERVICE_ACCOUNT_KEY', 'FIREBASE_ADMIN_KEY', 'FIREBASE_ADMIN_CREDENTIALS', 'GOOGLE_SERVICE_ACCOUNT', 'GOOGLE_SERVICE_ACCOUNT_KEY', 'SERVICE_ACCOUNT', 'SERVICE_ACCOUNT_JSON', 'FIREBASE_KEY'];
+const ENV_NAMES = ['FIREBASE_SERVICE_ACCOUNT_JSON', 'FIREBASE_SERVICE_ACCOUNT', 'FIREBASE_SERVICE_ACCOUNT_KEY', 'FIREBASE_ADMIN_KEY', 'FIREBASE_ADMIN_CREDENTIALS', 'GOOGLE_SERVICE_ACCOUNT', 'GOOGLE_SERVICE_ACCOUNT_KEY', 'SERVICE_ACCOUNT', 'SERVICE_ACCOUNT_JSON', 'FIREBASE_KEY'];
 
 function creds() {
   for (const n of ENV_NAMES) {
