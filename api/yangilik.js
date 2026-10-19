@@ -3,14 +3,14 @@
 const L = require('./_lib.js');
 const esc = L.esc;
 
-const CSS = ':root{--navy:#0F3D7A;--blue:#1A3E8C;--gold:#F2B632;--gold-d:#7A5B12;--ink:#0B2447;--muted:#5B6B85;--bg:#F7F5EE;--line:#E6E2D3;--head:"Unbounded","Trebuchet MS",system-ui,sans-serif;--body:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}' +
+const CSS = ':root{--soft:#EEF2FA;--navy:#0F3D7A;--blue:#1A3E8C;--gold:#F2B632;--gold-d:#7A5B12;--ink:#0B2447;--muted:#5B6B85;--bg:#F7F5EE;--line:#E6E2D3;--head:"Unbounded","Trebuchet MS",system-ui,sans-serif;--body:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}' +
   '*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:500 16px/1.6 var(--body);overflow-x:clip}a{color:inherit}img{max-width:100%;display:block}' +
   '.wrap{max-width:1120px;margin:0 auto;padding:0 18px}header{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}' +
   '.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:64px;flex-wrap:wrap;padding:6px 0}.brand{display:flex;align-items:center;gap:11px;text-decoration:none}' +
   '.brand b{font:700 15px/1 var(--head);color:var(--blue);white-space:nowrap}.brand small{display:block;font:700 9.5px/1 var(--body);letter-spacing:.18em;color:var(--gold-d);margin-top:5px}' +
-  'nav{display:flex;gap:2px;overflow-x:auto;max-width:100%}nav a{text-decoration:none;font-weight:700;font-size:14.5px;color:var(--muted);padding:9px 12px;border-radius:10px;white-space:nowrap}nav a:hover{background:#EEF2FA;color:var(--navy)}' +
+  'nav{display:flex;gap:2px;overflow-x:auto;max-width:100%}nav a{text-decoration:none;font-weight:700;font-size:14.5px;color:var(--muted);padding:9px 12px;border-radius:10px;white-space:nowrap}nav a:hover{background:var(--soft);color:var(--navy)}' +
   '.art{max-width:760px;margin:0 auto;padding:28px 0 8px}.back{display:inline-flex;text-decoration:none;font-weight:800;color:var(--navy);margin-bottom:16px}' +
-  '.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted);font-weight:600}.chip{font:800 11px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:6px 9px;border-radius:99px;background:#EEF2FA;color:var(--navy)}.chip.pin{background:var(--gold);color:#3b2a00}' +
+  '.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted);font-weight:600}.chip{font:800 11px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:6px 9px;border-radius:99px;background:var(--soft);color:var(--navy)}.chip.pin{background:var(--gold);color:#3b2a00}' +
   'h1{font:700 clamp(24px,4.4vw,38px)/1.18 var(--head);margin:12px 0 18px;color:var(--navy)}.cover{border-radius:18px;overflow:hidden;margin:0 0 24px;border:1px solid var(--line);background:#fff}.cover img{width:100%;max-height:480px;object-fit:cover}' +
   '.body{font-size:17.5px;line-height:1.75}.body p{margin:0 0 1.1em}.body h3{font:700 21px/1.3 var(--head);color:var(--navy);margin:1.4em 0 .5em}.body ul{margin:0 0 1.1em;padding-left:1.3em}.body li{margin:.3em 0}.body a{color:var(--blue);font-weight:700;word-break:break-word}' +
   '.gal{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0}.gal img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;border:1px solid var(--line)}' +
@@ -28,11 +28,11 @@ function shell(title, desc, image, canonical, extraHead, inner, info) {
     '<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="' + esc(title.replace(/ · 28-maktab$/, '')) + '"><meta name="twitter:description" content="' + esc(desc) + '"><meta name="twitter:image" content="' + esc(image) + '">' +
     '<meta name="theme-color" content="#0F3D7A"><link rel="icon" href="/icons/maktab/icon-192.png">' +
     '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap">' +
-    '<style>' + CSS + '</style>' + extraHead + '</head><body>' +
+    '<style>' + CSS + L.THEME_CSS + '</style>' + L.themeHead() + extraHead + '</head><body>' +
     '<header><div class="wrap bar"><a class="brand" href="/"><img src="/logo-28.svg" width="42" height="42" alt="28-maktab"><span><b>28-MAKTAB</b><small>TARBIYA · BILIM · KELAJAK</small></span></a>' +
     '<nav aria-label="Menyu"><a href="/">Bosh</a><a href="/#/yangiliklar">Yangiliklar</a><a href="/#/tadbirlar">Tadbirlar</a><a href="/#/jamoa">Jamoa</a><a href="/#/yutuqlar">Yutuqlar</a><a href="/#/jadval">Jadval</a><a href="/#/galereya">Galereya</a><a href="/#/aloqa">Aloqa</a></nav></div></header>' +
     '<main class="wrap">' + inner + '</main>' +
-    L.footerHTML(info) + '</body></html>';
+    L.footerHTML(info) + L.themeWidget() + '</body></html>';
 }
 
 module.exports = async function (req, res) {
