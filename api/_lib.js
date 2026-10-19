@@ -163,10 +163,15 @@ function adminApp() {
   if (_adm) return _adm;
   const admin = require('firebase-admin');
   if (!admin.apps.length) {
-    let raw = String(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.FIREBASE_SERVICE_ACCOUNT || '').trim();
-    if (!raw) throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON sozlanmagan');
-    if (raw[0] !== '{') raw = Buffer.from(raw, 'base64').toString('utf8');
-    const sa = JSON.parse(raw);
+    /* api/_admin.js (ota-onalar kabineti) bilan bir xil nomlar qabul qilinadi, shunda bitta kalit hamma joyda ishlaydi */
+    const NAMES = ['FIREBASE_SERVICE_ACCOUNT_JSON', 'FIREBASE_SERVICE_ACCOUNT', 'FIREBASE_SERVICE_ACCOUNT_KEY', 'FIREBASE_ADMIN_KEY', 'FIREBASE_ADMIN_CREDENTIALS', 'GOOGLE_SERVICE_ACCOUNT', 'GOOGLE_SERVICE_ACCOUNT_KEY', 'SERVICE_ACCOUNT', 'SERVICE_ACCOUNT_JSON', 'FIREBASE_KEY'];
+    let sa = null;
+    for (const n of NAMES) {
+      let raw = String(process.env[n] || '').trim(); if (!raw) continue;
+      try { if (raw[0] !== '{') raw = Buffer.from(raw, 'base64').toString('utf8'); const j = JSON.parse(raw); if (j.client_email && j.private_key) { sa = j; break; } } catch (e) { /* keyingisini sinaymiz */ }
+    }
+    if (!sa && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) sa = { project_id: PROJECT, client_email: process.env.FIREBASE_CLIENT_EMAIL, private_key: process.env.FIREBASE_PRIVATE_KEY };
+    if (!sa) throw new Error('Firebase xizmat kaliti (FIREBASE_SERVICE_ACCOUNT_JSON) sozlanmagan yoki noto\'g\'ri');
     if (sa.private_key) sa.private_key = String(sa.private_key).replace(/\\n/g, '\n');
     admin.initializeApp({ credential: admin.credential.cert(sa) });
   }
@@ -182,10 +187,13 @@ function normPhone(p) {
 }
 function tgToken() { return process.env.TELEGRAM_TOKEN || process.env.TELEGRAM_BOT_TOKEN || ''; }
 async function tgApi(method, payload) {
+  if (!tgToken()) console.error('Bot tokeni yo\'q: Vercel da TELEGRAM_TOKEN yoki TELEGRAM_BOT_TOKEN kiriting');
   try {
     const r = await fetch('https://api.telegram.org/bot' + tgToken() + '/' + method, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload || {}) });
-    return await r.json();
-  } catch (e) { return { ok: false, description: String((e && e.message) || e) }; }
+    const j = await r.json();
+    if (!j.ok) console.error('Telegram ' + method + ' xato:', j.description);   // endi Vercel Logs da ko'rinadi
+    return j;
+  } catch (e) { console.error('Telegram ' + method + ' tarmoq xatosi:', e); return { ok: false, description: String((e && e.message) || e) }; }
 }
 async function tgSendDocument(chatId, base64, filename, caption) {
   const fd = new FormData();
