@@ -6,6 +6,28 @@ const crypto = require('crypto');
 const L = require('./_lib.js');
 const A = require('./_admin.js');
 
+/* Majburiy kanalga obuna (kanal: REQUIRED_CHANNEL yoki platformadagi «Telegram kanal nomi»). Bot kanalda ADMIN bo'lishi shart.
+   Kanal sozlanmagan bo'lsa yoki Telegram tekshirishga ruxsat bermasa, ota-ona bloklanmaydi. */
+async function reqChannel() {
+  let c = String(process.env.REQUIRED_CHANNEL || '').trim();
+  if (!c) { try { const i = await L.getDoc('publicinfo/maktab', { mask: ['tgChannel'] }); c = String((i && i.tgChannel) || '').trim(); } catch (e) { c = ''; } }
+  c = c.replace(/^https?:\/\/t\.me\//i, '').replace(/\/+$/, '');
+  if (/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(c)) c = '@' + c;
+  return /^(@[A-Za-z][A-Za-z0-9_]{4,31}|-100\d{5,})$/.test(c) ? c : '';
+}
+async function notSubscribed(ch, userId, botToken) {
+  if (!ch) return false;
+  try {
+    const r = await fetch('https://api.telegram.org/bot' + botToken + '/getChatMember', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: ch, user_id: userId }) });
+    const j = await r.json();
+    if (!j.ok) { console.error('getChatMember xato:', j.description); return false; }
+    const st = j.result && j.result.status;
+    if (st === 'creator' || st === 'administrator' || st === 'member') return false;
+    if (st === 'restricted') return !j.result.is_member;
+    return true;
+  } catch (e) { console.error('getChatMember xato:', e); return false; }
+}
+
 const KIND = { '': "Ogohlantirish xati", praise: 'Minnatdorchilik xati', invite: "Ota-onalar yig'ilishi taklifnomasi", summon: 'Maktabga chaqiruv xati' };
 const WIN = 10 * 60 * 1000, MAX_SENDS = 3, MAX_TRIES = 5, TTL = 5 * 60 * 1000, GAP = 45 * 1000;
 
@@ -105,6 +127,8 @@ module.exports = async function (req, res) {
       if (!childrenOf(phone, base).length) return out(res, 200, { ok: false, status: 'no_student' });
       const chat = await findChat(phone);
       if (!chat) return out(res, 200, { ok: false, status: 'not_linked' });
+      const subCh = await reqChannel();
+      if (await notSubscribed(subCh, chat, botToken)) return out(res, 200, { ok: false, status: 'not_subscribed', channel: subCh, error: "Kod olish uchun avval maktab kanaliga obuna bo'ling: " + subCh + ". Obuna bo'lgach, botga qaytib «✅ Obunani tekshirish» ni bosing va bu yerda qayta urinib ko'ring." });
       const cur = (await A.getDoc('parent_codes/p_' + phone)) || {};
       const win = cur.win && now - cur.win < WIN ? cur.win : now, cnt = cur.win && now - cur.win < WIN ? cur.cnt || 0 : 0;
       if (cur.sentAt && now - cur.sentAt < GAP) return out(res, 200, { ok: false, status: 'wait', seconds: Math.ceil((GAP - (now - cur.sentAt)) / 1000) });
