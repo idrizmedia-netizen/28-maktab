@@ -11,6 +11,32 @@
  */
 const { db, normPhone, tgApi } = require('./_lib');
 
+/* Majburiy kanalga obuna. Kanal: Vercel'da REQUIRED_CHANNEL (@nom), bo'sh bo'lsa platformadagi «Telegram kanal nomi».
+   Bot shu kanalda ADMIN bo'lishi shart. Kanal sozlanmagan bo'lsa yoki Telegram tekshirishga ruxsat bermasa, ota-ona bloklanmaydi. */
+async function reqChannel() {
+  let c = String(process.env.REQUIRED_CHANNEL || '').trim();
+  if (!c) { try { const d = await db().collection('publicinfo').doc('maktab').get(); c = String((d.exists && d.data().tgChannel) || '').trim(); } catch (e) { c = ''; } }
+  c = c.replace(/^https?:\/\/t\.me\//i, '').replace(/\/+$/, '');
+  if (/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(c)) c = '@' + c;
+  return /^(@[A-Za-z][A-Za-z0-9_]{4,31}|-100\d{5,})$/.test(c) ? c : '';
+}
+async function isSubscribed(ch, userId) {   // false faqat aniq "obuna emas" bo'lganda
+  if (!ch) return true;
+  const j = await tgApi('getChatMember', { chat_id: ch, user_id: userId });
+  if (!j || !j.ok) { console.error('getChatMember xato:', j && j.description); return true; }
+  const st = j.result && j.result.status;
+  if (st === 'creator' || st === 'administrator' || st === 'member') return true;
+  if (st === 'restricted') return !!j.result.is_member;
+  return false;
+}
+function subMarkup(ch) {
+  const rows = [];
+  if (ch.charAt(0) === '@') rows.push([{ text: "📢 Kanalga o'tish", url: 'https://t.me/' + ch.slice(1) }]);
+  rows.push([{ text: '✅ Obunani tekshirish', callback_data: 'sub' }]);
+  return { inline_keyboard: rows };
+}
+const READY = "✅ Tayyor! Raqamingiz ulandi va kanalga obuna tasdiqlandi. Endi farzandingiz haqida berilgan xatlar shu yerga yuboriladi va saytdagi ota-onalar kabinetidan kod olishingiz mumkin.";
+
 /**
  * "✅ Tanishdim" tugmasi bosilganda: notify_log yozuviga ackAt qo'shadi va
  * faollik jurnaliga yozadi. Tugma ma'lumoti: 'ack|<notify_log id>' (yangi)
@@ -21,6 +47,18 @@ async function handleCallback(cq) {
   const data = String(cq.data || '');
   const chatId = cq.message && cq.message.chat && cq.message.chat.id;
   const parts = data.split('|');
+  if (parts[0] === 'sub' && chatId) {
+    const lk = await db().collection('telegram_links').where('chatId', '==', chatId).limit(1).get();
+    if (lk.empty) { await answer("Avval /start bosib, telefon raqamingizni ulashing"); return; }
+    const ch = await reqChannel();
+    if (!(await isSubscribed(ch, cq.from && cq.from.id))) {
+      await tgApi('answerCallbackQuery', { callback_query_id: cq.id, text: "Siz hali kanalga obuna bo'lmagansiz", show_alert: true });
+      return;
+    }
+    await answer('Obuna tasdiqlandi ✅');
+    await tgApi('sendMessage', { chat_id: chatId, text: READY });
+    return;
+  }
   if (parts[0] !== 'ack' || !chatId) { await answer(); return; }
 
   let ref = null, snap = null;
@@ -82,11 +120,16 @@ module.exports = async (req, res) => {
       const phone = normPhone(msg.contact.phone_number);
       if (phone.length === 12) {
         await db().collection('telegram_links').doc(phone).set({ chatId, phone, linkedAt: Date.now() });
-        await tgApi('sendMessage', {
-          chat_id: chatId,
-          text: "✅ Raqamingiz ulandi. Endi farzandingiz haqida berilgan ogohlantirish xatlari shu yerga yuboriladi.",
-          reply_markup: { remove_keyboard: true },
-        });
+        const ch = await reqChannel();
+        if (await isSubscribed(ch, msg.from && msg.from.id)) {
+          await tgApi('sendMessage', {
+            chat_id: chatId,
+            text: "✅ Raqamingiz ulandi. Endi farzandingiz haqida berilgan ogohlantirish xatlari shu yerga yuboriladi.",
+            reply_markup: { remove_keyboard: true },
+          });
+        } else {
+          await tgApi('sendMessage', { chat_id: chatId, text: "✅ Raqamingiz ulandi.\n\n📢 Davom etish uchun avval maktab kanaliga obuna bo'ling: " + ch + "\n\nObuna bo'lgach, pastdagi «✅ Obunani tekshirish» tugmasini bosing.", reply_markup: subMarkup(ch) });
+        }
       } else {
         await tgApi('sendMessage', { chat_id: chatId, text: "Raqamni tanib bo'lmadi, birozdan so'ng qaytadan urinib ko'ring." });
       }
