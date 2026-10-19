@@ -155,4 +155,54 @@ function themeWidget() {
   return '<div id="thWrap"><div id="thPop" role="group" aria-label="Sayt rangi">' + TH.map(function (t, i) { return '<button type="button" data-th="' + i + '" title="' + esc(t.n) + '" aria-label="' + esc(t.n) + '" style="background:' + t.navy + '"></button>'; }).join('') + '</div><button type="button" id="thBtn" aria-label="Rang tanlash" title="Sayt rangini tanlang">🎨</button></div>' +
     '<script>(function(){var w=document.getElementById("thWrap"),cur=0;try{cur=+localStorage.getItem("m28_pub_theme")||0}catch(e){}function ap(i){var t=window.__TH[i]||window.__TH[0],s=document.documentElement.style;s.setProperty("--navy",t.navy);s.setProperty("--blue",t.blue);s.setProperty("--ink",t.ink);s.setProperty("--soft",t.soft);try{localStorage.setItem("m28_pub_theme",String(i))}catch(e){}var b=w.querySelectorAll("#thPop button");for(var k=0;k<b.length;k++)b[k].classList.toggle("on",k===i)}ap(cur);w.addEventListener("click",function(e){var b=e.target.closest("[data-th]");if(b){ap(+b.getAttribute("data-th"));return}if(e.target.closest("#thBtn"))document.getElementById("thPop").classList.toggle("on")});document.addEventListener("click",function(e){if(!e.target.closest("#thWrap"))document.getElementById("thPop").classList.remove("on")})})();</script>';
 }
-module.exports = { TH, themeHead, THEME_CSS, themeWidget, PROJECT, API_KEY, ORIGIN, OWNER, FS, CATS, esc, fdate, fmtBody, plain, getDoc, publishedNews, videoEmbed, videosOf, videoHTML, footerHTML, toObj };
+/* ===== Server yordamchilari (telegram-webhook, send-parent-notice, monthly-report uchun) =====
+   Vercel muhit o'zgaruvchilari: FIREBASE_SERVICE_ACCOUNT_JSON (JSON yoki base64), TELEGRAM_TOKEN yoki TELEGRAM_BOT_TOKEN.
+   firebase-admin faqat shu funksiyalar chaqirilganda yuklanadi (ochiq sahifalar sekinlashmaydi). */
+let _adm = null;
+function adminApp() {
+  if (_adm) return _adm;
+  const admin = require('firebase-admin');
+  if (!admin.apps.length) {
+    let raw = String(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.FIREBASE_SERVICE_ACCOUNT || '').trim();
+    if (!raw) throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON sozlanmagan');
+    if (raw[0] !== '{') raw = Buffer.from(raw, 'base64').toString('utf8');
+    const sa = JSON.parse(raw);
+    if (sa.private_key) sa.private_key = String(sa.private_key).replace(/\\n/g, '\n');
+    admin.initializeApp({ credential: admin.credential.cert(sa) });
+  }
+  _adm = admin;
+  return _adm;
+}
+function db() { return adminApp().firestore(); }
+function adminAuth() { return adminApp().auth(); }
+function normPhone(p) {
+  let d = String(p || '').replace(/\D/g, '');
+  if (d.length === 9) d = '998' + d; else if (d.length === 13 && d.indexOf('8998') === 0) d = d.slice(1);
+  return d;
+}
+function tgToken() { return process.env.TELEGRAM_TOKEN || process.env.TELEGRAM_BOT_TOKEN || ''; }
+async function tgApi(method, payload) {
+  try {
+    const r = await fetch('https://api.telegram.org/bot' + tgToken() + '/' + method, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload || {}) });
+    return await r.json();
+  } catch (e) { return { ok: false, description: String((e && e.message) || e) }; }
+}
+async function tgSendDocument(chatId, base64, filename, caption) {
+  const fd = new FormData();
+  fd.append('chat_id', String(chatId));
+  if (caption) fd.append('caption', caption);
+  fd.append('document', new Blob([Buffer.from(String(base64).replace(/^data:[^,]*,/, ''), 'base64')], { type: 'application/pdf' }), filename || 'xat.pdf');
+  const r = await fetch('https://api.telegram.org/bot' + tgToken() + '/sendDocument', { method: 'POST', body: fd });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.description || 'sendDocument xato');
+  return j;
+}
+async function isAdminEmail(email) {
+  email = String(email || '').toLowerCase();
+  if (!email) return false;
+  if (email === OWNER) return true;
+  const d = await db().collection('admins').doc(email).get();
+  return d.exists;
+}
+
+module.exports = { db, adminAuth, normPhone, tgApi, tgSendDocument, isAdminEmail, TH, themeHead, THEME_CSS, themeWidget, PROJECT, API_KEY, ORIGIN, OWNER, FS, CATS, esc, fdate, fmtBody, plain, getDoc, publishedNews, videoEmbed, videosOf, videoHTML, footerHTML, toObj };
