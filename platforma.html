@@ -4557,7 +4557,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   })();
   /* ---- Qo'ng'iroq jadvallari (smena va fasllar) va E-maktab uslubidagi dars jadvali ---- */
   var belData=[], lesData={}, lesCur='', custLoaded=false, LDAYS=['Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba'], LMAX=8;
-  var SUBJ=['Ona tili','Adabiyot',"O'qish",'Matematika','Algebra','Geometriya','Fizika','Kimyo','Biologiya','Tarix','Geografiya','Ingliz tili','Rus tili','Informatika','Jismoniy tarbiya','Tasviriy san\'at','Musiqa','Texnologiya','Chizmachilik','Tarbiya','Tabiatshunoslik','Huquq','Iqtisodiyot','Chaqiruvgacha tayyorgarlik','Sinf soati'];
+  var SUBJ=['Ona tili','Ona tili va adabiyot','Adabiyot',"O'qish savodxonligi",'Matematika','Algebra','Algebra va analiz asoslari','Geometriya','Atrofimizdagi olam','Tabiiy fanlar','Fizika','Astronomiya','Kimyo','Biologiya','Geografiya',"O'zbekiston tarixi",'Jahon tarixi','Tarix','Ingliz tili','Rus tili','Informatika','Informatika va axborot texnologiyalari','Texnologiya','Jismoniy tarbiya','Musiqa madaniyati','Musiqa',"Tasviriy san'at",'Chizmachilik','Tarbiya','Huquq','Iqtisodiyot','Iqtisodiy bilim asoslari','Kelajak soati',"Chaqiruvgacha boshlang'ich tayyorgarlik",'Tanlov fani','To\'garak'];
   function vid(){ return 'v'+Math.random().toString(36).slice(2,8) }
   function mdToDate(md){ return /^\d{2}-\d{2}$/.test(md||'')?'2000-'+md:'' }
   function pad2(n){ return (n<10?'0':'')+n }
@@ -4601,8 +4601,10 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       '<div><label class="fl">Smena</label><select class="inp" id="lesSm"><option value="1"'+(c&&String(c.smena)!=='2'?' selected':'')+'>1-smena</option><option value="2"'+(c&&String(c.smena)==='2'?' selected':'')+'>2-smena</option></select></div>'+
       '<div class="les-btns"><button type="button" class="mini" id="lesAdd">＋ Sinf qo\'shish</button><button type="button" class="mini" id="lesCopy">📋 Boshqa sinfdan nusxa</button><button type="button" class="mini danger" id="lesClr">Tozalash</button></div></div>';
     if(c){
-      h+='<datalist id="subjList">'+SUBJ.map(function(x){return '<option value="'+esc(x)+'">'}).join('')+'</datalist><div class="les-wrap"><table class="les-t"><thead><tr><th>№</th>'+LDAYS.map(function(d){return '<th>'+d+'</th>'}).join('')+'</tr></thead><tbody>';
-      for(var l=1;l<=LMAX;l++){ h+='<tr><td class="ln">'+l+'</td>'; for(var d=0;d<6;d++){ var x=((c.cells['d'+d]||{})[l])||['','','']; h+='<td><input class="inp s" list="subjList" data-ld="'+d+'" data-ll="'+l+'" data-lk="0" placeholder="Fan" value="'+esc(x[0]||'')+'"><div class="tr"><input class="inp" data-ld="'+d+'" data-ll="'+l+'" data-lk="1" placeholder="O\'qituvchi" value="'+esc(x[1]||'')+'"><input class="inp r" data-ld="'+d+'" data-ll="'+l+'" data-lk="2" placeholder="Xona" value="'+esc(x[2]||'')+'"></div></td>' } h+='</tr>' }
+      var used={}; Object.keys(lesData).forEach(function(cn){ Object.keys(lesData[cn].cells||{}).forEach(function(dk){ Object.keys(lesData[cn].cells[dk]).forEach(function(lk){ var x=lesData[cn].cells[dk][lk]; if(x&&x[0]&&SUBJ.indexOf(x[0])<0) used[x[0]]=1 }) }) });
+      var tch=(typeof roster!=='undefined'&&roster&&roster.teachers)?roster.teachers.filter(function(t){return t&&t.name}):[];
+      h+='<datalist id="subjList">'+SUBJ.concat(Object.keys(used)).map(function(x){return '<option value="'+esc(x)+'">'}).join('')+'</datalist><datalist id="teachList">'+tch.map(function(t){return '<option value="'+esc(t.name)+'" label="'+esc(t.subject||'')+'">'}).join('')+'</datalist><div class="les-wrap"><table class="les-t"><thead><tr><th>№</th>'+LDAYS.map(function(d){return '<th>'+d+'</th>'}).join('')+'</tr></thead><tbody>';
+      for(var l=1;l<=LMAX;l++){ h+='<tr><td class="ln">'+l+'</td>'; for(var d=0;d<6;d++){ var x=((c.cells['d'+d]||{})[l])||['','','']; h+='<td><input class="inp s" list="subjList" data-ld="'+d+'" data-ll="'+l+'" data-lk="0" placeholder="Fan" value="'+esc(x[0]||'')+'"><div class="tr"><input class="inp" data-ld="'+d+'" data-ll="'+l+'" data-lk="1" list="teachList" placeholder="O\'qituvchi" value="'+esc(x[1]||'')+'"><input class="inp r" data-ld="'+d+'" data-ll="'+l+'" data-lk="2" placeholder="Xona" value="'+esc(x[2]||'')+'"></div></td>' } h+='</tr>' }
       h+='</tbody></table></div>';
     } else h+='<p class="hint">Avval sinf qo\'shing yoki davomat bo\'limiga o\'quvchilar ro\'yxatini yuklang.</p>';
     box.innerHTML=h;
@@ -4644,7 +4646,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       else if(rf){ var r=vr.rows[+e.target.closest('.br-row').getAttribute('data-ri')]; r[rf]=e.target.value }
     });
     var lc=document.createElement('div'); lc.className='card st-off'; lc.style.marginTop='16px'; lc.setAttribute('data-sec','lessons');
-    lc.innerHTML='<h2>Dars jadvali</h2><p class="hint">Sinfni tanlang, har bir katakka fan, o\'qituvchi va xonani yozing (E-maktabdagi kabi). Fan nomini yozishni boshlasangiz, takliflar chiqadi. Hammasini kiritgach «Saqlash» ni bosing: barcha sinflar birdan saqlanadi.</p><div class="les-body"><p class="hint">Yuklanmoqda...</p></div><div class="nf-btns"><button type="button" class="btn sl-save">Saqlash</button></div><p class="hint sl-msg"></p>';
+    lc.innerHTML='<h2>Dars jadvali</h2><p class="hint">Sinfni tanlang, har bir katakka fan, o\'qituvchi va xonani yozing (E-maktabdagi kabi). Fan nomi va o\'qituvchi ismi takliflardan tanlanadi: o\'qituvchilar <b>Sozlamalar → O\'quvchilar va o\'qituvchilar bazasi</b> dan olinadi, o\'qituvchini tanlasangiz uning fani o\'zi yoziladi. Hammasini kiritgach «Saqlash» ni bosing: barcha sinflar birdan saqlanadi.</p><div class="les-body"><p class="hint">Yuklanmoqda...</p></div><div class="nf-btns"><button type="button" class="btn sl-save">Saqlash</button></div><p class="hint sl-msg"></p>';
     tab.appendChild(lc);
     lc.addEventListener('change',function(e){
       if(e.target.id==='lesCls'){ lesCur=e.target.value; lesDraw() }
@@ -4661,6 +4663,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     lc.addEventListener('input',function(e){
       var d=e.target.getAttribute('data-ld'); if(d==null||!lesCur) return; var l=e.target.getAttribute('data-ll'), k=+e.target.getAttribute('data-lk'), c=lesData[lesCur];
       var col=c.cells['d'+d]=c.cells['d'+d]||{}, x=col[l]=col[l]||['','','']; x[k]=e.target.value;
+      if(k===1&&!x[0]&&typeof roster!=='undefined'&&roster&&roster.teachers){ var th=roster.teachers.filter(function(t){return t&&t.name===e.target.value})[0]; if(th&&th.subject){ x[0]=th.subject; var si=lc.querySelector('[data-ld="'+d+'"][data-ll="'+l+'"][data-lk="0"]'); if(si) si.value=th.subject } }
     });
     belDraw(); lesDraw();
   })();
