@@ -18,6 +18,7 @@
 <meta property="og:title" content="28-maktab · Tarbiya, bilim, kelajak">
 <meta property="og:description" content="Maktab yangiliklari, e'lonlar va aloqa.">
 <meta name="theme-color" content="#0F3D7A">
+<script>window.__TH=[{"n": "Moviy", "navy": "#0F3D7A", "blue": "#1A3E8C", "ink": "#0B2447", "soft": "#EEF2FA", "h1": "#0B2F63", "h2": "#0F3D7A", "h3": "#1A3E8C", "glow": "#1c5aa8"}, {"n": "Yashil", "navy": "#0B6B4A", "blue": "#0F8A5F", "ink": "#062E22", "soft": "#E8F6EF", "h1": "#064D35", "h2": "#0B6B4A", "h3": "#0F8A5F", "glow": "#1FA97A"}, {"n": "Binafsha", "navy": "#4A2FA5", "blue": "#5B3FD1", "ink": "#1D1250", "soft": "#F0ECFB", "h1": "#321F7A", "h2": "#4A2FA5", "h3": "#5B3FD1", "glow": "#7A5CE6"}, {"n": "Qizil", "navy": "#A3262F", "blue": "#C2303B", "ink": "#3A0E12", "soft": "#FBEBEC", "h1": "#7A1B22", "h2": "#A3262F", "h3": "#C2303B", "glow": "#E0545E"}, {"n": "Zangori", "navy": "#0A6F82", "blue": "#0E8AA0", "ink": "#062F38", "soft": "#E6F5F8", "h1": "#07505E", "h2": "#0A6F82", "h3": "#0E8AA0", "glow": "#25A8C2"}, {"n": "To'q sariq", "navy": "#B4500F", "blue": "#D4660F", "ink": "#3D1F05", "soft": "#FDF0E4", "h1": "#8A3C0B", "h2": "#B4500F", "h3": "#D4660F", "glow": "#F08A35"}, {"n": "Grafit", "navy": "#2D3748", "blue": "#3F4B63", "ink": "#151A24", "soft": "#EEF0F4", "h1": "#1F2531", "h2": "#2D3748", "h3": "#3F4B63", "glow": "#5B6B8C"}];(function(){try{var i=+localStorage.getItem("m28_pub_theme"),t=window.__TH[i];if(i&&t){var s=document.documentElement.style;s.setProperty("--navy",t.navy);s.setProperty("--blue",t.blue);s.setProperty("--ink",t.ink);s.setProperty("--soft",t.soft);s.setProperty("--h1",t.h1);s.setProperty("--h2",t.h2);s.setProperty("--h3",t.h3);s.setProperty("--glow",t.glow)}}catch(e){}})();</script>
 <meta name="google-site-verification" content="8d_x46wjDNA6FSb6pbgkipiowEAUli7D2h5QSj82YJA" />
 <link rel="manifest" href="maktab.webmanifest">
 <link rel="apple-touch-icon" href="icons/maktab/apple-touch-icon.png">
@@ -29,7 +30,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
 [hidden]{display:none!important}
-:root{--navy:#0F3D7A;--blue:#1A3E8C;--gold:#F2B632;--gold-d:#7A5B12;--ink:#0B2447;--muted:#5B6B85;--bg:#F7F5EE;--card:#fff;--line:#E6E2D3;--r:18px;
+:root{--soft:#EEF2FA;--h1:#0B2F63;--h2:#0F3D7A;--h3:#1A3E8C;--glow:#1c5aa8;--navy:#0F3D7A;--blue:#1A3E8C;--gold:#F2B632;--gold-d:#7A5B12;--ink:#0B2447;--muted:#5B6B85;--bg:#F7F5EE;--card:#fff;--line:#E6E2D3;--r:18px;
   --head:'Unbounded','Trebuchet MS',system-ui,sans-serif;--body:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
@@ -48,13 +49,13 @@ header.top{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.9);-web
 .brand small{display:block;font:700 9.5px/1 var(--body);letter-spacing:.18em;color:var(--gold-d);margin-top:5px}
 nav.m{display:flex;gap:2px}
 nav.m a{white-space:nowrap;text-decoration:none;font-weight:700;font-size:14px;color:var(--muted);padding:9px 10px;border-radius:10px;transition:background-color .15s,color .15s}
-nav.m a:hover{background:#EEF2FA;color:var(--navy)}
+nav.m a:hover{background:var(--soft);color:var(--navy)}
 a.staff{border:1.5px solid var(--navy);color:var(--navy)!important;margin-left:6px;background:#fff}
 a.staff:hover{background:var(--navy)!important;color:#fff!important}
-nav.m a[aria-current=page]{color:var(--navy);background:#EEF2FA;box-shadow:inset 0 -3px 0 var(--gold)}
+nav.m a[aria-current=page]{color:var(--navy);background:var(--soft);box-shadow:inset 0 -3px 0 var(--gold)}
 
 /* hero */
-.hero{background:radial-gradient(900px 420px at 85% 30%,#1c5aa8 0,transparent 60%),linear-gradient(135deg,#0B2F63,#0F3D7A 55%,#1A3E8C);color:#fff;position:relative;overflow:hidden}
+.hero{background:radial-gradient(900px 420px at 85% 30%,var(--glow) 0,transparent 60%),linear-gradient(135deg,var(--h1),var(--h2) 55%,var(--h3));color:#fff;position:relative;overflow:hidden}
 .hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;background:var(--gold)}
 .hero .wrap{display:grid;grid-template-columns:1.25fr .75fr;gap:32px;align-items:center;padding:56px 18px 62px}
 .eyebrow{font:700 12px/1 var(--body);letter-spacing:.22em;color:var(--gold)}
@@ -88,7 +89,7 @@ section.blk{padding:44px 0 8px}
 .ph svg{width:46px;height:auto;opacity:.55}
 .cb{padding:16px 18px 20px;display:flex;flex-direction:column;gap:8px;flex:1}
 .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted);font-weight:600}
-.chip{font:800 11px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:6px 9px;border-radius:99px;background:#EEF2FA;color:var(--navy)}
+.chip{font:800 11px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:6px 9px;border-radius:99px;background:var(--soft);color:var(--navy)}
 .chip.yutuq{background:#FCEFC9;color:var(--gold-d)}
 .chip.elon{background:#FDE4E1;color:#a1301f}
 .chip.pin{background:var(--gold);color:#3b2a00}
@@ -116,7 +117,7 @@ section.blk{padding:44px 0 8px}
 /* aloqa */
 .info{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 .irow{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start}
-.irow i{font-style:normal;width:42px;height:42px;border-radius:12px;background:#EEF2FA;display:grid;place-items:center;font-size:20px;flex:none}
+.irow i{font-style:normal;width:42px;height:42px;border-radius:12px;background:var(--soft);display:grid;place-items:center;font-size:20px;flex:none}
 .irow small{display:block;color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
 .irow a{color:var(--navy);font-weight:800;text-decoration:none;word-break:break-word}
 
@@ -193,11 +194,12 @@ table.gt td small{display:block;color:var(--muted);font-weight:600;font-size:12p
 table.gt td.ln{width:92px;background:#faf8f1}
 table.gt td.ln small{color:var(--gold-d)}
 table.gt .nil{color:#c8c4b4}
-table.tt th.td,table.tt td.td{background:#FFF6DC}
-table.tt th.td{background:var(--gold);color:#3b2a00}
+table.tt th.td,table.tt td.td{background:#EAF2FF}
+table.tt th.td{background:#2F6FD0;color:#fff}
+table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;letter-spacing:0}
 .dcards{display:none;gap:12px}
 .dcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
-.dcard.td{border-color:var(--gold);background:#FFFBEE}
+.dcard.td{border-color:#2F6FD0;background:#F4F8FF}
 .dcard h4{margin:0 0 8px;font:700 15px var(--head);color:var(--navy)}
 .dcard ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .dcard li{display:flex;gap:10px;align-items:flex-start}
@@ -221,6 +223,49 @@ table.tt th.td{background:var(--gold);color:#3b2a00}
 .legal{max-width:780px}.legal h3{font:700 19px/1.3 var(--head);color:var(--navy);margin:1.6em 0 .5em}.legal p{margin:0 0 1em;font-size:16.5px;line-height:1.75}
 .legal .upd{color:var(--muted);font-size:14px}
 @media (max-width:760px){.ft-grid{grid-template-columns:1fr;gap:24px;padding:34px 18px 18px}}
+#thWrap{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+#thBtn{width:46px;height:46px;border-radius:50%;border:0;background:var(--navy);color:#fff;font-size:21px;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.28);display:grid;place-items:center;transition:transform .15s}
+#thBtn:hover{transform:scale(1.07)}
+#thPop{display:none;background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:0 14px 34px rgba(0,0,0,.2);gap:8px;flex-wrap:wrap;max-width:200px}
+#thPop.on{display:flex}
+#thPop button{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1.5px var(--line);cursor:pointer;padding:0}
+#thPop button.on{box-shadow:0 0 0 2.5px var(--gold)}
+.btn.kb{background:#fff;color:var(--navy);box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.btn.kb:hover{transform:translateY(-1px)}
+.kb-box{max-width:520px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px 24px;box-shadow:0 14px 40px rgba(15,61,122,.1)}
+.kb-box h2{font:700 22px/1.25 var(--head);color:var(--navy);margin:0 0 8px}
+.kb-box p{color:var(--muted);margin:0 0 16px;font-size:15.5px}
+.kb-in{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:14px;font:600 18px var(--body);letter-spacing:.04em;margin:0 0 12px;color:var(--ink)}
+.kb-in:focus{outline:none;border-color:var(--navy)}
+.kb-code{text-align:center;font-size:28px;letter-spacing:.4em}
+.kb-msg{margin:12px 0 0;padding:12px 14px;border-radius:12px;font-size:15px;line-height:1.5}
+.kb-msg.err{background:#FDE9E7;color:#9a1f12}
+.kb-msg.ok{background:#E4F6EC;color:#0b6b3a}
+.kb-msg a{color:inherit;font-weight:800}
+.kb-sub{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:14px;color:var(--muted)}
+.kb-link{border:0;background:none;color:var(--blue);font:700 14px var(--body);cursor:pointer;padding:0;text-decoration:underline}
+.kb-data{position:relative;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.kb-wm{position:absolute;inset:0;pointer-events:none;z-index:5}
+.kb-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;background:#FFF6DC;border:1px solid #F0D58A;border-radius:14px;padding:12px 16px;margin-bottom:16px;font-size:14px}
+.kb-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.kb-chips button{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:10px 16px;font:700 15px var(--body);color:var(--muted);cursor:pointer}
+.kb-chips button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.kb-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px}
+.kb-kpi div{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.kb-kpi b{display:block;font:700 28px/1.1 var(--head);color:var(--navy)}.kb-kpi b.bad{color:#b42318}
+.kb-kpi span{color:var(--muted);font-weight:700;font-size:13px}
+.kb-m{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.kb-m h4{margin:0 0 8px;font:700 15px var(--head);color:var(--navy);display:flex;justify-content:space-between;gap:8px}
+.kb-m h4 small{font:600 12.5px var(--body);color:var(--muted)}
+.kb-days{display:flex;gap:6px;flex-wrap:wrap}
+.dchip.Kas{background:#FEF0C7;color:#93370d}.dchip.Sb{background:#DBEAFE;color:#1d4ed8}.dchip.Tad{background:#EDE4FD;color:#6d28d9}.dchip.Kch{background:#FCF3C4;color:#854d0e}
+.dchip{display:inline-block;border-radius:8px;padding:5px 10px;font-size:13px;font-weight:700;background:var(--soft);color:var(--navy)}.dchip.Sz{background:#FDE4E1;color:#b42318}
+.kb-let{display:flex;gap:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.kb-let i{font-style:normal;font-size:24px}.kb-let b{display:block}.kb-let small{color:var(--muted);font-weight:600}.kb-let p{margin:6px 0 0;color:var(--ink);font-size:15px}
+.kb-note{color:var(--muted);font-size:13.5px;margin-top:18px;line-height:1.5}
+.kb-print{display:none}
+@media print{body.kb-on #app,body.kb-on header.top,body.kb-on #ft,body.kb-on #thWrap{display:none!important}body.kb-on .kb-print{display:block;font-size:18px;padding:40px;text-align:center}}
+@media (max-width:700px){.kb-kpi{grid-template-columns:repeat(2,1fr)}.kb-box{padding:20px 16px}}
 .view{animation:in .28s ease-out}
 @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
@@ -348,7 +393,7 @@ table.tt th.td{background:var(--gold);color:#3b2a00}
   /* ====== Sahifalar ====== */
   function home(){
     var pin=news&&news.filter(function(n){return n.pinned})[0], rest=news?news.slice(0,3):[];
-    return '<section class="hero"><div class="wrap"><div><div class="eyebrow">TARBIYA · BILIM · KELAJAK</div><h1>28-maktabga<br>xush kelibsiz</h1><p>'+esc(SCHOOL.intro)+'</p><div class="btns"><a class="btn gold" href="#/yangiliklar">Yangiliklar</a><a class="btn line" href="#/aloqa">Aloqa</a><button type="button" class="btn line" data-install hidden data-install-btn>📲 Ilovani o\'rnatish</button></div></div><div class="emb-box"><svg viewBox="0 0 240 240" role="img" aria-label="28-maktab emblemasi"><use href="#emb"/></svg></div></div></section>'+
+    return '<section class="hero"><div class="wrap"><div><div class="eyebrow">TARBIYA · BILIM · KELAJAK</div><h1>28-maktabga<br>xush kelibsiz</h1><p>'+esc(SCHOOL.intro)+'</p><div class="btns"><a class="btn gold" href="#/yangiliklar">Yangiliklar</a><a class="btn line" href="#/aloqa">Aloqa</a><a class="btn kb" href="#/kabinet">👨‍👩‍👧 Ota-onalar kabineti</a><button type="button" class="btn line" data-install hidden data-install-btn>📲 Ilovani o\'rnatish</button></div></div><div class="emb-box"><svg viewBox="0 0 240 240" role="img" aria-label="28-maktab emblemasi"><use href="#emb"/></svg></div></div></section>'+
       '<div class="wrap">'+(pin?'<a class="alert" href="/yangilik/'+esc(pin.id)+'"><div><span>Muhim e\'lon</span><br><b>'+esc(pin.title)+'</b></div></a>':'')+
       '<section class="blk"><div class="hd"><h2>So\'nggi yangiliklar</h2><a href="#/yangiliklar">Hammasi →</a></div>'+
       (news===null?SK:err?errBox():rest.length?'<div class="grid">'+rest.map(card).join('')+'</div>':empty("Hozircha yangilik yo'q","Tez orada maktab yangiliklari shu yerda paydo bo'ladi."))+'</section></div>';
@@ -492,23 +537,112 @@ table.tt th.td{background:var(--gold);color:#3b2a00}
     var soc=[['telegram','Telegram',Lk(SCHOOL.telegram)],['instagram','Instagram',Lk(SCHOOL.instagram)],['youtube','YouTube',Lk(SCHOOL.youtube)]].filter(function(x){return x[2]}).map(function(x){return '<a class="soc-a" href="'+esc(x[2])+'" target="_blank" rel="noopener noreferrer" aria-label="'+x[1]+'" title="'+x[1]+'">'+ICONS[x[0]]+'</a>'}).join('');
     var rows=[]; if(SCHOOL.address) rows.push('<li>📍 '+esc(SCHOOL.address)+'</li>'); if(tel) rows.push('<li>📞 <a href="tel:'+esc(tel)+'">'+esc(SCHOOL.phone)+'</a></li>'); if(mail) rows.push('<li>✉️ <a href="mailto:'+esc(mail)+'">'+esc(mail)+'</a></li>'); if(SCHOOL.hours) rows.push('<li>🕘 '+esc(SCHOOL.hours)+'</li>');
     ft.innerHTML='<div class="wrap ft-grid"><div><div class="ft-b"><img src="logo-28.svg" width="46" height="46" alt="28-maktab"><div><b>28-MAKTAB</b><small>TARBIYA · BILIM · KELAJAK</small></div></div>'+(soc?'<div class="soc">'+soc+'</div>':'')+'</div>'+
-      '<div><h4>Sahifalar</h4><ul class="ft-l"><li><a href="#/">Bosh sahifa</a></li><li><a href="#/yangiliklar">Yangiliklar</a></li><li><a href="#/tadbirlar">Tadbirlar</a></li><li><a href="#/jamoa">Jamoa</a></li><li><a href="#/jadval">Jadval</a></li><li><a href="#/aloqa">Aloqa</a></li></ul></div>'+
+      '<div><h4>Sahifalar</h4><ul class="ft-l"><li><a href="#/">Bosh sahifa</a></li><li><a href="#/yangiliklar">Yangiliklar</a></li><li><a href="#/tadbirlar">Tadbirlar</a></li><li><a href="#/jamoa">Jamoa</a></li><li><a href="#/jadval">Jadval</a></li><li><a href="#/aloqa">Aloqa</a></li><li><a href="#/kabinet">Ota-onalar kabineti</a></li></ul></div>'+
       '<div><h4>Aloqa</h4>'+(rows.length?'<ul class="ft-l">'+rows.join('')+'</ul>':'<ul class="ft-l"><li><a href="#/aloqa">Aloqa ma\'lumotlari</a></li></ul>')+'</div></div>'+
       '<div class="ft-bot"><div class="wrap"><span>© '+new Date().getFullYear()+' 28-maktab. Barcha huquqlar himoyalangan.</span><span class="ft-legal"><a href="#/shartlar">Foydalanish shartlari</a><a href="#/maxfiylik">Maxfiylik siyosati</a><span data-install hidden><button type="button" class="linkbtn" data-install-btn>📲 Ilovani o\'rnatish</button></span><span data-staff hidden><a href="/platforma">Platformaga o\'tish →</a></span></span></div></div>';
   }
+  /* ====== Rang tanlash ====== */
+  function applyTheme(i){
+    var t=window.__TH[i]||window.__TH[0], s=document.documentElement.style;
+    s.setProperty('--navy',t.navy);s.setProperty('--blue',t.blue);s.setProperty('--ink',t.ink);s.setProperty('--soft',t.soft);s.setProperty('--h1',t.h1);s.setProperty('--h2',t.h2);s.setProperty('--h3',t.h3);s.setProperty('--glow',t.glow);
+    try{localStorage.setItem('m28_pub_theme',String(i))}catch(e){}
+    var mt=document.querySelector('meta[name="theme-color"]'); if(mt) mt.setAttribute('content',t.navy);
+    Array.prototype.forEach.call(document.querySelectorAll('#thPop button'),function(b,k){b.classList.toggle('on',k===i)});
+  }
+  (function(){
+    var w=document.createElement('div'); w.id='thWrap';
+    w.innerHTML='<div id="thPop" role="group" aria-label="Sayt rangi">'+window.__TH.map(function(t,i){return '<button type="button" data-th="'+i+'" title="'+esc(t.n)+'" aria-label="'+esc(t.n)+'" style="background:'+t.navy+'"></button>'}).join('')+'</div><button type="button" id="thBtn" aria-label="Rang tanlash" title="Sayt rangini tanlang">🎨</button>';
+    document.body.appendChild(w);
+    var cur=0; try{cur=+localStorage.getItem('m28_pub_theme')||0}catch(e){} applyTheme(cur);
+    w.addEventListener('click',function(e){ var b=e.target.closest('[data-th]'); if(b){ applyTheme(+b.getAttribute('data-th')); return } if(e.target.closest('#thBtn')) document.getElementById('thPop').classList.toggle('on') });
+    document.addEventListener('click',function(e){ if(!e.target.closest('#thWrap')) document.getElementById('thPop').classList.remove('on') });
+  })();
+
+  /* ====== Ota-onalar kabineti: Telegram bot kodi orqali xavfsiz kirish ====== */
+  var BOT='maktab28_bot', KB={step:'phone',phone:'',msg:'',html:'',err:false,busy:false,data:null,cur:0,exp:0,wm:''}, KBT=null, KBI=null;
+  var KCODE={Sz:'Sababsiz',Kas:'Kasal',Sb:'Sababli',Tad:'Tadbir',Kch:'Kechikdi'}, KICON={'':'⚠️',praise:'🌟',invite:'📅',summon:'📞'};
+  function kbReset(keepPhone){ clearTimeout(KBT); clearInterval(KBI); KB={step:'phone',phone:keepPhone?KB.phone:'',msg:'',html:'',err:false,busy:false,data:null,cur:0,exp:0,wm:''}; document.body.classList.remove('kb-on') }
+  function kbSay(t,err,html){ KB.msg=t||''; KB.html=html||''; KB.err=!!err }
+  function kbPost(b){ return fetch('/api/parent',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify(b)}).then(function(r){return r.json().catch(function(){return {ok:false,status:'server',error:"Server javobi noto'g'ri"}})}).catch(function(){return {ok:false,status:'server',error:"Internetga ulanib bo'lmadi"}}) }
+  function kbMaskPhone(p){ var d=String(p||'').replace(/\D/g,''); if(d.length===9) d='998'+d; return d.length===12?'+'+d.slice(0,5)+' *** ** '+d.slice(-2):'' }
+  function kbWM(){ var t=KB.wm||'', svg="<svg xmlns='http://www.w3.org/2000/svg' width='260' height='150'><text x='10' y='90' transform='rotate(-22 130 75)' font-family='Arial' font-size='15' font-weight='700' fill='rgba(15,61,122,.2)'>"+esc('Faqat ko\'rish uchun · '+t)+"</text></svg>"; return 'url("data:image/svg+xml;utf8,'+encodeURIComponent(svg)+'")' }
+  function kbMonth(mk){ var x=/^(\d{4})-(\d{2})$/.exec(mk); return x?(MON[+x[2]-1].charAt(0).toUpperCase()+MON[+x[2]-1].slice(1))+' '+x[1]:mk }
+  function kabinet(){
+    var msg=(KB.msg||KB.html)?'<div class="kb-msg '+(KB.err?'err':'ok')+'" role="status">'+(KB.html||esc(KB.msg))+'</div>':'';
+    if(KB.step==='phone') return '<div class="wrap"><section class="blk"><div class="kb-box"><h2>👨‍👩‍👧 Ota-onalar kabineti</h2><p>Farzandingizning davomati va olgan xatlarini ko\'ring. Xavfsizlik uchun kirish kodi maktabning Telegram botiga yuboriladi.</p><label for="kbPhone" class="hint" style="display:block;margin-bottom:6px;font-weight:700">Maktabga bergan telefon raqamingiz</label><input id="kbPhone" class="kb-in" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67" value="'+esc(KB.phone)+'"><button type="button" class="btn navy" style="width:100%;justify-content:center" data-kb="send"'+(KB.busy?' disabled':'')+'>'+(KB.busy?'Yuborilmoqda...':'Telegram\'dan kod olish')+'</button>'+msg+'<p class="kb-note">Raqamingiz botga ulangan bo\'lishi kerak: <a href="https://t.me/'+BOT+'" target="_blank" rel="noopener noreferrer">@'+BOT+'</a> ga kirib, «Start» ni bosing va telefon raqamingizni ulashing.</p></div></section></div>';
+    if(KB.step==='code') return '<div class="wrap"><section class="blk"><div class="kb-box"><h2>Kodni kiriting</h2><p>Kod <b>@'+BOT+'</b> orqali Telegram\'ingizga yuborildi. U 5 daqiqa amal qiladi.</p><input id="kbCode" class="kb-in kb-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••"><button type="button" class="btn navy" style="width:100%;justify-content:center" data-kb="verify"'+(KB.busy?' disabled':'')+'>'+(KB.busy?'Tekshirilmoqda...':'Kirish')+'</button>'+msg+'<div class="kb-sub"><span>Amal qilish muddati: <b id="kbTimer">5:00</b></span><span><button type="button" class="kb-link" data-kb="resend">Kodni qayta yuborish</button> · <button type="button" class="kb-link" data-kb="back">Raqamni o\'zgartirish</button></span></div></div></section></div>';
+    // ma'lumot
+    var ch=KB.data||[], c=ch[KB.cur]||ch[0];
+    if(!c) return '<div class="wrap"><section class="blk"><div class="kb-box"><h2>Ma\'lumot topilmadi</h2><button type="button" class="btn navy" data-kb="exit">Orqaga</button></div></section></div>';
+    var tot=c.att.tot, months=c.att.months.slice().reverse();
+    var h='<div class="wrap"><section class="blk kb-data" oncontextmenu="return false"><div class="kb-wm" style="background-image:'+kbWM()+'"></div><div class="kb-top"><span>🔒 Xavfsiz ko\'rinish · yopilishiga: <b id="kbTimer">10:00</b></span><button type="button" class="kb-link" data-kb="exit">Chiqish</button></div>';
+    if(ch.length>1) h+='<div class="kb-chips" role="tablist">'+ch.map(function(x,i){return '<button type="button" data-kb="child" data-i="'+i+'" class="'+(i===KB.cur?'on':'')+'">'+esc(x.name.split(' ').slice(0,2).join(' '))+' · '+esc(x.cls)+'</button>'}).join('')+'</div>';
+    h+='<div class="hd"><h2>'+esc(c.name)+'</h2><span class="chip">'+esc(c.cls)+' sinf</span></div>';
+    h+='<div class="kb-kpi"><div><b>'+(tot.pct!=null?tot.pct+'%':'—')+'</b><span>Davomat (o\'quv yili)</span></div><div><b>'+tot.abs+'</b><span>Kelmagan kun</span></div><div><b class="'+(tot.sz?'bad':'')+'">'+tot.sz+'</b><span>Sababsiz</span></div><div><b class="'+(c.warn?'bad':'')+'">'+c.warn+'</b><span>Ogohlantirish xati</span></div></div>';
+    h+='<div class="sub">Davomat</div>';
+    if(!c.linked||!months.length) h+='<p class="hint">Bu o\'quvchi uchun davomat ma\'lumoti hozircha yo\'q.</p>';
+    else h+=months.map(function(mo){ return '<div class="kb-m"><h4>'+esc(kbMonth(mo.m))+'<small>'+mo.days+' ta dars kuni</small></h4>'+(mo.absent.length?'<div class="kb-days">'+mo.absent.map(function(a){return '<span class="dchip '+esc(a.c)+'">'+a.d+'-kun · '+esc(KCODE[a.c]||a.c)+'</span>'}).join('')+'</div>':'<span class="hint">✅ Kelmagan kun yo\'q</span>')+'</div>' }).join('');
+    h+='<div class="sub">Xatlar</div>'+(c.letters.length?c.letters.map(function(l){return '<div class="kb-let"><i>'+(KICON[l.k]||'✉️')+'</i><div><b>'+esc(l.label)+'</b><small>'+esc(fdate(l.date))+'</small>'+(l.reason?'<p>'+esc(l.reason)+'</p>':'')+'</div></div>'}).join(''):'<p class="hint">Xat berilmagan 👍</p>');
+    h+='<p class="kb-note">Bu ma\'lumot faqat ko\'rish uchun. Uni yuklab olish yoki chop etish mumkin emas va u shu oynada saqlanmaydi. Qayta ko\'rish uchun yangi kod olinadi.</p></section></div><div class="kb-print">Bu ma\'lumotni chop etish mumkin emas.</div>';
+    return h;
+  }
+  function kbTick(){
+    var el=document.getElementById('kbTimer'); if(!el) return; var left=Math.max(0,Math.round((KB.exp-Date.now())/1000));
+    el.textContent=Math.floor(left/60)+':'+('0'+(left%60)).slice(-2);
+    if(left<=0){ var wasData=KB.step==='data'; if(wasData){ kbReset(true); kbSay("Xavfsizlik uchun ma'lumot yopildi. Qayta ko'rish uchun yangi kod oling.",false) } else { KB.step='phone'; kbSay("Kod muddati tugadi. Yangi kod oling.",true) } clearInterval(KBI); route() }
+  }
+  function kbStart(sec){ KB.exp=Date.now()+sec*1000; clearInterval(KBI); KBI=setInterval(kbTick,1000) }
+  function kbSend(resend){
+    var p=resend?KB.phone:(document.getElementById('kbPhone')||{}).value||''; var d=p.replace(/\D/g,'');
+    if(!(d.length===9||(d.length===12&&d.indexOf('998')===0))){ kbSay("Telefon raqamini to'liq kiriting. Masalan: +998 90 123 45 67",true); route(); return }
+    KB.phone=p; KB.busy=true; kbSay(''); route();
+    kbPost({action:'code',phone:p}).then(function(j){
+      KB.busy=false;
+      if(j.status==='sent'){ KB.step='code'; kbSay("Kod yuborildi.",false); kbStart(j.expiresIn||300) }
+      else if(j.status==='no_student') kbSay("Sizning raqamingiz bazada yo'q. Maktab ma'muriyati bilan bog'laning.",true);
+      else if(j.status==='not_linked') kbSay('',true,"Raqamingiz bazada bor, lekin Telegram botga ulanmagan. <a href=\"https://t.me/"+BOT+"\" target=\"_blank\" rel=\"noopener noreferrer\">@"+BOT+"</a> ga kiring, «Start» ni bosing va telefon raqamingizni ulashing. So'ng qayta urinib ko'ring.");
+      else if(j.status==='wait') kbSay("Kod yaqinda yuborilgan. "+(j.seconds||45)+" soniyadan keyin qayta urinib ko'ring.",true);
+      else kbSay(j.error||"Xatolik yuz berdi. Qayta urinib ko'ring.",true);
+      route();
+    });
+  }
+  function kbVerify(){
+    var code=((document.getElementById('kbCode')||{}).value||'').replace(/\D/g,'');
+    if(code.length!==6){ kbSay("6 xonali kodni kiriting",true); route(); return }
+    KB.busy=true; kbSay(''); route();
+    kbPost({action:'verify',phone:KB.phone,code:code}).then(function(j){
+      KB.busy=false;
+      if(j.status==='ok'){ KB.data=j.children||[]; KB.cur=0; KB.step='data'; KB.wm=kbMaskPhone(KB.phone); kbSay(''); document.body.classList.add('kb-on'); clearTimeout(KBT); kbStart(600) }
+      else if(j.status==='bad_code') kbSay("Kod noto'g'ri. Qolgan urinish: "+(j.left!=null?j.left:'—'),true);
+      else if(j.status==='expired'||j.status==='too_many'){ KB.step='phone'; kbSay(j.error||'Yangi kod oling.',true) }
+      else kbSay(j.error||"Xatolik yuz berdi",true);
+      route();
+    });
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('[data-kb]'); if(!b) return; var a=b.getAttribute('data-kb');
+    if(a==='send') kbSend(false); else if(a==='resend') kbSend(true); else if(a==='verify') kbVerify();
+    else if(a==='back'){ KB.step='phone'; clearInterval(KBI); kbSay(''); route() }
+    else if(a==='exit'){ kbReset(true); route() }
+    else if(a==='child'){ KB.cur=+b.getAttribute('data-i'); route() }
+  });
+  document.addEventListener('keydown',function(e){ if(e.key==='Enter'&&e.target.id==='kbPhone') kbSend(false); else if(e.key==='Enter'&&e.target.id==='kbCode') kbVerify() });
+  ['copy','cut','dragstart','selectstart'].forEach(function(ev){ document.addEventListener(ev,function(e){ if(KB.step==='data'&&e.target&&e.target.closest&&e.target.closest('.kb-data')) e.preventDefault() }) });
+  document.addEventListener('keydown',function(e){ if(KB.step==='data'&&(e.key==='PrintScreen'||((e.ctrlKey||e.metaKey)&&/^[ps]$/i.test(e.key)))){ e.preventDefault() } });
   function route(){
     var h=location.hash.replace(/^#\/?/,''), p=h.split('/'), r=p[0]||'home';
     if(r==='yangilik'&&p[1]){ location.replace('/yangilik/'+encodeURIComponent(decodeURIComponent(p[1]))); return }
     document.title='28-maktab · Tarbiya, bilim, kelajak';
+    if(r!=='kabinet'&&KB.step!=='phone') kbReset(false);
     var key={yangiliklar:'news',tadbirlar:'events',jamoa:'team',yutuqlar:'ach',jadval:'schedule',galereya:'gallery',aloqa:'contact'}[r]||(r==='xodim'?'':'home');
     Array.prototype.forEach.call(document.querySelectorAll('nav.m a[data-r]'),function(a){ if(a.dataset.r===key) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current') });
     var SD={jamoa:['team'],yutuqlar:['achievements'],tadbirlar:['events'],jadval:['bellsets','lessons','bells','timetables']};
     function draw(){
-      var html= r==='shartlar'?legal('Foydalanish shartlari',SCHOOL.terms||DEF_TERMS): r==='maxfiylik'?legal('Maxfiylik siyosati',SCHOOL.privacy||DEF_PRIV): r==='xodim'?staffPage(): r==='yangiliklar'?list(): r==='tadbirlar'?events(): r==='jamoa'?team(): r==='yutuqlar'?achievements(): r==='jadval'?schedule(): r==='galereya'?gallery(): r==='aloqa'?contact(): home();
-      app.innerHTML='<div class="view">'+html+'</div>'; renderFooter(); applyStaff(); applyInstall();
+      var html= r==='kabinet'?kabinet(): r==='shartlar'?legal('Foydalanish shartlari',SCHOOL.terms||DEF_TERMS): r==='maxfiylik'?legal('Maxfiylik siyosati',SCHOOL.privacy||DEF_PRIV): r==='xodim'?staffPage(): r==='yangiliklar'?list(): r==='tadbirlar'?events(): r==='jamoa'?team(): r==='yutuqlar'?achievements(): r==='jadval'?schedule(): r==='galereya'?gallery(): r==='aloqa'?contact(): home();
+      app.innerHTML='<div class="view">'+html+'</div>'; renderFooter(); applyStaff(); applyInstall(); if(r==='kabinet'){ var fi=document.getElementById(KB.step==='code'?'kbCode':'kbPhone'); if(fi&&!KB.busy) fi.focus(); kbTick() }
     }
     draw();
-    var tasks=[]; if(SD[r]) SD[r].forEach(function(n){tasks.push(secLoad(n))}); else if(r!=='aloqa'&&r!=='xodim'&&r!=='shartlar'&&r!=='maxfiylik'&&news===null) tasks.push(load());
+    var tasks=[]; if(SD[r]) SD[r].forEach(function(n){tasks.push(secLoad(n))}); else if(r!=='aloqa'&&r!=='xodim'&&r!=='shartlar'&&r!=='maxfiylik'&&r!=='kabinet'&&news===null) tasks.push(load());
     if(r==='tadbirlar'&&news===null) tasks.push(load());
     if(tasks.length) Promise.all(tasks).then(function(){ var again=location.hash.replace(/^#\/?/,'').split('/')[0]||'home'; if(again===r) draw(); });
   }
