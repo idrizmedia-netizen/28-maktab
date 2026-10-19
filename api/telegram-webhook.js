@@ -9,7 +9,8 @@
  *   TELEGRAM_WEBHOOK_SECRET      — o'zingiz o'ylab topgan tasodifiy matn
  *   FIREBASE_SERVICE_ACCOUNT_JSON — Firebase xizmat hisobi kaliti (JSON, bir qator)
  */
-const { db, normPhone, tgApi } = require('./_lib');
+const L = require('./_lib');
+const { db, normPhone, tgApi } = L;
 
 /* Majburiy kanalga obuna. Kanal: Vercel'da REQUIRED_CHANNEL (@nom), bo'sh bo'lsa platformadagi «Telegram kanal nomi».
    Bot shu kanalda ADMIN bo'lishi shart. Kanal sozlanmagan bo'lsa yoki Telegram tekshirishga ruxsat bermasa, ota-ona bloklanmaydi. */
@@ -55,8 +56,11 @@ async function handleCallback(cq) {
       return;
     }
     await answer('Obuna tasdiqlandi ✅');
-    const lk = await db().collection('telegram_links').where('chatId', '==', chatId).limit(1).get();
-    if (lk.empty) await tgApi('sendMessage', { chat_id: chatId, text: "✅ Obuna tasdiqlandi.\n\nEndi pastdagi tugmani bosib, telefon raqamingizni ulashing (faqat bir marta).", reply_markup: CONTACT_MARKUP });
+    /* Firestore ishlamasa ham tugma yuboriladi (avval shu yerda bot jim qolardi) */
+    let linked = false;
+    try { linked = !(await db().collection('telegram_links').where('chatId', '==', chatId).limit(1).get()).empty; }
+    catch (e) { console.error('telegram_links tekshiruvi xato:', e); }
+    if (!linked) await tgApi('sendMessage', { chat_id: chatId, text: "✅ Obuna tasdiqlandi.\n\nEndi pastdagi tugmani bosib, telefon raqamingizni ulashing (faqat bir marta).", reply_markup: CONTACT_MARKUP });
     else await tgApi('sendMessage', { chat_id: chatId, text: READY, reply_markup: { remove_keyboard: true } });
     return;
   }
@@ -100,7 +104,24 @@ async function handleCallback(cq) {
   }
 }
 
+/* Tekshiruv sahifasi: brauzerda https://28maktab.uz/api/telegram-webhook ni oching (maxfiy kalitlar ko'rsatilmaydi) */
+async function diag(res) {
+  const out = { vaqt: new Date().toISOString(), tokenlar: {}, 'webhook ishlatadigan token': process.env.TELEGRAM_TOKEN ? 'TELEGRAM_TOKEN' : (process.env.TELEGRAM_BOT_TOKEN ? 'TELEGRAM_BOT_TOKEN' : 'YOQ'),
+    'TELEGRAM_WEBHOOK_SECRET': process.env.TELEGRAM_WEBHOOK_SECRET ? "o'rnatilgan (setWebhook da secret_token shunga teng bo'lishi shart)" : "o'rnatilmagan", 'REQUIRED_CHANNEL': process.env.REQUIRED_CHANNEL || "(bo'sh: platformadagi Telegram kanal nomi olinadi)" };
+  for (const n of ['TELEGRAM_TOKEN', 'TELEGRAM_BOT_TOKEN']) {
+    const t = process.env[n]; if (!t) { out.tokenlar[n] = "o'rnatilmagan"; continue; }
+    try { const j = await (await fetch('https://api.telegram.org/bot' + t + '/getMe')).json(); out.tokenlar[n] = j.ok ? 'ISHLAYDI (@' + j.result.username + ')' : 'RAD ETILDI: ' + j.description; } catch (e) { out.tokenlar[n] = 'tarmoq xatosi'; }
+  }
+  const info = await tgApi('getWebhookInfo', {});
+  out.webhook = info && info.ok ? { url: info.result.url || "(O'RNATILMAGAN)", kutayotgan_xabarlar: info.result.pending_update_count, oxirgi_xato: info.result.last_error_message || 'yoq', oxirgi_xato_vaqti: info.result.last_error_date ? new Date(info.result.last_error_date * 1000).toISOString() : null } : 'olinmadi: ' + (info && info.description);
+  try { await db().collection('publicinfo').doc('maktab').get(); out.firebase = 'ISHLAYDI'; } catch (e) { out.firebase = 'XATO: ' + (e && e.message); }
+  try { out['majburiy kanal'] = (await reqChannel()) || "(yo'q: obuna so'ralmaydi)"; } catch (e) { out['majburiy kanal'] = 'xato'; }
+  res.status(200).setHeader('Content-Type', 'application/json; charset=utf-8'); res.setHeader('Cache-Control', 'no-store');
+  res.send(JSON.stringify(out, null, 2));
+}
+
 module.exports = async (req, res) => {
+  if (req.method === 'GET') { try { return await diag(res); } catch (e) { res.status(500).send('diag xato: ' + e.message); return; } }
   try {
     const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
     if (secret && req.headers['x-telegram-bot-api-secret-token'] !== secret) {
@@ -159,6 +180,10 @@ module.exports = async (req, res) => {
     res.status(200).send('ok');
   } catch (e) {
     console.error('telegram-webhook xato:', e);
+    try {   // foydalanuvchi jim qolmasin
+      const b = req.body || {}, m = b.message || (b.callback_query && b.callback_query.message), cid = m && m.chat && m.chat.id;
+      if (cid) await tgApi('sendMessage', { chat_id: cid, text: "⚠️ Vaqtincha texnik xatolik. Birozdan keyin qayta urinib ko'ring." });
+    } catch (e2) { /* e'tibor bermaymiz */ }
     res.status(200).send('ok'); // Telegram qayta-qayta urinavermasligi uchun 200 qaytaramiz
   }
 };
