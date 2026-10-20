@@ -1796,29 +1796,149 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   function isTLetter(){ return myRole==='tletter' }
   function inMyClasses(cls){ return !isHomeroom() || (myClasses.length>0 && myClasses.indexOf(normClass(cls))>=0); }
   function cloudDocId(key){ return 'm28_'+key; }
-  function cloudSave(key, arr){
+  /* ---------- Xatlar ro'yxatini XAVFSIZ saqlash (log, tlog, attst) ----------
+     Avval har safar butun ro'yxat qayta yozilardi: ikki xodim bir vaqtda saqlasa, biri boshqasining xatini
+     o'chirib yuborar edi. Endi faqat O'ZGARGAN yozuvlar (id bo'yicha) tranzaksiya ichida bulutdagi eng yangi
+     ro'yxatga qo'shiladi, shuning uchun hech kimning o'zgarishi yo'qolmaydi. */
+  var MERGE_KEYS = {log:1, tlog:1, attst:1};
+  var SIZE_HARD = 1000000, SIZE_WARN = 800000;      /* Firestore hujjat chegarasi ~1 MB */
+  var pendingOps = {}, flushJobs = {}, retryMs = {}, sizeWarned = {}, syncCb = {}, cloudBase = {};
+  function canon(v){
+    if(Array.isArray(v)) return '['+v.map(canon).join(',')+']';
+    if(v && typeof v==='object'){ return '{'+Object.keys(v).sort().map(function(k){ return JSON.stringify(k)+':'+canon(v[k]) }).join(',')+'}'; }
+    return JSON.stringify(v===undefined?null:v);
+  }
+  /* yozuv kaliti: id; id bo'lmagan eski yozuvlar uchun mazmuni (o'zgarsa, "eskisi o'chdi + yangisi qo'shildi" deb hisoblanadi) */
+  function keyOf(e){ return (e && e.id) ? String(e.id) : ((e && typeof e === 'object') ? '~' + canon(e) : null); }
+  function opsOf(key){ return pendingOps[key] || (pendingOps[key] = {put:{}, del:{}}); }
+  function hasOps(o){ return !!o && (Object.keys(o.put).length>0 || Object.keys(o.del).length>0); }
+  function anyPending(){ return Object.keys(pendingOps).some(function(k){ return hasOps(pendingOps[k]) }); }
+  /* ro'yxatga o'zgarishlarni qo'llash: o'chirilganlar chiqadi, o'zgarganlar almashadi, yangilar oxiriga qo'shiladi */
+  function applyOps(arr, ops){
+    if(!ops) return arr.slice();
+    var out = [], seen = {};
+    arr.forEach(function(e){
+      var id = keyOf(e);
+      if(id && ops.del[id]) return;
+      if(id && ops.put[id]){ out.push(ops.put[id]); seen[id] = 1; return; }
+      out.push(e);
+    });
+    Object.keys(ops.put).forEach(function(id){ if(!seen[id] && !ops.del[id]) out.push(ops.put[id]); });
+    return out;
+  }
+  /* "oldingi" va "yangi" ro'yxat farqi: faqat haqiqatan o'zgargan yozuvlar */
+  function diffToOps(before, after){
+    var b = {}, a = {}, put = {}, del = {};
+    before.forEach(function(e){ var k = keyOf(e); if(k) b[k] = e; });
+    after.forEach(function(e){ var k = keyOf(e); if(k) a[k] = e; });
+    Object.keys(a).forEach(function(id){ if(!b[id] || canon(b[id]) !== canon(a[id])) put[id] = a[id]; });
+    Object.keys(b).forEach(function(id){ if(!a[id]) del[id] = 1; });
+    return {put:put, del:del};
+  }
+  function mergeOps(p, d){
+    Object.keys(d.put).forEach(function(id){ p.put[id] = d.put[id]; delete p.del[id]; });
+    Object.keys(d.del).forEach(function(id){ p.del[id] = 1; delete p.put[id]; });
+  }
+  function clearSent(p, sent){
+    Object.keys(sent.put).forEach(function(id){ if(p.put[id] && canon(p.put[id]) === canon(sent.put[id])) delete p.put[id]; });
+    Object.keys(sent.del).forEach(function(id){ if(p.del[id]) delete p.del[id]; });
+  }
+  function byteSize(s){ try{ return new Blob([s]).size }catch(e){ return s.length*2 } }
+  /* ro'yxatni o'qiganda, o'qilgan paytdagi holatini (xom matn) ro'yxatga yashirin belgilab qo'yamiz */
+  function loadKeyed(key){
+    var raw = lget('m28_'+key);
+    var l = jparse(raw, []); if(!Array.isArray(l)) l = [];
+    try{ Object.defineProperty(l, '__raw', {value: raw, enumerable: false}); }catch(e){}
+    return l;
+  }
+  function saveKeyed(key, l){
+    /* "oldingi holat": ro'yxat loadKeyed() dan kelgan bo'lsa, o'qilgan paytdagisi; yangi (filter/concat/bo'sh) bo'lsa,
+       saqlash lahzasida ekranda turgan ro'yxat. Farq aynan shundan olinadi, shuning uchun faqat foydalanuvchining o'zgarishi yuboriladi. */
+    var base = (l && l.__raw !== undefined) ? l.__raw : lget('m28_'+key);
+    lset('m28_'+key, JSON.stringify(l));
+    cloudSave(key, l, base);
+  }
+  /* bulutdagi hujjatga tranzaksiya bilan yozish: eng yangi ro'yxatni o'qib, ustiga faqat bizning o'zgarishlarimizni qo'yadi */
+  function dropPending(key){
+    pendingOps[key] = null;
+    if(cloudBase[key]) lset('m28_'+key, JSON.stringify(cloudBase[key]));   /* ekranda bulutdagi haqiqiy holat qolsin */
+    if(syncCb[key]) { try{ syncCb[key]() }catch(e){} }
+  }
+  function flushOps(key){
+    if(!db || !curUser) return Promise.resolve();
+    var p = opsOf(key);
+    if(!hasOps(p)) return Promise.resolve();
+    if(flushJobs[key]){ flushJobs[key].again = true; return flushJobs[key].promise; }
+    var sent = {put: Object.assign({}, p.put), del: Object.assign({}, p.del)};
+    var ref = db.collection('m28letters').doc(cloudDocId(key));
+    var job = {again:false, ok:false};
+    flushJobs[key] = job;
+    job.promise = db.runTransaction(function(tx){
+      return tx.get(ref).then(function(s){
+        var d = s.exists ? s.data() : null;
+        var cur = (d && Array.isArray(d.items)) ? d.items : [];
+        var next = applyOps(cur, sent);
+        var bytes = byteSize(JSON.stringify(next));
+        if(bytes > SIZE_HARD){ var er = new Error('size'); er.sizeLimit = true; throw er; }
+        tx.set(ref, {items: next, updatedAt: Date.now(), updatedBy: curUser.email});
+        return bytes;
+      });
+    }).then(function(bytes){
+      job.ok = true; retryMs[key] = 0;
+      clearSent(opsOf(key), sent);
+      if(bytes > SIZE_WARN && !sizeWarned[key]){ sizeWarned[key] = 1; toast("Diqqat: xatlar bazasi 80% to'ldi. Zaxira nusxa olib, eski xatlarni tozalang"); }
+    }).catch(function(e){
+      if(e && e.sizeLimit){ toast("Xatlar bazasi to'lgan (1 MB chegarasi). Yangi o'zgarish saqlanmadi. Zaxira nusxa olib, eski xatlarni tozalang"); dropPending(key); return; }
+      if(e && e.code === 'permission-denied'){ toast("Saqlashga ruxsat yo'q. Qaytadan kiring yoki administratorga murojaat qiling"); dropPending(key); return; }
+      console.warn('Bulutga saqlashda xato ('+key+'):', e);
+      var first = !retryMs[key];
+      retryMs[key] = Math.min((retryMs[key] || 3000) * 2, 60000);
+      if(first) toast("Bulutga saqlab bo'lmadi. Sahifani yopmang: internet qaytgach o'zi qayta yuboriladi");
+      setTimeout(function(){ flushOps(key) }, retryMs[key]);
+    }).then(function(){
+      flushJobs[key] = null;
+      if(job.ok && job.again && hasOps(opsOf(key))) return flushOps(key);
+    });
+    return job.promise;
+  }
+  function cloudSave(key, arr, baseRaw){
     if(!db || !curUser) return;
+    if(MERGE_KEYS[key]){
+      var base = jparse(baseRaw, []); if(!Array.isArray(base)) base = [];
+      var d = diffToOps(base, arr);
+      if(!hasOps(d)) return;
+      mergeOps(opsOf(key), d);
+      flushOps(key);
+      return;
+    }
     db.collection('m28letters').doc(cloudDocId(key)).set({items: arr, updatedAt: Date.now(), updatedBy: curUser.email})
       .catch(function(e){ console.warn('Bulutga saqlashda xato ('+key+'):', e); toast("Bulutga saqlab bo'lmadi. Internetni tekshiring"); });
   }
   function cloudSync(key, onChange){
     if(!db) return;
-    var first = true;
+    var first = true; syncCb[key] = onChange;
     var un = db.collection('m28letters').doc(cloudDocId(key)).onSnapshot(function(snap){
       var localArr = jparse(lget('m28_'+key), []);
       if(!snap.exists){
         /* bulutda hali hech narsa yo'q: shu qurilmadagi eski ma'lumotni bulutga ko'chiramiz */
-        if(first && Array.isArray(localArr) && localArr.length){ first = false; cloudSave(key, localArr); return; }
-        first = false; synced[key] = true; lset('m28_'+key, '[]'); onChange(); return;
+        if(first && Array.isArray(localArr) && localArr.length){ first = false; cloudBase[key] = []; cloudSave(key, localArr, '[]'); return; }
+        first = false; synced[key] = true;
+        if(MERGE_KEYS[key]){ cloudBase[key] = []; lset('m28_'+key, JSON.stringify(applyOps([], pendingOps[key]))); } else { lset('m28_'+key, '[]'); }
+        onChange(); return;
       }
       first = false; synced[key] = true;
       var data = snap.data();
       var arr = (data && Array.isArray(data.items)) ? data.items : [];
+      /* bulutdagi ro'yxat + hali yuborilmagan o'zgarishlarimiz: ekranda yozganim yo'qolib qolmasin */
+      if(MERGE_KEYS[key]){ cloudBase[key] = arr; arr = applyOps(arr, pendingOps[key]); }
       lset('m28_'+key, JSON.stringify(arr));
       onChange();
     }, function(e){ console.warn('Bulutdan sinxronlashda xato ('+key+'):', e); });
     unsubs.push(un);
   }
+  /* sahifa yopilayotganda yuborilmagan xat bo'lsa, ogohlantiramiz; internet qaytganda darhol yuboramiz */
+  window.addEventListener('beforeunload', function(e){ if(anyPending()){ e.preventDefault(); e.returnValue = ''; return ''; } });
+  window.addEventListener('online', function(){ Object.keys(pendingOps).forEach(function(k){ flushOps(k) }); });
   function startCloud(){
     stopCloud(true);
     if(!isAttStaff() && !isTLetter()) cloudSync('log', function(){ renderLog() });
@@ -2130,7 +2250,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       /* umumiy kompyuterda o'quvchi ma'lumoti qolib ketmasin (faqat bulutga saqlanganlari o'chiriladi) */
       ['log','tlog','sigs'].forEach(function(k){ if(synced[k]){ lset('m28_'+k, '[]'); } });
       attReset();
-      synced = {};
+      synced = {}; pendingOps = {}; cloudBase = {}; flushJobs = {}; retryMs = {}; sizeWarned = {};
     }
   }
 
@@ -2949,8 +3069,8 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   $('#f_reason').addEventListener('input',syncChips);
 
   /* ---------- registry ---------- */
-  function loadLog(){var l=jparse(lget('m28_log'),[]);return Array.isArray(l)?l:[]}
-  function saveLog(l){lset('m28_log',JSON.stringify(l));cloudSave('log',l)}
+  function loadLog(){return loadKeyed('log')}
+  function saveLog(l){saveKeyed('log',l)}
   var lastLogStats={added:0,updated:0};
   /* bir o'quvchining telefoni barcha xatlariga qo'yiladi (bo'sh qolganlariga; yangi raqam kiritilsa hammasiga) */
   function spreadPhones(log, forceKey, forcePhone){
@@ -3662,8 +3782,8 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   $('#tEditNew').addEventListener('click',function(){ delete tl.srcId; saveTl(); updTEditNote(); setMsg('#tMsg',"Endi bu yangi xat sifatida yoziladi",'ok'); });
 
   /* o'qituvchilar ro'yxati (o'quvchilardan alohida) */
-  function loadTLog(){var l=jparse(lget('m28_tlog'),[]);return Array.isArray(l)?l:[]}
-  function saveTLog(l){lset('m28_tlog',JSON.stringify(l));cloudSave('tlog',l)}
+  function loadTLog(){return loadKeyed('tlog')}
+  function saveTLog(l){saveKeyed('tlog',l)}
   function updTEditNote(){
     var n=$('#tEditNote'); if(!n) return;
     n.classList.toggle('hidden', !(tl.srcId && loadTLog().some(function(e){return e.id===tl.srcId})));
@@ -3783,8 +3903,8 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   var ATT={}, attCur='*', attSubTab='grid', attPending=[];
   try{ AUDIT_LABELS.att_changed="Davomat o'zgartirildi"; AUDIT_LABELS.att_students_added="Davomat: o'quvchilar qo'shildi"; AUDIT_LABELS.att_students_removed="Davomat: o'quvchi/sinf o'chirildi"; }catch(e){}
 
-  function attStu(){var a=jparse(lget('m28_attst'),[]);return Array.isArray(a)?a:[]}
-  function attSaveStu(a){lset('m28_attst',JSON.stringify(a)); cloudSave('attst',a)}
+  function attStu(){return loadKeyed('attst')}
+  function attSaveStu(a){saveKeyed('attst',a)}
   function attMine(cls){ if(!isAttStaff()) return inMyClasses(cls); return myClasses.length===0 || myClasses.indexOf(normClass(cls))>=0 }
   function attCanEdit(cls){return !isViewer() && attMine(cls)}
   function attCanManage(){return !isViewer() && !isHomeroom() && !isAttStaff()}
