@@ -5,7 +5,7 @@ const ORIGIN = 'https://28maktab.uz';
 const OWNER = 'idrizmedia@gmail.com';
 const FS = 'https://firestore.googleapis.com/v1/projects/' + PROJECT + '/databases/(default)/documents';
 const CATS = { yangilik: 'Yangilik', tadbir: 'Tadbir', yutuq: 'Yutuq', elon: "E'lon" };
-const MON = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktyabr', 'noyabr', 'dekabr'];
+const MON = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
