@@ -4,10 +4,11 @@
  * Sozlamalar → "Oylik avtomatik hisobot"da kiritilgan Telegram raqamiga
  * yuboradi.
  *
- * Xavfsizlik: Vercel cron so'rovni avtomatik "Authorization: Bearer
- * <CRON_SECRET>" sarlavhasi bilan yuboradi (CRON_SECRET muhit o'zgaruvchisi
- * Vercel tomonidan o'zi yaratiladi). Shu sarlavha tekshiriladi, aks holda
- * boshqa hech kim bu manzilni chaqira olmaydi.
+ * Xavfsizlik: Vercel'da CRON_SECRET muhit o'zgaruvchisini O'ZINGIZ kiriting
+ * (Settings -> Environment Variables, istalgan uzun tasodifiy qator). Shundan
+ * keyin Vercel cron so'rovni avtomatik "Authorization: Bearer <CRON_SECRET>"
+ * sarlavhasi bilan yuboradi. Shu sarlavha tekshiriladi; CRON_SECRET yo'q bo'lsa
+ * yoki mos kelmasa, funksiya 401 qaytaradi va hisobot yuborilmaydi.
  */
 const { db, normPhone, tgApi } = require('./_lib');
 
