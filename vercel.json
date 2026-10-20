@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/monthly-report",
+      "schedule": "0 3 1 * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/platforma",
