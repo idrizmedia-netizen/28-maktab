@@ -44,14 +44,17 @@ module.exports = async function (req, res) {
     const user = ((await lr.json()).users || [])[0];
     const email = user && user.email && user.emailVerified ? String(user.email).toLowerCase() : '';
     if (!email) throw new Fail(401, 'Email tasdiqlanmagan');
-    // 2) faqat asosiy admin va to'liq adminlar
+    // 2) asosiy admin, to'liq adminlar va yangilik yozuvchilar (ular faqat o'z yangiliklarini yuboradi)
+    let role = 'owner';
     if (email !== L.OWNER) {
       const a = await L.getDoc('admins/' + encodeURIComponent(email), { token: idToken });
-      if (!a || (a.role || 'full') !== 'full') throw new Fail(403, "Sizda yuborish huquqi yo'q");
+      role = a ? (a.role || 'full') : '';
+      if (role !== 'full' && role !== 'news') throw new Fail(403, "Sizda yuborish huquqi yo'q");
     }
     // 3) yangilik (adminning o'z huquqi bilan o'qiladi)
     const n = await L.getDoc('news/' + id, { token: idToken });
     if (!n) throw new Fail(404, 'Yangilik topilmadi');
+    if (role === 'news' && String(n.by || '').toLowerCase() !== email) throw new Fail(403, "Faqat o'z yangiligingizni Telegramga yuborishingiz mumkin");
     if (n.status !== 'published') throw new Fail(400, "Avval yangilikni e'lon qiling");
 
     const caption = buildCaption(n, id), nImgs = imgCount(n), sig = imgSig(n);
