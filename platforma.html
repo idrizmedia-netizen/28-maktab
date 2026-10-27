@@ -1527,8 +1527,8 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
           </div>
           <div class="card" id="wmCard">
             <h2>Watermark (suv belgisi)</h2>
-            <p class="hint">Xat orqasida xira ko'rinadigan yozuv yoki rasm. U chop etilganda, PDF qilinganda va Telegramga yuborilganda ham chiqadi. Har bir xat uchun xat formasidagi «Watermark qo'shish» belgisi bilan alohida yoqish yoki o'chirish mumkin.</p>
-            <label class="check"><input type="checkbox" id="wm_on"><span>Yangi xatlarga avtomatik qo'shilsin</span></label>
+            <p class="hint">Xat orqasida xira ko'rinadigan yozuv yoki rasm. U chop etilganda, PDF qilinganda va Telegramga yuborilganda ham chiqadi. Har bir xat uchun xat formasidagi «Watermark qo'shish» belgisi bilan alohida yoqish yoki o'chirish mumkin. Belgisi o'zgartirilmagan eski xatlar yuqoridagi umumiy sozlamaga ko'ra chiqadi.</p>
+            <label class="check"><input type="checkbox" id="wm_on"><span>Xatlarga avtomatik qo'shilsin (eski xatlar ochilganda, chop etilganda, PDF va Telegramga yuborilganda ham)</span></label>
             <div class="wm-ty"><label class="check"><input type="radio" name="wm_ty" id="wm_ty_text" checked><span>Yozuv</span></label><label class="check"><input type="radio" name="wm_ty" id="wm_ty_img"><span>Rasm (logotip)</span></label></div>
             <div id="wm_textBox"><label class="fl" for="wm_text">Yozuv (bo'sh qoldirsangiz, maktab nomi chiqadi; 3 qatorgacha)</label><textarea class="inp" id="wm_text" rows="2" maxlength="120" placeholder="28-maktab"></textarea></div>
             <div id="wm_imgBox" class="hidden"><div id="wm_imgPrev" class="wm-imgprev"></div><div class="actions"><button class="btn line" id="wm_imgBtn" type="button">Rasm tanlash</button><button class="btn line hidden" id="wm_imgRm" type="button">Rasmni olib tashlash</button></div><input type="file" id="wm_file" accept="image/*" class="hidden"><p class="hint">PNG (shaffof fon bilan) tavsiya etiladi. Rasm avtomatik kichraytiriladi.</p></div>
@@ -3695,7 +3695,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
         log=log.filter(function(e){ return e===src || e.id!==id; });
         src.name=rec.name; src.cls=rec.cls; src.parent=rec.parent; src.reason=rec.reason; src.date=rec.date; src.phone=rec.phone||src.phone||'';
         if(rec.kind) src.kind=rec.kind; else delete src.kind;
-        if(rec.wm) src.wm=1; else delete src.wm;
+        src.wm=rec.wm;
         if(src.qt){ s.qt=src.qt; } else { src.qt=rec.qt||newQt(); s.qt=src.qt; changed=true; }
         src.id=id; s.srcId=id;
         if(s.tgId){ src.tg=s.tgId; delete s.tgId; changed=true; }
@@ -3711,7 +3711,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       var existing=log.filter(function(e){return e.id===id})[0];
       if(existing){
         if(phone && existing.phone!==phone){ existing.phone=phone; changed=true; }
-        if((existing.wm?1:0)!==rec.wm){ if(rec.wm) existing.wm=1; else delete existing.wm; changed=true; }
+        if(existing.wm!==rec.wm){ existing.wm=rec.wm; changed=true; }
         if(existing.qt){ s.qt=existing.qt; } else { existing.qt=rec.qt||newQt(); s.qt=existing.qt; changed=true; }
         if(phone) forced.push([personKey(existing),phone]);
         s.srcId=id;
@@ -3723,7 +3723,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       if(!dateOK(d)){ blockedDate++; return; }
       var ne={id:id,name:rec.name,cls:rec.cls,parent:rec.parent,reason:rec.reason,date:d,phone:phone,at:Date.now()};
       if(rec.kind) ne.kind=rec.kind;
-      if(rec.wm) ne.wm=1;
+      ne.wm=rec.wm;
       ne.qt=rec.qt||newQt();
       if(log.some(function(x){return x.qt===ne.qt})) ne.qt=newQt();   /* bir xil belgi ikki xatda bo'lmasin */
       s.qt=ne.qt;
@@ -4103,7 +4103,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     var ab=$('#selAllBox'); if(ab){ var vis=filteredLog(); ab.checked = vis.length>0 && vis.every(function(e){return selected[e.id]}); }
     updSigSel();
   }
-  function toSlot(e){return {name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date,phone:e.phone||phoneForName(e.name),kind:e.kind||'',wm:e.wm?1:0,qt:e.qt||'',srcId:e.id}}
+  function toSlot(e){return {name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date,phone:e.phone||phoneForName(e.name),kind:e.kind||'',wm:(e.wm===undefined||e.wm===null)?null:(e.wm?1:0),qt:e.qt||'',srcId:e.id}}
   function openEntries(ids){
     if(isHomeroom()) return;
     var log=loadLog(), es=ids.map(function(id){return log.filter(function(x){return x.id===id})[0]}).filter(Boolean);
@@ -4389,7 +4389,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       if(src.date!==d && !dateOK(d)){ toast(dateLimitMsg()); return 0; }
       var before=JSON.stringify([src.name,src.subject,src.issue,src.date,src.signer||'',src.wm?1:0]);
       log=log.filter(function(e){ return e===src || e.id!==id; });
-      src.name=tl.name.trim(); src.subject=(tl.subject||'').trim(); src.issue=(tl.issue||'').trim(); src.date=d; src.signer=tl.signer||''; if(tlWmOf(tl)) src.wm=1; else delete src.wm; src.id=id; tl.srcId=id;
+      src.name=tl.name.trim(); src.subject=(tl.subject||'').trim(); src.issue=(tl.issue||'').trim(); src.date=d; src.signer=tl.signer||''; src.wm=tlWmOf(tl)?1:0; src.id=id; tl.srcId=id;
       saveTl(); updTEditNote();
       if(JSON.stringify([src.name,src.subject,src.issue,src.date,src.signer||'',src.wm?1:0])===before) return 0;
       saveTLog(log); logAudit('teacher_letter_edited', {name:src.name, subject:src.subject, date:d});
@@ -4432,7 +4432,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     $$('#tlogBody tr[data-topen]').forEach(function(tr){tr.addEventListener('click',function(e){
       if(e.target.closest('button')) return;
       var r=loadTLog().filter(function(x){return x.id===tr.dataset.topen})[0]; if(!r) return;
-      tl={name:r.name,subject:r.subject,issue:r.issue,date:r.date,signer:r.signer,wm:r.wm?1:0,srcId:r.id}; saveTl();
+      tl={name:r.name,subject:r.subject,issue:r.issue,date:r.date,signer:r.signer,wm:(r.wm===undefined||r.wm===null)?null:(r.wm?1:0),srcId:r.id}; saveTl();
       goTab('tletter'); loadTlToForm(); updTEditNote(); fillSigner(); renderTSheet(); setMsg('#tMsg',"Xat qayta ochildi",'ok');
     })});
     $$('#tlogBody [data-trm]').forEach(function(b){b.addEventListener('click',function(){
