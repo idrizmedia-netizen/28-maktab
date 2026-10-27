@@ -299,6 +299,25 @@ textarea.inp{resize:vertical;min-height:76px}
 .btn.sm{padding:8px 12px;font-size:13px}
 .sheet .letter{cursor:pointer}
 .sheet .letter.sel{outline:2px solid var(--brand);outline-offset:-3px}
+/* watermark: xat orqasidagi qatlam */
+.letter,.tl{position:relative;z-index:0}
+.wm{position:absolute;left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:hidden;z-index:-1}
+.wm-t{font-family:Arial,Helvetica,sans-serif;font-weight:700;color:#000;text-align:center;line-height:1.1;white-space:nowrap}
+.wm-i{display:block;object-fit:contain;height:auto}
+.wm-pvw{width:58mm;height:82mm;overflow:hidden;border:1px solid rgba(128,128,128,.35);border-radius:6px;background:#fff}
+.wm-pv{position:relative;z-index:0;width:105mm;height:148.5mm;background:#fff;transform:scale(.55);transform-origin:top left;padding:10mm 9mm}
+.wm-pv-l i{display:block;height:2.2mm;margin:5mm 0;background:#cfd6d3;border-radius:1mm;width:100%}
+.wm-imgprev{margin:8px 0;padding:8px;border:1px dashed rgba(128,128,128,.5);border-radius:10px;text-align:center;background:#fff}.wm-imgprev img{max-width:100%;max-height:120px}
+.wm-ty{display:flex;gap:18px;margin:6px 0}
+/* o'quvchi raqamini tuzatish */
+.rs-bar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}.rs-bar .inp{flex:1 1 220px;margin:0}.rs-bar select.inp{flex:0 1 240px}
+.rs-row{border:1px solid rgba(128,128,128,.3);border-radius:12px;padding:10px 12px;margin:8px 0}.rs-row.on{border-color:var(--brand);box-shadow:0 0 0 2px var(--brand-soft)}
+.rs-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.rs-name{font-weight:700}.rs-cls{font-weight:600;font-size:12px;padding:1px 8px;border-radius:999px;background:var(--brand-soft);margin-left:6px}
+.rs-meta{font-size:13px;opacity:.8;margin-top:2px}.rs-act{display:flex;gap:6px;flex-wrap:wrap}
+.rs-c{display:inline-block;font-style:normal;font-size:12px;padding:2px 8px;border-radius:999px;background:var(--brand-soft);margin:4px 6px 0 0}.rs-c.warn{background:#fdecea;color:#b3261e}
+.rs-form{display:grid;grid-template-columns:1fr 1fr 110px;gap:8px;margin-top:10px}@media(max-width:640px){.rs-form{grid-template-columns:1fr}}
+
 .filters{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:10px;margin-top:12px;align-items:end}
 .filters>:first-child{grid-column:1/-1}
 .filters .fld{display:grid;gap:3px;font-size:12px;font-weight:700;color:var(--muted);min-width:0}
@@ -1041,6 +1060,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
             <button class="btn line sm" id="clearOne" type="button">Shu xatni tozalash</button>
             <button class="btn line sm" id="clearBtn" type="button">Hammasini tozalash</button>
           </div>
+          <label class="check"><input type="checkbox" id="f_wm"><span>Watermark qo'shish (xat orqasida xira yozuv yoki rasm; Sozlamalarda o'zgartiriladi)</span></label>
           <label class="check"><input type="checkbox" id="autoLog" checked><span>Chop etilganda yoki PDF olinganda to'ldirilgan xatlar "Xatlar ro'yxati"ga yozilsin</span></label>
           <div class="actions">
             <button class="btn" id="printBtn" type="button">Chop etish (A4 · 4 ta)</button>
@@ -1125,6 +1145,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
           <div class="reason-meta"><span id="tIssueCnt">0 / 280</span></div>
           <label class="fl" for="t_signer">Imzolovchi (direktor yoki o'rinbosari)</label>
           <select class="inp" id="t_signer"></select>
+          <label class="check"><input type="checkbox" id="t_wm"><span>Watermark qo'shish (Sozlamalarda o'zgartiriladi)</span></label>
           <label class="check"><input type="checkbox" id="tAutoLog" checked><span>Chop etilganda yoki PDF olinganda xat "O'qituvchilar ro'yxati"ga yozilsin</span></label>
           <div class="actions">
             <button class="btn" id="tPrintBtn" type="button">Chop etish (A4 · 1 ta)</button>
@@ -1441,6 +1462,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
                 <option value="homeroom">Sinf rahbari — faqat o'z sinfi, faqat o'quvchi xatlari</option>
                 <option value="tletter">O'qituvchilarga xat — faqat o'qituvchilarga ogohlantirish xati yozadi</option>
                 <option value="attendance">Davomat xodimi — faqat davomat belgilaydi (sinf biriktirish shart emas)</option>
+                <option value="news">Yangilik yozuvchi — faqat sayt yangiliklarini yozadi (o'z yangiliklarini tahrirlaydi)</option>
                 <option value="viewer">Faqat ko'ruvchi — hech narsa yoza/yubora olmaydi</option>
               </select>
               <div id="newAdminClassBox" class="hidden">
@@ -1485,6 +1507,29 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
             </div>
             <div class="actions"><button class="btn" id="saveSet">Saqlash</button></div>
             <div class="msg" id="setMsg"></div>
+          </div>
+          <div class="card" id="wmCard">
+            <h2>Watermark (suv belgisi)</h2>
+            <p class="hint">Xat orqasida xira ko'rinadigan yozuv yoki rasm. U chop etilganda, PDF qilinganda va Telegramga yuborilganda ham chiqadi. Har bir xat uchun xat formasidagi «Watermark qo'shish» belgisi bilan alohida yoqish yoki o'chirish mumkin.</p>
+            <label class="check"><input type="checkbox" id="wm_on"><span>Yangi xatlarga avtomatik qo'shilsin</span></label>
+            <div class="wm-ty"><label class="check"><input type="radio" name="wm_ty" id="wm_ty_text" checked><span>Yozuv</span></label><label class="check"><input type="radio" name="wm_ty" id="wm_ty_img"><span>Rasm (logotip)</span></label></div>
+            <div id="wm_textBox"><label class="fl" for="wm_text">Yozuv (bo'sh qoldirsangiz, maktab nomi chiqadi; 3 qatorgacha)</label><textarea class="inp" id="wm_text" rows="2" maxlength="120" placeholder="28-maktab"></textarea></div>
+            <div id="wm_imgBox" class="hidden"><div id="wm_imgPrev" class="wm-imgprev"></div><div class="actions"><button class="btn line" id="wm_imgBtn" type="button">Rasm tanlash</button><button class="btn line hidden" id="wm_imgRm" type="button">Rasmni olib tashlash</button></div><input type="file" id="wm_file" accept="image/*" class="hidden"><p class="hint">PNG (shaffof fon bilan) tavsiya etiladi. Rasm avtomatik kichraytiriladi.</p></div>
+            <label class="fl" for="wm_op" style="margin-top:10px">Xiralik: <b id="wm_opv"></b></label><input type="range" id="wm_op" min="3" max="50" step="1" style="width:100%">
+            <label class="fl" for="wm_sz">Kattalik: <b id="wm_szv"></b></label><input type="range" id="wm_sz" min="20" max="100" step="1" style="width:100%">
+            <label class="fl" for="wm_an">Burchak: <b id="wm_anv"></b></label><input type="range" id="wm_an" min="-90" max="90" step="1" style="width:100%">
+            <div class="fl" style="margin-top:10px">Ko'rinishi (xatning bir qismi)</div>
+            <div id="wmPrev"></div>
+            <div class="actions"><button class="btn" id="wmSave" type="button">Watermark'ni saqlash</button></div>
+            <div class="msg" id="wmMsg"></div>
+          </div>
+          <div class="card" id="contactCard">
+            <h2>O'quvchi raqamini tuzatish</h2>
+            <p class="hint">O'quvchini qidiring: ota-onasi, telefon raqami va sinfi chiqadi. Raqamni to'g'rilab saqlasangiz, u bazada ham, shu o'quvchining <b>barcha yozilgan xatlarida</b> ham avtomatik yangilanadi.</p>
+            <div class="rs-bar"><input class="inp" id="rsQ" type="search" placeholder="Ism, sinf, telefon yoki ota-ona ismi..." autocomplete="off"><select class="inp" id="rsF"><option value="">Hammasi</option><option value="nophone">Raqami yo'q</option><option value="badphone">Raqami to'liq emas</option><option value="mismatch">Xatlarida boshqa raqam bor</option></select></div>
+            <div class="hint" id="rsCount"></div>
+            <div id="rsList"></div>
+            <div class="msg" id="rsMsg"></div>
           </div>
           <div class="card" id="rosterCard">
             <h2>O'quvchilar va o'qituvchilar bazasi</h2>
@@ -1794,6 +1839,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   function isHomeroom(){ return myRole==='homeroom' }
   function isAttStaff(){ return myRole==='attendance' }
   function isTLetter(){ return myRole==='tletter' }
+  function isNewsWriter(){ return myRole==='news' }
   function inMyClasses(cls){ return !isHomeroom() || (myClasses.length>0 && myClasses.indexOf(normClass(cls))>=0); }
   function cloudDocId(key){ return 'm28_'+key; }
   /* ---------- Xatlar ro'yxatini XAVFSIZ saqlash (log, tlog, attst) ----------
@@ -1941,6 +1987,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   window.addEventListener('online', function(){ Object.keys(pendingOps).forEach(function(k){ flushOps(k) }); });
   function startCloud(){
     stopCloud(true);
+    if(isNewsWriter()) return;   /* yangilik yozuvchiga xatlar, baza va davomat kerak emas (ruxsati ham yo'q) */
     if(!isAttStaff() && !isTLetter()) cloudSync('log', function(){ renderLog() });
     if(!isAttStaff()){
     cloudSync('tlog', function(){ renderTLog() });
@@ -1980,6 +2027,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     $('#rosterStudentsCount').textContent = roster.students.length+" ta o'quvchi saqlangan";
     $('#rosterTeachersCount').textContent = roster.teachers.length+" ta o'qituvchi saqlangan";
     $('#reportPhone').value = roster.reportPhone||'';
+    if(!rsEdit) rsRender();
   }
   function watchRoster(){
     if(!db) return;
@@ -2149,6 +2197,168 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     var hit=roster.teachers.filter(function(t){return t.name===v})[0];
     if(hit && hit.subject) $('#t_subject').value=hit.subject;
   });
+  /* ---------- O'quvchini qidirib, raqamini tuzatish (xatlar ham avto tuzaladi) ----------
+     Bazadagi o'quvchi: ism, sinf, ota-ona, telefon. Saqlaganda telefon bazada ham, shu o'quvchining (ism + sinf)
+     barcha yozilgan xatlarida ham yangilanadi. Ota-onalar kabineti farzandni aynan shu raqam bo'yicha topadi. */
+  var rsEdit=null, rsLimit=25, rsTimer=null;
+  function rsKey(s){ return nameKey(s.name)+'|'+nameKey(normClass(s.cls)); }
+  /* o'quvchi kaliti -> uning xatlari soni va xatlardagi raqamlar */
+  function rsLetterIdx(){
+    var idx={};
+    loadLog().forEach(function(e){
+      if(!e || !e.name) return;
+      var k=rsKey(e), o=idx[k]||(idx[k]={n:0,ph:{}});
+      o.n++;
+      var p=normPhone(e.phone);
+      if(p){ var q=o.ph[p]||(o.ph[p]={d:e.phone,n:0,at:0}); q.n++; if((e.at||0)>=q.at){ q.at=e.at||0; q.d=e.phone; } }
+    });
+    return idx;
+  }
+  function rsInfo(s, idx){
+    var np=normPhone(s.phone), L=idx[rsKey(s)]||{n:0,ph:{}};
+    var others=Object.keys(L.ph).filter(function(p){ return p!==np; });
+    var latest=''; var best=-1;
+    Object.keys(L.ph).forEach(function(p){ if(L.ph[p].at>best){ best=L.ph[p].at; latest=p; } });
+    return {np:np, n:L.n, ph:L.ph, others:others, latest:latest, none:!np, bad:!!(np && np.length!==12), mismatch:others.length>0};
+  }
+  function rsMatch(s, q){
+    if(!q) return true;
+    var hay=nameKey(s.name)+' '+nameKey(s.cls)+' '+nameKey(normClass(s.cls))+' '+nameKey(s.parent)+' '+normPhone(s.phone)+' '+String(s.phone||'').replace(/\D/g,'');
+    return q.split(/\s+/).every(function(tk){
+      tk=nameKey(tk); if(!tk) return true;
+      if(hay.indexOf(tk)>=0) return true;
+      var dg=tk.replace(/\D/g,'');
+      return dg.length>=3 && /^[\d+\-()]+$/.test(tk) && hay.indexOf(dg)>=0;
+    });
+  }
+  function rsPhoneTxt(p){ return p ? formatPhoneDisplay(p) : ''; }
+  function rsRow(s, info){
+    var k=rsKey(s), editing=(rsEdit===k), chips='';
+    if(info.none) chips+='<i class="rs-c warn">Raqam yo\'q</i>';
+    else if(info.bad) chips+='<i class="rs-c warn">Raqam to\'liq emas</i>';
+    if(info.mismatch){
+      var txt=info.others.map(function(p){ return rsPhoneTxt(info.ph[p].d||p)+' ('+info.ph[p].n+' ta xat)'; }).join(', ');
+      chips+='<i class="rs-c warn">Xatlarda boshqa raqam: '+esc(txt)+'</i>';
+    }
+    if(info.n) chips+='<i class="rs-c">'+info.n+' ta xat</i>';
+    var meta=[]; if(s.parent) meta.push('Ota-onasi: '+esc(s.parent)); meta.push('Tel: '+(s.phone?'<b>'+esc(rsPhoneTxt(s.phone))+'</b>':'—'));
+    var acts='';
+    if(!isViewer()){
+      acts='<button type="button" class="mini" data-rs-edit="'+esc(k)+'">Tahrirlash</button>';
+      if(!editing && info.mismatch && info.np.length===12) acts+='<button type="button" class="mini" data-rs-sync="'+esc(k)+'" title="Xatlardagi raqamni bazadagiga tenglaydi">Xatlarni shu raqamga moslash</button>';
+      if(!editing && (info.none||info.bad) && info.latest) acts+='<button type="button" class="mini" data-rs-adopt="'+esc(k)+'" title="Xatlarda yozilgan oxirgi raqamni bazaga oladi">Xatdagi raqamni olish ('+esc(rsPhoneTxt(info.ph[info.latest].d||info.latest))+')</button>';
+    }
+    var form='';
+    if(editing){
+      var pre=s.phone || (info.latest?(info.ph[info.latest].d||''):'');
+      form='<div class="rs-form"><div><label class="fl" for="rsParent">Ota-onasi (F.I.Sh)</label><input class="inp" id="rsParent" value="'+esc(s.parent||'')+'" autocomplete="off"></div>'+
+        '<div><label class="fl" for="rsPhone">Telefon raqami</label><input class="inp" id="rsPhone" value="'+esc(pre?formatPhoneDisplay(pre):'')+'" inputmode="tel" placeholder="+998 90 123 45 67" autocomplete="off"></div>'+
+        '<div><label class="fl" for="rsCls">Sinf</label><input class="inp" id="rsCls" value="'+esc(s.cls||'')+'" autocomplete="off"></div></div>'+
+        '<p class="hint" style="margin:8px 0 0">'+(info.n?'Shu o\'quvchining <b>'+info.n+' ta xati</b> bor: saqlaganda raqam ularda ham yangilanadi (chop etilgan xatlar o\'zgarmaydi).':'Bu o\'quvchining yozilgan xati yo\'q, faqat baza yangilanadi.')+' Sinfni o\'zgartirsangiz, eski xatlar o\'z sinfida qoladi.</p>'+
+        '<div class="actions" style="margin-top:8px"><button type="button" class="btn" data-rs-save="'+esc(k)+'">Saqlash va xatlarni tuzatish</button><button type="button" class="btn line" data-rs-cancel="1">Bekor qilish</button></div>';
+    }
+    return '<div class="rs-row'+(editing?' on':'')+'"><div class="rs-top"><div><div class="rs-name">'+esc(s.name)+(s.cls?' <span class="rs-cls">'+esc(s.cls)+'</span>':'')+'</div><div class="rs-meta">'+meta.join(' · ')+'</div><div>'+chips+'</div></div><div class="rs-act">'+acts+'</div></div>'+form+'</div>';
+  }
+  function rsRender(){
+    var box=$('#rsList'); if(!box) return;
+    var q=($('#rsQ').value||'').trim(), f=$('#rsF').value, idx=rsLetterIdx();
+    var rows=roster.students.filter(function(s){ return s && s.name && inMyClasses(s.cls); }).map(function(s){ return {s:s, i:rsInfo(s, idx)}; })
+      .filter(function(r){
+        if(!rsMatch(r.s,q)) return false;
+        if(f==='nophone') return r.i.none;
+        if(f==='badphone') return r.i.bad;
+        if(f==='mismatch') return r.i.mismatch;
+        return true;
+      })
+      .sort(function(a,b){ return String(a.s.name).localeCompare(String(b.s.name),'uz'); });
+    /* tahrirlanayotgan qator doim ko'rinsin */
+    var shown=rows.slice(0,rsLimit);
+    if(rsEdit && !shown.some(function(r){ return rsKey(r.s)===rsEdit; })){ var er=rows.filter(function(r){ return rsKey(r.s)===rsEdit; })[0]; if(er) shown.unshift(er); }
+    var total=roster.students.length;
+    $('#rsCount').textContent = !total ? "Baza hali bo'sh. Pastdagi ro'yxatni to'ldiring yoki xat yozing: o'quvchilar bazaga o'zi qo'shiladi."
+      : (rows.length+" ta o'quvchi topildi"+(rows.length>shown.length?" (dastlabki "+shown.length+" tasi ko'rsatilmoqda)":''));
+    var focusId=document.activeElement && document.activeElement.id, selStart=null;
+    box.innerHTML = shown.map(function(r){ return rsRow(r.s, r.i); }).join('') +
+      (rows.length>shown.length ? '<div class="actions"><button type="button" class="btn line" data-rs-more="1">Yana ko\'rsatish</button></div>' : '');
+    if(rsEdit){ var pf=$('#rsPhone'); if(pf && !rsRender._focused){ rsRender._focused=true; pf.focus(); pf.select(); } }
+  }
+  /* bulutdagi bazani tranzaksiya bilan yangilaydi: boshqa odam shu paytda yozgan o'zgarishlar yo'qolmaydi */
+  function cloudUpdateRoster(mut){
+    if(!db || !curUser) return Promise.reject(new Error('no-auth'));
+    var ref=rosterRef();
+    return db.runTransaction(function(tx){
+      return tx.get(ref).then(function(s){
+        var d=normRoster(s.exists && s.data() && s.data().data ? JSON.parse(JSON.stringify(s.data().data)) : {});
+        mut(d);
+        tx.set(ref,{data:d, updatedAt:Date.now(), updatedBy:curUser.email});
+        return d;
+      });
+    });
+  }
+  function rsApply(key, vals){
+    if(isViewer()) return;
+    if(!db || !curUser) return setMsg('#rsMsg',"Internet yo'q yoki tizimga kirilmagan",'err');
+    var cur=roster.students.filter(function(x){ return rsKey(x)===key; })[0];
+    if(!cur) return setMsg('#rsMsg',"O'quvchi bazadan topilmadi (ro'yxat yangilangan bo'lishi mumkin)",'err');
+    var raw=String(vals.phone||'').trim(), phone='';
+    if(raw){
+      if(normPhone(raw).length!==12) return setMsg('#rsMsg',"Telefon raqami to'liq emas. Masalan: 90 123 45 67",'err');
+      phone=formatPhoneDisplay(raw);
+    }
+    var parent=String(vals.parent||'').trim(), cls=normClass(String(vals.cls||'').trim());
+    var oldName=cur.name, oldCls=cur.cls, oldPhone=cur.phone||'';
+    var btns=$$('#rsList button'); btns.forEach(function(b){ b.disabled=true; });
+    setMsg('#rsMsg','Saqlanmoqda...','');
+    cloudUpdateRoster(function(d){
+      var t=d.students.filter(function(x){ return rsKey(x)===key; })[0];
+      if(!t) throw new Error('notfound');
+      t.parent=parent; t.phone=phone; t.cls=cls;
+    }).then(function(d){
+      roster=normRoster(d);
+      /* xatlar: shu o'quvchining (ism + sinf) hamma xatida raqam yangilanadi */
+      var log=loadLog(), fixed=0;
+      log.forEach(function(e){
+        if(!e || !sameName(e.name,oldName)) return;
+        if(oldCls && normClass(e.cls)!==normClass(oldCls)) return;
+        if((e.phone||'')!==phone){ if(phone) e.phone=phone; else delete e.phone; fixed++; }
+      });
+      if(fixed) saveLog(log);
+      rsEdit=null; rsRender._focused=false;
+      fillDatalists(); renderRosterTextareas(); renderLog();
+      var msg="Saqlandi: bazada yangilandi"+(fixed?", "+fixed+" ta xatda raqam tuzatildi":"");
+      if(phone && normPhone(phone)!==normPhone(oldPhone)) msg+=". Yangi raqam botga ulanmagan bo'lsa, ota-ona botga /start yozib raqamini ulashi kerak";
+      setMsg('#rsMsg',msg,'ok');
+      try{ logAudit('student_contact_fixed',{name:oldName, cls:cls||oldCls, letters:fixed}); }catch(e){}
+    }).catch(function(e){
+      btns.forEach(function(b){ b.disabled=false; });
+      setMsg('#rsMsg', (e && e.message==='notfound') ? "O'quvchi bazadan topilmadi (boshqa kishi o'zgartirgan bo'lishi mumkin)" : "Saqlab bo'lmadi (internet yoki ruxsat yo'q)",'err');
+    });
+  }
+  (function(){
+    if(!$('#rsList')) return;
+    $('#rsQ').addEventListener('input',function(){ clearTimeout(rsTimer); rsTimer=setTimeout(function(){ rsLimit=25; rsRender(); },120); });
+    $('#rsF').addEventListener('change',function(){ rsLimit=25; rsRender(); });
+    $('#rsList').addEventListener('click',function(e){
+      var b=e.target.closest('button'); if(!b) return;
+      var g=function(a){ return b.getAttribute(a); };
+      if(g('data-rs-edit')!==null){ rsEdit=g('data-rs-edit'); rsRender._focused=false; setMsg('#rsMsg','',''); rsRender(); }
+      else if(g('data-rs-cancel')!==null){ rsEdit=null; rsRender._focused=false; rsRender(); }
+      else if(g('data-rs-more')!==null){ rsLimit+=25; rsRender(); }
+      else if(g('data-rs-save')!==null){ rsApply(g('data-rs-save'), {parent:$('#rsParent').value, phone:$('#rsPhone').value, cls:$('#rsCls').value}); }
+      else if(g('data-rs-sync')!==null){
+        var k=g('data-rs-sync'), s=roster.students.filter(function(x){ return rsKey(x)===k; })[0];
+        if(s) rsApply(k,{parent:s.parent, phone:s.phone, cls:s.cls});
+      }
+      else if(g('data-rs-adopt')!==null){
+        var k2=g('data-rs-adopt'), s2=roster.students.filter(function(x){ return rsKey(x)===k2; })[0], inf=s2?rsInfo(s2,rsLetterIdx()):null;
+        if(s2 && inf && inf.latest) rsApply(k2,{parent:s2.parent, phone:inf.ph[inf.latest].d||inf.latest, cls:s2.cls});
+      }
+    });
+    $('#rsList').addEventListener('keydown',function(e){
+      if(e.key==='Enter' && e.target.closest('.rs-form')){ e.preventDefault(); var sb=$('#rsList [data-rs-save]'); if(sb) sb.click(); }
+      if(e.key==='Escape' && rsEdit){ rsEdit=null; rsRender._focused=false; rsRender(); }
+    });
+  })();
   $('#rosterStudentsSave').addEventListener('click',function(){
     roster.students = parseRosterLines($('#rosterStudents').value, 'student');
     fillDatalists(); renderRosterTextareas();
@@ -2181,6 +2391,8 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   }
   var AUDIT_LABELS = {
     student_letter_logged: "O'quvchi xati ro'yxatga yozildi",
+    student_contact_fixed: "O'quvchi raqami/ota-onasi tuzatildi (xatlar ham yangilandi)",
+    wm_changed: "Watermark sozlamasi o'zgartirildi",
     student_letter_signed: "O'quvchi xatlari imzolandi",
     teacher_letter_logged: "O'qituvchi xati ro'yxatga yozildi",
     telegram_sent: "Telegram orqali ota-onaga xabar yuborildi",
@@ -2260,12 +2472,122 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     {role:"MMIBDO", name:"T.Badalov"},
     {role:"Maktab maslahatchisi", name:"I.Normurodov"}
   ];
+  /* ---------- WATERMARK (suv belgisi) ----------
+     Xat orqasida xira ko'rinadigan yozuv yoki rasm. Sozlamalar (settings.wm) hamma qurilmaga bulut orqali tarqaladi.
+     Har bir xatning o'z belgisi bor (slot.wm / ro'yxatdagi yozuv.wm): chop etish, PDF va Telegramga yuborishda ham chiqadi. */
+  function wmClamp(v,a,b,d){ v=+v; if(!isFinite(v)) v=d; return v<a?a:(v>b?b:v); }
+  function normWm(w){
+    w=(w && typeof w==='object')?w:{};
+    var img=(typeof w.img==='string' && w.img.length<=420000 && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+\/=]+$/.test(w.img))?w.img:'';
+    return {on:!!w.on, type:(w.type==='image'?'image':'text'), text:(typeof w.text==='string'?w.text.slice(0,120):''), img:img,
+            opacity:wmClamp(w.opacity,0.03,0.5,0.12), size:wmClamp(w.size,20,100,70), angle:wmClamp(w.angle,-90,90,-30)};
+  }
+  /* yangi xat uchun boshlang'ich holat: Sozlamalarda "avtomatik qo'shilsin" yoqilganmi */
+  function wmDefault(){ return (typeof settings!=='undefined' && settings && settings.wm && settings.wm.on) ? 1 : 0; }
+  /* xat ichiga qo'yiladigan qatlam (xat matni ostida, xira). widthMm: xat kengligi (talaba xati 105, o'qituvchi xati 210) */
+  function wmHTML(on, widthMm, w){
+    w = w || ((typeof settings!=='undefined' && settings) ? settings.wm : null);
+    if(!on || !w) return '';
+    var inner='', ang=(+w.angle)||0, sz=(+w.size)||70;
+    if(w.type==='image' && w.img){
+      inner='<img class="wm-i" alt="" src="'+w.img+'" style="width:'+sz+'%;max-height:92%;transform:rotate('+ang+'deg)">';
+    } else {
+      var t=String(w.text||'').trim() || ((typeof settings!=='undefined' && settings && settings.school) || '28-maktab');
+      var lines=t.split(/\r?\n/).slice(0,3), L=1;
+      lines.forEach(function(s){ if(s.length>L) L=s.length; });
+      var fs=Math.max(5, Math.min(40, (sz/100)*widthMm/(L*0.6)));
+      inner='<div class="wm-t" style="font-size:'+fs.toFixed(2)+'mm;transform:rotate('+ang+'deg)">'+lines.map(esc).join('<br>')+'</div>';
+    }
+    return '<div class="wm" style="opacity:'+(+w.opacity||0.12)+'" aria-hidden="true">'+inner+'</div>';
+  }
+  function tlWmOf(f){ return (f && f.wm!==undefined && f.wm!==null) ? (f.wm?1:0) : wmDefault(); }
+  /* xat belgisi aniq (0/1) bo'lmasa (null), Sozlamalardagi standart qiymat olinadi: sozlama kechroq kelsa ham to'g'ri ishlaydi */
+  function slotWmOf(f){ return tlWmOf(f); }
+
+  /* --- Sozlamalar bo'limidagi karta --- */
+  function wmPrevRender(){
+    var box=$('#wmPrev'); if(!box) return;
+    var w=settings.wm;
+    box.innerHTML='<div class="wm-pvw"><div class="wm-pv">'+wmHTML(true,105,w)+
+      '<div class="wm-pv-l"><i style="width:60%"></i><i></i><i style="width:90%"></i><i style="width:75%"></i><i></i><i style="width:40%"></i></div></div></div>';
+  }
+  function wmUpdateLabels(){
+    var w=settings.wm;
+    $('#wm_opv').textContent=Math.round(w.opacity*100)+'%'; $('#wm_szv').textContent=Math.round(w.size)+'%'; $('#wm_anv').textContent=Math.round(w.angle)+'°';
+    var isImg=(w.type==='image');
+    $('#wm_textBox').classList.toggle('hidden', isImg); $('#wm_imgBox').classList.toggle('hidden', !isImg);
+    $('#wm_imgPrev').innerHTML = w.img ? '<img alt="Watermark rasmi" src="'+w.img+'">' : '<span class="hint">Rasm tanlanmagan</span>';
+    $('#wm_imgRm').classList.toggle('hidden', !w.img);
+  }
+  function wmFill(){
+    if(!$('#wm_on')) return;
+    var w=settings.wm;
+    $('#wm_on').checked=!!w.on; $('#wm_ty_text').checked=(w.type!=='image'); $('#wm_ty_img').checked=(w.type==='image');
+    $('#wm_text').value=w.text||''; $('#wm_op').value=Math.round(w.opacity*100); $('#wm_sz').value=Math.round(w.size); $('#wm_an').value=Math.round(w.angle);
+    wmUpdateLabels(); wmPrevRender();
+  }
+  function wmChanged(){
+    wmUpdateLabels(); wmPrevRender(); renderSheet(); renderTSheet();
+  }
+  function wmApplyDefaultToEmpty(){
+    slots.forEach(function(s){ if(!s.name || !String(s.name).trim()) s.wm=null; });
+    saveSlots(); try{ loadSlotToForm(); }catch(e){}
+  }
+  (function(){
+    if(!$('#wm_on')) return;
+    $('#wm_on').addEventListener('change',function(){ settings.wm.on=this.checked; wmApplyDefaultToEmpty(); wmChanged(); });
+    $('#wm_ty_text').addEventListener('change',function(){ if(this.checked){ settings.wm.type='text'; wmChanged(); } });
+    $('#wm_ty_img').addEventListener('change',function(){ if(this.checked){ settings.wm.type='image'; wmChanged(); } });
+    $('#wm_text').addEventListener('input',function(){ settings.wm.text=this.value.slice(0,120); wmChanged(); });
+    $('#wm_op').addEventListener('input',function(){ settings.wm.opacity=wmClamp(this.value/100,0.03,0.5,0.12); wmChanged(); });
+    $('#wm_sz').addEventListener('input',function(){ settings.wm.size=wmClamp(this.value,20,100,70); wmChanged(); });
+    $('#wm_an').addEventListener('input',function(){ settings.wm.angle=wmClamp(this.value,-90,90,-30); wmChanged(); });
+    $('#wm_imgBtn').addEventListener('click',function(){ $('#wm_file').click(); });
+    $('#wm_imgRm').addEventListener('click',function(){ settings.wm.img=''; settings.wm.type='text'; $('#wm_ty_text').checked=true; wmChanged(); });
+    $('#wm_file').addEventListener('change',function(){
+      var f=this.files && this.files[0]; this.value=''; if(!f) return;
+      if(!/^image\//.test(f.type)) return setMsg('#wmMsg',"Rasm faylini tanlang (PNG yoki JPG)",'err');
+      var rd=new FileReader();
+      rd.onload=function(){ var im=new Image(); im.onload=function(){ wmProcessImage(im); }; im.onerror=function(){ setMsg('#wmMsg',"Rasmni o'qib bo'lmadi",'err'); }; im.src=rd.result; };
+      rd.onerror=function(){ setMsg('#wmMsg',"Faylni o'qib bo'lmadi",'err'); };
+      rd.readAsDataURL(f);
+    });
+    $('#wmSave').addEventListener('click',function(){
+      lset('m28_settings',JSON.stringify(settings));
+      if(!db || !curUser) return setMsg('#wmMsg','Saqlandi (faqat shu qurilmada)','ok');
+      cloudSaveSettings().then(function(){ setMsg('#wmMsg',"Saqlandi. Barcha qurilmalarda yangilanadi",'ok'); logAudit('wm_changed',{type:settings.wm.type,on:!!settings.wm.on}); },
+        function(){ setMsg('#wmMsg',"Shu qurilmada saqlandi, lekin bulutga yozib bo'lmadi",'err'); });
+    });
+  })();
+  /* rasmni kichraytirib, ~300 KB dan kichik qilib saqlaymiz (PNG, shaffoflik saqlanadi; juda katta bo'lsa JPG) */
+  function wmProcessImage(im){
+    var sc=Math.min(1, 900/Math.max(im.width,im.height)), out='';
+    for(var t=0;t<8;t++){
+      var w=Math.max(1,Math.round(im.width*sc)), h=Math.max(1,Math.round(im.height*sc));
+      var c=document.createElement('canvas'); c.width=w; c.height=h;
+      var cx=c.getContext('2d'); cx.imageSmoothingQuality='high'; cx.drawImage(im,0,0,w,h);
+      out=c.toDataURL('image/png');
+      if(out.length>300000){
+        var c2=document.createElement('canvas'); c2.width=w; c2.height=h;
+        var x2=c2.getContext('2d'); x2.fillStyle='#fff'; x2.fillRect(0,0,w,h); x2.drawImage(im,0,0,w,h);
+        out=c2.toDataURL('image/jpeg',0.82);
+      }
+      if(out.length<=300000) break;
+      sc*=0.78;
+    }
+    if(out.length>420000) return setMsg('#wmMsg',"Rasm juda katta. Kichikroq rasm tanlang",'err');
+    settings.wm.img=out; settings.wm.type='image'; $('#wm_ty_img').checked=true;
+    setMsg('#wmMsg',"Rasm tayyor. «Watermark'ni saqlash» tugmasini bosing",'ok');
+    wmChanged();
+  }
+
   function normSettings(o){
     o = (o && typeof o === 'object') ? o : {};
     if(!o.school) o.school = "28-maktab";
     if(!o.schoolFull) o.schoolFull = "28-sonli umumiy o'rta ta'lim maktabi";
     if(!Array.isArray(o.admins)) o.admins = JSON.parse(JSON.stringify(DEF_ADMINS));
     if(typeof o.telegramBot !== 'string') o.telegramBot = '';
+    o.wm = normWm(o.wm);
     return o;
   }
   var settings = normSettings(jparse(lget('m28_settings'), null));
@@ -2287,7 +2609,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     if(!$('#infoView').classList.contains('hidden')) showInfo();
     if(!$('#appView').classList.contains('hidden')){
       $('#brandName').textContent = settings.school+' platformasi';
-      fillSettings(); renderSheet(); renderTSheet(); fillSigner();
+      fillSettings(); wmApplyDefaultToEmpty(); $('#t_wm').checked=!!tlWmOf(tl); renderSheet(); renderTSheet(); fillSigner();
     }
     if(!$('#authView').classList.contains('hidden')) $('#authSub').textContent = settings.school+' platformasi';
   }
@@ -2365,7 +2687,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     [$('#printBtn'), $('#pdfBtn'), $('#logBtn'), $('#tgSendBtn')].forEach(function(b){ if(b) b.disabled = viewer; });
     var tPrint=$('#tPrintBtn'), tPdf=$('#tPdfBtn'), tLog=$('#tLogBtn');
     [tPrint,tPdf,tLog].forEach(function(b){ if(b) b.disabled = viewer; });
-    $('#saveSet').disabled = viewer;
+    $('#saveSet').disabled = viewer; $('#wmSave').disabled = viewer;
     $('#rosterStudentsSave').disabled = viewer;
     $('#rosterTeachersSave').disabled = viewer;
     var homeroomClassTxt = myClasses.join(', ') || 'sizning sinfingiz';
@@ -2381,10 +2703,11 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     if(homeroom && ['settings','tletter','tlog','audit'].some(function(n){ var el=$('#tab-'+n); return el && !el.classList.contains('hidden'); })) goTab('letter');
 
     // Davomat xodimi: faqat "Davomat" bo'limi ko'rinadi
-    var onlyTab = isAttStaff() ? 'att' : (isTLetter() ? 'tletter' : '');
+    var onlyTab = isAttStaff() ? 'att' : (isTLetter() ? 'tletter' : (isNewsWriter() ? 'news' : ''));
     $$('nav.tabs [data-tab]').forEach(function(b){ var n=b.getAttribute('data-tab'); if(onlyTab) b.classList.toggle('hidden', n!==onlyTab); else if(n==='att') b.classList.remove('hidden'); });
-    if(onlyTab) goTab(onlyTab); else if(!window.__homeDone){ window.__homeDone=1; var wantNews=(location.hash==='#yangiliklar'); if(wantNews){ try{history.replaceState(null,'',location.pathname+location.search)}catch(e){} } goTab(wantNews&&newsAllowed()?'news':'home'); }
+    if(onlyTab) goTab(onlyTab); else if(!window.__homeDone){ window.__homeDone=1; var wantNews=(location.hash==='#yangiliklar'); if(wantNews){ try{history.replaceState(null,'',location.pathname+location.search)}catch(e){} } goTab(wantNews&&newsPostAllowed()?'news':'home'); }
     if(isTLetter()){ $('#roleNote').textContent="Siz faqat o'qituvchilarga ogohlantirish xati yozish huquqiga egasiz."; $('#roleNote').classList.remove('hidden'); }
+    if(isNewsWriter()){ $('#roleNote').textContent="Siz \"yangilik yozuvchi\" sifatida kirgansiz: maktab saytiga yangilik yozishingiz va o'z yangiliklaringizni tahrirlashingiz mumkin."; $('#roleNote').classList.remove('hidden'); }
 
     // Sinf rahbari uchun "Sinf" maydoni: bitta sinf bo'lsa qulflanadi, bir nechta bo'lsa tanlovga aylanadi
     var fClass = $('#f_class');
@@ -2494,7 +2817,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
 
   /* ---------- adminlar boshqaruvi ---------- */
   var adminsList = [];
-  var ROLE_LABELS = { full:"To'liq", viewer:"Faqat ko'ruvchi", homeroom:"Sinf rahbari", attendance:"Davomat xodimi", tletter:"O'qituvchilarga xat yozuvchi" };
+  var ROLE_LABELS = { full:"To'liq", viewer:"Faqat ko'ruvchi", homeroom:"Sinf rahbari", attendance:"Davomat xodimi", tletter:"O'qituvchilarga xat yozuvchi", news:"Yangilik yozuvchi" };
   function renderAdminCard(){
     $('#meEmail').textContent = curUser ? curUser.email : '—';
     $('#adminAddBox').classList.toggle('hidden', !isOwner);
@@ -2556,11 +2879,12 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   function goTab(t){
     if(isAttStaff() && t!=='att') t='att';
     if(isTLetter() && t!=='tletter') t='tletter';
+    if(isNewsWriter() && t!=='news') t='news';
     if(isHomeroom() && (t==='settings'||t==='tletter'||t==='tlog'||t==='audit')) t='letter';
-    if(t==='news' && !newsAllowed()) t='home';
+    if(t==='news' && !newsPostAllowed()) t='home';
     $$('nav.tabs [data-tab]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-tab')===t)});
     ['home','letter','log','tletter','tlog','att','stats','news','audit','settings'].forEach(function(n){$('#tab-'+n).classList.toggle('hidden',n!==t)});
-    if(t==='letter') fit(); else if(t==='tletter'){fillSigner();fit()} else if(t==='settings'){fillSettings();loadAdmins()} else if(t==='log') renderLog(); else if(t==='tlog') renderTLog(); else if(t==='stats') renderStats(); else if(t==='home') renderHome(); else if(t==='news') newsStart(); else if(t==='audit') loadAuditLog(); else if(t==='att') attRender();
+    if(t==='letter'){ document.getElementById('f_wm').checked=!!slotWmOf(slots[cur]); renderSheet(); fit(); } else if(t==='tletter'){fillSigner();$('#t_wm').checked=!!tlWmOf(tl);renderTSheet();fit()} else if(t==='settings'){fillSettings();loadAdmins()} else if(t==='log') renderLog(); else if(t==='tlog') renderTLog(); else if(t==='stats') renderStats(); else if(t==='home') renderHome(); else if(t==='news') newsStart(); else if(t==='audit') loadAuditLog(); else if(t==='att') attRender();
     window.scrollTo(0,0);
   }
   /* ---------- Statistika ---------- */
@@ -2839,7 +3163,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     $('#s_full').value=settings.schoolFull;
     $('#s_url').value=platformUrl();
     $('#s_tgbot').value=settings.telegramBot||'';
-    admRows(); renderQrPrev(); renderTgCard(); renderRosterTextareas();
+    admRows(); renderQrPrev(); renderTgCard(); renderRosterTextareas(); wmFill();
   }
   $('#addAdm').addEventListener('click',function(){settings.admins.push({role:'',name:''});admRows();renderSheet()});
   $('#s_full').addEventListener('input',function(){settings.schoolFull=this.value;renderTSheet()});
@@ -2888,7 +3212,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
 
   /* ---------- letters: 4 slots ---------- */
   var MONTHS=['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'];
-  function emptySlot(){return {name:'',cls:'',parent:'',reason:'',date:'',phone:'',kind:''}}
+  function emptySlot(){return {name:'',cls:'',parent:'',reason:'',date:'',phone:'',kind:'',wm:null}}
   /* Telegram uchun telefonni 998XXXXXXXXX ko'rinishiga keltiradi (faqat raqamlar, mamlakat kodi bilan) */
   function normPhone(p){
     p=(p||'').replace(/\D/g,'');
@@ -2923,7 +3247,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     var admins=settings.admins.filter(function(a){return a.name&&a.name.trim()}).map(function(a){
       return '<div class="a">'+(a.role?'<span class="r">'+esc(a.role)+'</span>':'')+'<span class="n">'+esc(a.name)+'</span></div>';
     }).join('');
-    return '<div class="letter">'+
+    return '<div class="letter">'+wmHTML(slotWmOf(f),105)+
       '<div class="l-head"><div class="l-school">'+esc(settings.school)+'</div><div class="l-title'+(K.t.length>19?' long':'')+'">'+K.t+'</div></div>'+
       '<div class="l-row"><span class="lb">O\'quvchi:</span><span class="fill">'+esc(f.name)+'</span><span class="lb">Sinf:</span><span class="fill w-sm">'+esc(f.cls)+'</span></div>'+
       '<div class="l-row"><span class="lb">Ota-onasi (F.I.Sh):</span><span class="fill">'+esc(f.parent)+'</span></div>'+
@@ -2973,7 +3297,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     $$('#slots .slot').forEach(function(b){b.addEventListener('click',function(){selectSlot(+b.dataset.slot)})});
   }
   var FIELDS={f_name:'name',f_class:'cls',f_parent:'parent',f_reason:'reason',f_date:'date',f_phone:'phone',f_kind:'kind'};
-  function loadSlotToForm(){updEditNote(); Object.keys(FIELDS).forEach(function(id){document.getElementById(id).value=slots[cur][FIELDS[id]]||''}); if(window.__syncChips) window.__syncChips(); applyKindUI(); checkRepeatWarn();}
+  function loadSlotToForm(){updEditNote(); Object.keys(FIELDS).forEach(function(id){document.getElementById(id).value=slots[cur][FIELDS[id]]||''}); document.getElementById('f_wm').checked=!!slotWmOf(slots[cur]); if(window.__syncChips) window.__syncChips(); applyKindUI(); checkRepeatWarn();}
   function selectSlot(i){cur=i;loadSlotToForm();renderSlots();renderSheet()}
   Object.keys(FIELDS).forEach(function(id){
     document.getElementById(id).addEventListener('input',function(){
@@ -2984,6 +3308,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       var sm=$('#slots .slot.on small'); if(sm) sm.textContent=slotLabel(slots[cur]);
     });
   });
+  document.getElementById('f_wm').addEventListener('change',function(){ slots[cur].wm=this.checked?1:0; saveSlots(); renderSheet(); });
   function applyKindUI(){
     var k=slots[cur].kind||'', K=kindInfo(k);
     $('#f_reason').placeholder=K.ph;
@@ -3100,7 +3425,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       var phone=(s.phone||'').trim() ? formatPhoneDisplay(s.phone) : '';
       if(isHomeroom() && !inMyClasses(s.cls)){ blockedClass++; return; }
       var id=[s.name,s.cls,s.parent,s.reason,d].concat(s.kind?[s.kind]:[]).join('|').toLowerCase();
-      var rec={name:s.name.trim(),cls:normClass((s.cls||'').trim()),parent:(s.parent||'').trim(),reason:(s.reason||'').trim(),date:d,phone:phone,kind:s.kind||''};
+      var rec={name:s.name.trim(),cls:normClass((s.cls||'').trim()),parent:(s.parent||'').trim(),reason:(s.reason||'').trim(),date:d,phone:phone,kind:s.kind||'',wm:slotWmOf(s)?1:0};
       /* 1) ro'yxatdan ochilgan xat tahrirlangan bo'lsa, o'sha yozuvning o'zi yangilanadi */
       var src = s.srcId ? log.filter(function(e){return e.id===s.srcId})[0] : null;
       if(src && isHomeroom()){
@@ -3109,14 +3434,15 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       }
       if(src){
         if(src.date!==d && !dateOK(d)){ blockedDate++; return; }
-        var before=JSON.stringify([src.name,src.cls,src.parent,src.reason,src.date,src.phone||'',src.kind||'']);
+        var before=JSON.stringify([src.name,src.cls,src.parent,src.reason,src.date,src.phone||'',src.kind||'',src.wm?1:0]);
         /* shu mazmundagi boshqa (takroriy) yozuv bo'lsa, ikkitaga ko'paymasin */
         log=log.filter(function(e){ return e===src || e.id!==id; });
         src.name=rec.name; src.cls=rec.cls; src.parent=rec.parent; src.reason=rec.reason; src.date=rec.date; src.phone=rec.phone||src.phone||'';
         if(rec.kind) src.kind=rec.kind; else delete src.kind;
+        if(rec.wm) src.wm=1; else delete src.wm;
         src.id=id; s.srcId=id;
         if(s.tgId){ src.tg=s.tgId; delete s.tgId; changed=true; }
-        if(JSON.stringify([src.name,src.cls,src.parent,src.reason,src.date,src.phone||'',src.kind||''])!==before){
+        if(JSON.stringify([src.name,src.cls,src.parent,src.reason,src.date,src.phone||'',src.kind||'',src.wm?1:0])!==before){
           updated++; changed=true;
           logAudit('student_letter_edited', {name:rec.name, cls:rec.cls, date:d});
         }
@@ -3128,6 +3454,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       var existing=log.filter(function(e){return e.id===id})[0];
       if(existing){
         if(phone && existing.phone!==phone){ existing.phone=phone; changed=true; }
+        if((existing.wm?1:0)!==rec.wm){ if(rec.wm) existing.wm=1; else delete existing.wm; changed=true; }
         if(phone) forced.push([personKey(existing),phone]);
         s.srcId=id;
         if(s.tgId){ existing.tg=s.tgId; delete s.tgId; changed=true; }
@@ -3138,6 +3465,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       if(!dateOK(d)){ blockedDate++; return; }
       var ne={id:id,name:rec.name,cls:rec.cls,parent:rec.parent,reason:rec.reason,date:d,phone:phone,at:Date.now()};
       if(rec.kind) ne.kind=rec.kind;
+      if(rec.wm) ne.wm=1;
       if(s.tgId){ ne.tg=s.tgId; delete s.tgId; }
       log.push(ne); added++;
       s.srcId=id;
@@ -3512,7 +3840,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     var ab=$('#selAllBox'); if(ab){ var vis=filteredLog(); ab.checked = vis.length>0 && vis.every(function(e){return selected[e.id]}); }
     updSigSel();
   }
-  function toSlot(e){return {name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date,phone:e.phone||phoneForName(e.name),kind:e.kind||'',srcId:e.id}}
+  function toSlot(e){return {name:e.name,cls:e.cls,parent:e.parent,reason:e.reason,date:e.date,phone:e.phone||phoneForName(e.name),kind:e.kind||'',wm:e.wm?1:0,srcId:e.id}}
   function openEntries(ids){
     if(isHomeroom()) return;
     var log=loadLog(), es=ids.map(function(id){return log.filter(function(x){return x.id===id})[0]}).filter(Boolean);
@@ -3723,7 +4051,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   }
   function loadTlToForm(){ if(typeof updTEditNote==='function') updTEditNote();
     ['t_name','t_subject','t_issue','t_date'].forEach(function(id){document.getElementById(id).value=tl[TF[id]]||''});
-    $('#t_signer').value=tl.signer||''; tCount();
+    $('#t_signer').value=tl.signer||''; $('#t_wm').checked=!!tlWmOf(tl); tCount();
   }
   function tCount(){var n=$('#t_issue').value.length,el=$('#tIssueCnt');el.textContent=n+' / 280';el.style.color=n>240?'var(--danger)':''}
   function tLetterQrUrl(f){
@@ -3735,7 +4063,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   function tf(txt,cls){return '<span class="tf '+(cls||'')+'">'+(txt?esc(txt):'&nbsp;')+'</span>'}
   function tLetterHTML(f,qr){
     var L=(f.issue||'').length, sz=L>240?' s9':(L>190?' s10':'');
-    return '<div class="tl">'+
+    return '<div class="tl">'+wmHTML(tlWmOf(f),210)+
       '<div class="tl-title">OGOHLANTIRISH XATI</div>'+
       '<div class="tl-p"><b>Kimdan:</b> '+esc(settings.schoolFull)+' ma\'muriyatidan</div>'+
       '<div class="tl-p"><b>Kimga:</b> '+tf(f.subject,'w50')+' fani o\'qituvchisi</div>'+
@@ -3778,6 +4106,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     var c=clampDate(v); this.value=c; tl.date=c; saveTl(); renderTSheet();
     toast(dateLimitMsg());
   });
+  $('#t_wm').addEventListener('change',function(){ tl.wm=this.checked?1:0; saveTl(); renderTSheet(); });
   $('#tClearBtn').addEventListener('click',function(){tl=Object.assign({},TEMPTY);saveTl();loadTlToForm();fillSigner();renderTSheet();updTEditNote()});
   $('#tEditNew').addEventListener('click',function(){ delete tl.srcId; saveTl(); updTEditNote(); setMsg('#tMsg',"Endi bu yangi xat sifatida yoziladi",'ok'); });
 
@@ -3795,17 +4124,17 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     var src = tl.srcId ? log.filter(function(e){return e.id===tl.srcId})[0] : null;
     if(src){
       if(src.date!==d && !dateOK(d)){ toast(dateLimitMsg()); return 0; }
-      var before=JSON.stringify([src.name,src.subject,src.issue,src.date,src.signer||'']);
+      var before=JSON.stringify([src.name,src.subject,src.issue,src.date,src.signer||'',src.wm?1:0]);
       log=log.filter(function(e){ return e===src || e.id!==id; });
-      src.name=tl.name.trim(); src.subject=(tl.subject||'').trim(); src.issue=(tl.issue||'').trim(); src.date=d; src.signer=tl.signer||''; src.id=id; tl.srcId=id;
+      src.name=tl.name.trim(); src.subject=(tl.subject||'').trim(); src.issue=(tl.issue||'').trim(); src.date=d; src.signer=tl.signer||''; if(tlWmOf(tl)) src.wm=1; else delete src.wm; src.id=id; tl.srcId=id;
       saveTl(); updTEditNote();
-      if(JSON.stringify([src.name,src.subject,src.issue,src.date,src.signer||''])===before) return 0;
+      if(JSON.stringify([src.name,src.subject,src.issue,src.date,src.signer||'',src.wm?1:0])===before) return 0;
       saveTLog(log); logAudit('teacher_letter_edited', {name:src.name, subject:src.subject, date:d});
       return 1;
     }
     if(log.some(function(e){return e.id===id})) { tl.srcId=id; saveTl(); return 0; }
     if(!dateOK(d)){ toast(dateLimitMsg()); return 0; }
-    log.push({id:id,name:tl.name.trim(),subject:(tl.subject||'').trim(),issue:(tl.issue||'').trim(),date:d,signer:tl.signer||'',at:Date.now()});
+    log.push({id:id,name:tl.name.trim(),subject:(tl.subject||'').trim(),issue:(tl.issue||'').trim(),date:d,signer:tl.signer||'',at:Date.now(),wm:tlWmOf(tl)});
     tl.srcId=id; saveTl();
     saveTLog(log);
     logAudit('teacher_letter_logged', {name:tl.name.trim(), subject:(tl.subject||'').trim(), date:d});
@@ -3840,7 +4169,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     $$('#tlogBody tr[data-topen]').forEach(function(tr){tr.addEventListener('click',function(e){
       if(e.target.closest('button')) return;
       var r=loadTLog().filter(function(x){return x.id===tr.dataset.topen})[0]; if(!r) return;
-      tl={name:r.name,subject:r.subject,issue:r.issue,date:r.date,signer:r.signer,srcId:r.id}; saveTl();
+      tl={name:r.name,subject:r.subject,issue:r.issue,date:r.date,signer:r.signer,wm:r.wm?1:0,srcId:r.id}; saveTl();
       goTab('tletter'); loadTlToForm(); updTEditNote(); fillSigner(); renderTSheet(); setMsg('#tMsg',"Xat qayta ochildi",'ok');
     })});
     $$('#tlogBody [data-trm]').forEach(function(b){b.addEventListener('click',function(){
@@ -4433,8 +4762,10 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   function newsVideos(){ return String($('#nVideo').value||'').split(/\s+/).map(function(x){return x.trim()}).filter(Boolean) }
   function newsVidsOf(n){ return Array.isArray(n.videos)?n.videos:(n.video?String(n.video).split(/\s+/).filter(Boolean):[]) }
   function newsTgTxt(){ var o=newsEditId?newsDocs.filter(function(x){return x.id===newsEditId})[0]:null, t=$('#nTgTxt'); if(t) t.textContent=(o&&o.tg)?"✈️ Telegramdagi postni ham yangilash":"✈️ E'lon qilinganda Telegram kanalga ham joylash" }
-  function newsAllowed(){ return myRole==='full'||myRole==='owner' }
-  function newsApplyRole(){ var b=$('nav.tabs [data-tab="news"]'); if(b) b.classList.toggle('hidden',!newsAllowed()) }
+  function newsAllowed(){ return myRole==='full'||myRole==='owner' }   /* sayt matnlari, bo'limlar va boshqalar: faqat to'liq admin */
+  function newsPostAllowed(){ return newsAllowed()||myRole==='news' }   /* yangilik yozish: yangilik yozuvchi ham */
+  function newsMine(n){ return !isNewsWriter() || String((n&&n.by)||'').toLowerCase()===String((curUser&&curUser.email)||'').toLowerCase() }
+  function newsApplyRole(){ var b=$('nav.tabs [data-tab="news"]'); if(b) b.classList.toggle('hidden',!newsPostAllowed()); var sc=$('#siteCard'); if(sc) sc.classList.toggle('hidden',!newsAllowed()); var nb=$('#tab-news .set-tabs'); if(nb) nb.classList.toggle('hidden',!newsAllowed()); }
   function newsStop(){ siteLoaded=false; secLoaded=false; custLoaded=false; if(newsUnsub){ try{newsUnsub()}catch(e){} newsUnsub=null } newsDocs=[]; }
   function newsLink(id){ return location.origin+'/yangilik/'+id }
   var SITEF=[['terms','#cTerms'],['privacy','#cPrivacy'],['tgChannel','#cTgCh'],['intro','#cIntro'],['address','#cAddress'],['phone','#cPhone'],['email','#cEmail'],['hours','#cHours'],['telegram','#cTg'],['instagram','#cIg'],['youtube','#cYt'],['mapUrl','#cMap']], siteLoaded=false;
@@ -4459,7 +4790,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   function newsStart(){
     siteLoad(); secLoadAll();
     if(!newsEditId&&!$('#nDate').value) $('#nDate').value=dateISO(new Date());
-    if(!db||!curUser||!newsAllowed()||newsUnsub) { newsRender(); return }
+    if(!db||!curUser||!newsPostAllowed()||newsUnsub) { newsRender(); return }
     newsUnsub=db.collection('news').onSnapshot(function(s){
       newsDocs=s.docs.map(function(x){var o=x.data(); o.id=x.id; return o}).sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))});
       newsRender();
@@ -4468,8 +4799,8 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   function newsRender(){
     var box=$('#newsList'); if(!box) return;
     box.innerHTML=newsDocs.length?newsDocs.map(function(n){
-      var ni=Array.isArray(n.imgs)?n.imgs.length:(n.img?1:0), pub=n.status==='published';
-      return '<div class="nw-row'+(n.id===newsEditId?' on':'')+'"><div class="nw-t"><b>'+esc(n.title)+'</b><span class="hint">'+esc(fmtDate(n.date))+' · '+esc(NCAT[n.cat]||'')+(ni?' · 🖼 '+ni:'')+(newsVidsOf(n).length?' · ▶ video':'')+(n.views?' · 👁 '+n.views:'')+'</span><span class="nw-chips"><i class="'+(pub?'ok':'dr')+'">'+(pub?"E'lon qilingan":'Qoralama')+'</i>'+(n.pinned?'<i class="pn">📌 Muhim</i>':'')+((n.tg||n.tgAt)?'<i class="tgc">✈️ Telegramga joylangan</i>':'')+'</span></div><div class="nw-a"><button type="button" class="mini" data-nedit="'+esc(n.id)+'">Tahrirlash</button>'+(pub?'<button type="button" class="mini" data-ntg="'+esc(n.id)+'" title="Telegram kanal">'+(n.tg?'↻ Telegramni yangilash':(n.tgAt?'✈️ Qayta yuborish':'✈️ Telegram'))+'</button><button type="button" class="mini" data-ncopy="'+esc(n.id)+'" title="Telegram uchun havola">🔗 Havola</button><a class="mini" target="_blank" rel="noopener" href="/#/yangilik/'+esc(n.id)+'">Ko\'rish</a>':'')+'<button type="button" class="mini danger" data-ndel="'+esc(n.id)+'">O\'chirish</button></div></div>';
+      var ni=Array.isArray(n.imgs)?n.imgs.length:(n.img?1:0), pub=n.status==='published', mine=newsMine(n);
+      return '<div class="nw-row'+(n.id===newsEditId?' on':'')+'"><div class="nw-t"><b>'+esc(n.title)+'</b><span class="hint">'+esc(fmtDate(n.date))+' · '+esc(NCAT[n.cat]||'')+(ni?' · 🖼 '+ni:'')+(newsVidsOf(n).length?' · ▶ video':'')+(n.views?' · 👁 '+n.views:'')+'</span><span class="nw-chips"><i class="'+(pub?'ok':'dr')+'">'+(pub?"E'lon qilingan":'Qoralama')+'</i>'+(n.pinned?'<i class="pn">📌 Muhim</i>':'')+((n.tg||n.tgAt)?'<i class="tgc">✈️ Telegramga joylangan</i>':'')+'</span></div><div class="nw-a">'+(mine?('<button type="button" class="mini" data-nedit="'+esc(n.id)+'">Tahrirlash</button>'+(pub?'<button type="button" class="mini" data-ntg="'+esc(n.id)+'" title="Telegram kanal">'+(n.tg?'↻ Telegramni yangilash':(n.tgAt?'✈️ Qayta yuborish':'✈️ Telegram'))+'</button><button type="button" class="mini" data-ncopy="'+esc(n.id)+'" title="Telegram uchun havola">🔗 Havola</button><a class="mini" target="_blank" rel="noopener" href="/#/yangilik/'+esc(n.id)+'">Ko\'rish</a>':'')+'<button type="button" class="mini danger" data-ndel="'+esc(n.id)+'">O\'chirish</button>'):'<span class="hint">Muallif: '+esc(n.by||'—')+'</span>')+'</div></div>';
     }).join(''):'<p class="hint">Hali yangilik yozilmagan.</p>';
   }
   function newsMsg(t,err){ var m=$('#nMsg'); m.textContent=t; m.style.color=err?'var(--danger)':'' }
@@ -4551,6 +4882,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     if(!db||!curUser) return newsMsg('Internet yoki kirish yo\'q',true);
     var data={title:title,body:body,cat:$('#nCat').value,date:$('#nDate').value||dateISO(new Date()),status:status,pinned:$('#nPin').checked,imgs:newsImgs.slice(),ni:newsImgs.length,videos:videos,by:(curUser.email||'').toLowerCase(),updated:firebase.firestore.FieldValue.serverTimestamp()};
     var old=newsEditId?newsDocs.filter(function(x){return x.id===newsEditId})[0]:null, hadTg=!!(old&&old.tg), legacyTg=!!(old&&!old.tg&&old.tgAt);
+    if(old&&old.by) data.by=String(old.by).toLowerCase();   /* muallif o'zgarmaydi: boshqa admin tahrirlasa ham */
     var ref;
     if(newsEditId){ data.img=firebase.firestore.FieldValue.delete(); data.video=firebase.firestore.FieldValue.delete(); ref=db.collection('news').doc(newsEditId).set(data,{merge:true}); }   // merge: ko'rishlar soni va Telegram belgisi saqlanadi
     else ref=db.collection('news').add(data);
