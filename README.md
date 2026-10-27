@@ -1,4 +1,4 @@
-# 28-maktab# 28-maktab
+# 28-maktab
 
 28-maktabning rasmiy sayti va ichki platformasi (ogohlantirish xatlari, davomat, yangiliklar, ota-onalar kabineti).
 Sayt: https://28maktab.uz
@@ -20,7 +20,9 @@ Sayt: https://28maktab.uz
 - `send-parent-notice.js` — xatni ota-onaga Telegramda yuboradi.
 - `news-telegram.js` — yangilikni Telegram kanaliga joylaydi/tahrirlaydi.
 - `yangilik.js`, `rasm.js`, `sitemap.js` — yangilik sahifasi (ijtimoiy tarmoq ko'rinishi bilan), yangilik rasmi, sitemap.
+- `seen.js` — ota-onaning QR orqali «Ko'rdim» tasdig'ini qabul qiladi (`letter_acks` ga yozadi; bitta IP dan 10 daqiqada 40 ta so'rov).
 - `monthly-report.js` — oylik hisobot (cron, har oyning 1-sanasi).
+- `seen.js` — ota-onaning QR orqali «Ko'rdim» tasdig'ini qabul qiladi (IP bo'yicha 10 daqiqada 40 ta so'rov chegarasi bilan).
 - `_lib.js`, `_admin.js` — umumiy yordamchilar (Firebase Admin, Telegram).
 
 ## Muhit o'zgaruvchilari (Vercel → Settings → Environment Variables)
@@ -64,6 +66,12 @@ Rollar: `owner` (asosiy admin), `full`, `viewer`, `homeroom` (sinf rahbari), `at
 
 - **Watermark (suv belgisi):** xat orqasidagi xira yozuv yoki rasm (logotip). Yozuv/rasm, xiralik, kattalik va burchak sozlanadi. «Yangi xatlarga avtomatik qo'shilsin» yoqilsa, har bir yangi xatda belgi turadi; xat formasidagi «Watermark qo'shish» belgisi bilan har bir xat uchun alohida o'chirish mumkin. Chop etish, PDF va Telegramga yuborishda ham chiqadi. O'quvchi va o'qituvchi xatlarida ishlaydi.
 - **O'quvchi raqamini tuzatish:** ism, sinf, telefon yoki ota-ona ismi bo'yicha qidiriladi. Raqam to'g'rilanib saqlansa, u bazada ham, shu o'quvchining (ism + sinf) barcha yozilgan xatlarida ham yangilanadi. «Xatlarida boshqa raqam bor» filtri ziddiyatlarni topadi. Yangi raqam botga ulanmagan bo'lsa, ota-ona botga `/start` yozib raqamini ulashi kerak.
+
+- **Xatlar arxivi (Zaxira va arxiv):** xatlar bitta Firestore hujjatida turadi (chegarasi 1 MB). Kartada hajm o'lchagichi va o'quv yillari bo'yicha xatlar soni ko'rinadi. O'tgan o'quv yili (1-sentabrdan 31-avgustgacha) xatlari «Arxivga ko'chirish» bilan `m28_arch_<yil>` hujjatiga o'tadi: avval arxivga yoziladi, shundan keyingina faol ro'yxatdan olinadi (zaxira fayli ham yuklab olinadi). Arxivlangan xatlar jurnaldan, statistikadan va ota-onalar kabinetidan chiqadi; arxivda ko'rish, CSV yuklash va «Faolga qaytarish» mumkin. Joriy o'quv yili xatlari arxivlanmaydi.
+- **QR orqali «Ko'rdim» tasdig'i:** har bir yangi xatga tasodifiy yashirin belgi (`qt`) beriladi va xatdagi QR manziliga qo'shiladi (`#x=...&k=<belgi>`). Ota-ona QR ni skanerlab, ochilgan sahifada «✅ Ko'rdim, tanishdim» tugmasini bossa, `api/seen.js` buni `letter_acks` ga yozadi va xatlar jurnalida «👁 QR orqali ko'rdi» belgisi chiqadi. Belgisiz eski xatlarning QR kodi avvalgidek ishlaydi (faqat ma'lumot ko'rsatadi). Sahifa faqat ism va sanani ko'rsatadi, sabab va ota-ona ismini emas.
+
+- **QR orqali «Ko'rdim»:** har bir yangi xatga yashirin belgi beriladi va QR manziliga qo'shiladi (`#x=...&k=<belgi>`). Ota-ona QR ni skanerlab, ochilgan sahifada «Ko'rdim, tanishdim» tugmasini bossa, xatlar jurnalida «👁 QR orqali ko'rdi · sana» belgisi chiqadi (sinf rahbari faqat o'z sinfini ko'radi). Ochiq sahifa xat haqida yangi ma'lumot ko'rsatmaydi, server faqat holat va vaqtni qaytaradi. Belgisi yo'q eski xatlarda QR avvalgidek ishlaydi (faqat tekshirish).
+- **Xatlar arxivi** (Sozlamalar → Zaxira va arxiv): xatlar bitta Firestore hujjatida turadi va uning hajmi 1 MB bilan cheklangan. Hajm ko'rsatkichi bor; eski o'quv yillari (1-sentabrdan 31-avgustgacha) xatlari arxivga ko'chiriladi (`m28_arch_<yil>` hujjatlari). Avval arxivga yoziladi, keyin faol ro'yxatdan olinadi; zaxira JSON fayli avtomatik yuklanadi. Arxivda ko'rish, qidirish, CSV yuklash va faolga qaytarish mumkin. Arxivlangan xatlar jurnaldan, statistikadan, ota-onalar kabinetidan va «3 ta ogohlantirish» hisobidan chiqadi. Arxivni faqat asosiy admin va to'liq adminlar boshqaradi.
 
 ## Oylik hisobot
 
