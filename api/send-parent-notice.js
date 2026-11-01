@@ -7,6 +7,7 @@
  * foydalanuvchi admin ekanligi Firestore'dan tasdiqlanadi.
  */
 const { db, adminAuth, normPhone, isAdminEmail, tgApi, tgSendDocument } = require('./_lib');
+const { t, normLang, kindKey } = require('./_i18n');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') { res.status(405).json({ error: 'method-not-allowed' }); return; }
@@ -57,34 +58,32 @@ module.exports = async (req, res) => {
     }
     const infoUrl = (data.infoUrl || '').trim();
 
-    // Xat turi: '' (ogohlantirish) | praise | invite | summon. Noma'lum qiymat ogohlantirish deb olinadi
-    const KINDS = {
-      '':      { head: "📩 Ogohlantirish xati haqida xabar", line: (c) => c + " uchun ogohlantirish xati berildi.", reasonLb: "Sababi: ", file: 'ogohlantirish-xati', cap: 'Xat nusxasi (PDF)' },
-      praise:  { head: "🌟 Minnatdorchilik xati haqida xabar", line: (c) => c + " uchun minnatdorchilik xati berildi.", reasonLb: "Sababi: ", file: 'minnatdorchilik-xati', cap: 'Xat nusxasi (PDF)' },
-      invite:  { head: "📅 Ota-onalar yig'ilishiga taklifnoma", line: (c) => "Hurmatli ota-ona! Sizni maktabda o'tadigan ota-onalar yig'ilishiga taklif qilamiz. " + c + ".", reasonLb: "Mavzu va vaqt: ", file: 'taklifnoma', cap: 'Taklifnoma nusxasi (PDF)' },
-      summon:  { head: "📞 Maktabga chaqiruv xati", line: (c) => "Hurmatli ota-ona! " + c + " bo'yicha sizni maktabga chaqiramiz.", reasonLb: "Sabab va vaqt: ", file: 'chaqiruv-xati', cap: 'Xat nusxasi (PDF)' },
-    };
-    const kind = Object.prototype.hasOwnProperty.call(KINDS, data.kind) ? data.kind : '';
-    const K = KINDS[kind];
+    // Xat turi: '' (ogohlantirish) | praise | invite | summon. Noma'lum qiymat ogohlantirish deb olinadi.
+    // Matn ota-onaning tilida (bot orqali tanlagan: o'zbek yoki rus) yuboriladi.
+    const lang = normLang(linkDoc.data().lang);
+    const kind = ['praise', 'invite', 'summon'].indexOf(data.kind) >= 0 ? data.kind : '';
+    const kk = kindKey(kind);
+    const FILES = { '': 'ogohlantirish-xati', praise: 'minnatdorchilik-xati', invite: 'taklifnoma', summon: 'chaqiruv-xati' };
+    const qt = /^[a-z0-9]{8,16}$/.test(String(data.qt || '')) ? String(data.qt) : '';
 
-    let text = K.head + "\n\n";
-    text += K.line("Farzandingiz" + (name ? " (" + name + (cls ? ", " + cls + "-sinf" : "") + ")" : "")) + "\n";
-    if (dateTxt) text += "Sana: " + dateTxt + "\n";
-    if (reason) text += K.reasonLb + reason + "\n";
-    if (infoUrl) text += "\nTafsilot: " + infoUrl;
+    let text = t(lang, kk + '_head') + "\n\n";
+    text += t(lang, kk + '_line', { c: t(lang, 'child') + (name ? " (" + name + (cls ? ", " + t(lang, 'cls_sfx', { c: cls }) : "") + ")" : "") }) + "\n";
+    if (dateTxt) text += t(lang, 'date_lb') + dateTxt + "\n";
+    if (reason) text += t(lang, kk + '_reason') + reason + "\n";
+    if (infoUrl) text += "\n" + t(lang, 'detail_lb') + infoUrl;
 
     // "Tanishdim" tugmasi: ota-ona bossa, telegram-webhook.js shu yozuvga ackAt qo'shadi
     const logRef = db().collection('notify_log').doc();
     const sent = await tgApi('sendMessage', {
       chat_id: chatId,
       text,
-      reply_markup: { inline_keyboard: [[{ text: '✅ Tanishdim', callback_data: 'ack|' + logRef.id }]] },
+      reply_markup: { inline_keyboard: [[{ text: t(lang, 'btn_ack'), callback_data: 'ack|' + logRef.id }]] },
     });
     if (sent && sent.ok === false) {
       res.status(502).json({ error: 'telegram-failed', message: sent.description || '' });
       return;
     }
-    await logRef.set({ phone, name, cls, clsKey: normClass(cls), date: dateTxt, kind, sentBy: email, sentAt: Date.now() });
+    await logRef.set({ phone, name, cls, clsKey: normClass(cls), date: dateTxt, kind, sentBy: email, sentAt: Date.now(), qt });
 
     // PDF nusxasi (ixtiyoriy) — admin brauzerda tayyorlab yuborgan bo'lsa,
     // alohida xabar sifatida biriktiriladi. Bu muvaffaqiyatsiz bo'lsa ham,
@@ -93,8 +92,8 @@ module.exports = async (req, res) => {
     let pdfSent = false;
     if (data.pdfBase64) {
       try {
-        const fname = K.file + (dateTxt ? '-' + dateTxt : '') + '.pdf';
-        await tgSendDocument(chatId, data.pdfBase64, fname, K.cap);
+        const fname = FILES[kind] + (dateTxt ? '-' + dateTxt : '') + '.pdf';
+        await tgSendDocument(chatId, data.pdfBase64, fname, t(lang, kk + '_cap'));
         pdfSent = true;
       } catch (e) {
         console.warn("PDF yuborib bo'lmadi:", e);
