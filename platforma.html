@@ -316,6 +316,15 @@ textarea.inp{resize:vertical;min-height:76px}
 .arch-t{width:100%;border-collapse:collapse;font-size:13px}.arch-t th,.arch-t td{padding:6px 8px;text-align:left;border-bottom:1px solid rgba(128,128,128,.15);vertical-align:top}.arch-t th{position:sticky;top:0;background:var(--card,#fff)}
 /* QR orqali "Ko'rdim" */
 .ack-card{margin:16px 0 4px;padding:14px;border-radius:14px;background:var(--brand-soft);text-align:center}.ack-h{font-weight:700}
+/* ko'rilmagan xatlar, til, avtomatik xabarlar, hisobot */
+.unseen-home{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;border-left:4px solid #d98c00}
+.info-lang{display:flex;gap:6px;justify-content:flex-end;margin:0 0 6px}.info-lang button{border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer}.info-lang button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.ack-q{font-weight:600;margin:4px 0 8px}.ack-yn{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:8px}.ack-yn .btn{flex:1 1 140px}
+.au-row{display:flex;gap:18px;flex-wrap:wrap;margin:6px 0 8px 26px}.au-row label{display:flex;align-items:center;gap:6px}.au-row select.inp{width:auto;margin:0}
+.rk-h{font-size:15px;margin:18px 0 6px}.rk-tw{overflow:auto;max-height:420px;border:1px solid rgba(128,128,128,.25);border-radius:10px}
+.rk-bar{position:relative;height:18px;min-width:110px;background:rgba(128,128,128,.15);border-radius:6px;overflow:hidden}.rk-bar i{display:block;height:100%;background:var(--brand);border-radius:6px}.rk-bar span{position:absolute;left:6px;top:0;font-size:12px;line-height:18px;font-weight:700}
+.nw-chips i.sc{background:#fff4d6;color:#8a5a00}.nf-sched{margin:8px 0}
+
 
 /* o'quvchi raqamini tuzatish */
 .rs-bar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}.rs-bar .inp{flex:1 1 220px;margin:0}.rs-bar select.inp{flex:0 1 240px}
@@ -957,6 +966,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
 <!-- ============ OMMAVIY MA'LUMOT (QR orqali) ============ -->
 <section id="infoView" class="hidden">
   <div class="info-card">
+    <div id="infoLang" class="info-lang"></div>
     <img class="logo" src="icons/logo/icon.svg" alt="28-maktab" width="56" height="56">
     <h1 id="infoTitle">28-maktab</h1>
     <p class="sub" id="infoSub">Maktab ma'muriyati</p>
@@ -1100,6 +1110,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
         <div class="filters">
           <input class="inp" id="q" placeholder="Qidirish: ism, sinf, sabab...">
           <select class="inp" id="qClass"><option value="">Barcha sinflar</option></select>
+          <select class="inp" id="qSeen" title="Ota-ona xatni ko'rganmi"><option value="">Ko'rilgan va ko'rilmagan</option><option value="unseen">Faqat ko'rilmagan</option><option value="seen">Faqat ko'rilgan</option></select>
           <label class="fld"><span>Sanadan</span><input class="inp" id="qFrom" type="date"></label>
           <label class="fld"><span>Sanagacha</span><input class="inp" id="qTo" type="date"></label>
           <button class="mini" id="qClear" type="button">Filtrni tozalash</button>
@@ -1309,6 +1320,13 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
         <p class="hint">O'quvchilar va o'qituvchilar ro'yxatidagi ma'lumotlar asosida avtomatik hisoblanadi.</p>
         <div class="stat-cards" id="statCards"></div>
       </div>
+      <div class="card" id="riskCard">
+        <div class="ch-head"><h2>Xavf guruhi va hisobotlar</h2>
+          <div class="ch-act"><select class="inp" id="rkPeriod"><option value="year">Joriy o'quv yili</option><option value="month">Joriy oy</option><option value="d30">Oxirgi 30 kun</option><option value="all">Barcha faol xatlar</option></select>
+          <button class="btn line sm" id="rkExcel" type="button">⬇ Excel</button><button class="btn line sm" id="rkPdf" type="button">⬇ PDF</button></div></div>
+        <div class="msg" id="rkMsg"></div>
+        <div id="riskBody"></div>
+      </div>
       <div class="card" id="chCard">
         <div class="ch-head">
           <h2 id="chTitle">Diagrammalar</h2>
@@ -1380,7 +1398,8 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
             <p class="hint">⚠️ Rasmda o'quvchilar bo'lsa, ota-onalarning roziligi olinganiga ishonch hosil qiling.</p>
             <label class="nf-chk"><input type="checkbox" id="nTg" checked> <span id="nTgTxt">✈️ E'lon qilinganda Telegram kanalga ham joylash</span></label>
             <label class="nf-chk"><input type="checkbox" id="nPin"> 📌 Muhim e'lon sifatida tepaga mahkamlash</label>
-            <div class="nf-btns"><button type="button" class="btn" id="nPublish">E'lon qilish</button><button type="button" class="btn line" id="nDraft">Qoralama saqlash</button><button type="button" class="mini" id="nNew">Yangisini boshlash</button></div>
+            <div class="nf-sched"><label class="fl" for="nWhen">⏰ Rejalashtirish (ixtiyoriy)</label><input type="date" class="inp" id="nWhen"><p class="hint">Sana tanlab «Rejalashtirish»ni bosing: yangilik shu kuni soat 10:00 atrofida o'zi e'lon qilinadi (yuqoridagi Telegram belgisi yoqilgan bo'lsa, kanalga ham joylanadi).</p></div>
+            <div class="nf-btns"><button type="button" class="btn" id="nPublish">E'lon qilish</button><button type="button" class="btn line" id="nDraft">Qoralama saqlash</button><button type="button" class="btn line" id="nSchedule">⏰ Rejalashtirish</button><button type="button" class="mini" id="nNew">Yangisini boshlash</button></div>
             <p id="nMsg" class="hint"></p>
           </div>
           <div class="news-side"><h3>Yozilgan yangiliklar</h3><div id="newsList"><p class="hint">Yuklanmoqda...</p></div></div>
@@ -1525,6 +1544,31 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
             <div class="actions"><button class="btn" id="saveSet">Saqlash</button></div>
             <div class="msg" id="setMsg"></div>
           </div>
+          <div class="card" id="autoCard">
+            <h2>Avtomatik xabarlar va zaxira</h2>
+            <p class="hint">Quyidagilar har kuni Toshkent vaqti bilan soat <b>10:00</b> da server tomonidan o'zi bajariladi. Ota-onalarga xabarlar faqat Telegram botga ulangan ota-onalarga boradi. Takror xabar yuborilmaydi.</p>
+            <label class="check"><input type="checkbox" id="au_rem_on"><span><b>Ko'rilmagan xatlar haqida eslatma</b>: ota-ona xatni Telegramda «Tanishdim» yoki QR orqali «Ko'rdim» tugmasi bilan tasdiqlamasa, bot qayta eslatadi</span></label>
+            <div class="au-row"><label>Xatdan so'ng <select class="inp" id="au_rem_days"><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="7">7</option></select> kun o'tgach</label><label>Eng ko'pi bilan <select class="inp" id="au_rem_max"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select> marta</label></div>
+            <div class="actions"><button type="button" class="btn line sm" data-au="reminders:dry">Sinash: nechta eslatma ketadi?</button><button type="button" class="btn line sm" data-au="reminders:run">Hozir yuborish</button></div>
+            <label class="check" style="margin-top:14px"><input type="checkbox" id="au_abs_on"><span><b>Davomat xabari</b>: o'quvchi darsga kelmasa («Sz», «Kas», «Sb»), ota-onasiga xabar yuboriladi (hisob 10:00 da, kecha va bugun uchun)</span></label>
+            <label class="check"><input type="checkbox" id="au_abs_late"><span>Kechikkanlar («Kch») haqida ham xabar yuborilsin</span></label>
+            <div class="actions"><button type="button" class="btn line sm" data-au="absence:dry">Sinash: nechta xabar ketadi?</button><button type="button" class="btn line sm" data-au="absence:run">Hozir yuborish</button></div>
+            <label class="check" style="margin-top:14px"><input type="checkbox" id="au_bk_on"><span><b>Haftalik zaxira</b>: har dushanba barcha xatlar, baza va davomat fayli «Hisobot raqami»ga Telegramda yuboriladi</span></label>
+            <div class="actions"><button type="button" class="btn line sm" data-au="backup:dry">Tekshirish</button><button type="button" class="btn line sm" data-au="backup:run">Zaxirani hozir yuborish</button><button type="button" class="btn line sm" data-au="news:run">Rejalashtirilgan yangiliklarni hozir e'lon qilish</button></div>
+            <div class="actions" style="margin-top:14px"><button type="button" class="btn" id="auSave">Saqlash</button></div>
+            <div class="msg" id="auMsg"></div>
+            <div class="hint" id="auStatus" style="margin-top:10px"></div>
+          </div>
+          <div class="card" id="reasonCard">
+            <h2>Sabab shablonlari</h2>
+            <p class="hint">Xat yozishda «Tayyor sabablar» ro'yxatida chiqadi. Har bir qatorga bitta shablon yozing. Bu ro'yxat hamma xodimda bir xil bo'ladi.</p>
+            <label class="fl" for="rz_w">Ogohlantirish xati uchun qo'shimcha shablonlar (tayyor ro'yxatga qo'shiladi)</label><textarea class="inp" id="rz_w" rows="4"></textarea>
+            <label class="fl" for="rz_p">Minnatdorchilik xati</label><textarea class="inp" id="rz_p" rows="4"></textarea>
+            <label class="fl" for="rz_i">Ota-onalar yig'ilishi taklifnomasi</label><textarea class="inp" id="rz_i" rows="3"></textarea>
+            <label class="fl" for="rz_s">Maktabga chaqiruv xati</label><textarea class="inp" id="rz_s" rows="3"></textarea>
+            <div class="actions"><button type="button" class="btn" id="rz_save">Saqlash</button><button type="button" class="btn line" id="rz_reset">Boshlang'ich holatga qaytarish</button></div>
+            <div class="msg" id="rz_msg"></div>
+          </div>
           <div class="card" id="wmCard">
             <h2>Watermark (suv belgisi)</h2>
             <p class="hint">Xat orqasida xira ko'rinadigan yozuv yoki rasm. U chop etilganda, PDF qilinganda va Telegramga yuborilganda ham chiqadi. Har bir xat uchun xat formasidagi «Watermark qo'shish» belgisi bilan alohida yoqish yoki o'chirish mumkin. Belgisi o'zgartirilmagan eski xatlar yuqoridagi umumiy sozlamaga ko'ra chiqadi.</p>
@@ -1654,7 +1698,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   (function(){
     var sec=$('#tab-settings'); if(!sec) return;
     var sc=$$('.card',sec).filter(function(c){var h=$('h2',c);return h&&/muriyati/i.test(h.textContent)})[0];
-    var cards=[['admin','Adminlar',[$('#adminCard')]],['school','Maktab',[sc]],['roster','Baza',[$('#contactCard'),$('#rosterCard')]],['wm','Watermark',[$('#wmCard')]],['report','Hisobot',[$('#reportCard')]],['backup','Zaxira va arxiv',[$('#backupCard'),$('#archCard')]]].map(function(x){return [x[0],x[1],x[2].filter(Boolean)]}).filter(function(x){return x[2].length});
+    var cards=[['admin','Adminlar',[$('#adminCard')]],['school','Maktab',[sc,$('#reasonCard')]],['roster','Baza',[$('#contactCard'),$('#rosterCard')]],['wm','Watermark',[$('#wmCard')]],['report','Hisobot va avtomatik xabarlar',[$('#reportCard'),$('#autoCard')]],['backup','Zaxira va arxiv',[$('#backupCard'),$('#archCard')]]].map(function(x){return [x[0],x[1],x[2].filter(Boolean)]}).filter(function(x){return x[2].length});
     if(cards.length<3) return;
     var bar=d.createElement('div'); bar.className='set-tabs'; bar.innerHTML=cards.map(function(c){return '<button type="button" data-st="'+c[0]+'">'+c[1]+'</button>'}).join('');
     var pr=cards[0][2][0].parentNode; pr.insertBefore(bar,pr.firstElementChild);   /* menyu paneli sahifaning eng tepasida */
@@ -2011,7 +2055,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     cloudSync('sigs', function(){ renderSigPanel(); renderSheet(); renderLog(); });
     }
     ensureSettingsDoc();
-    if(!isAttStaff()){ watchRoster(); watchNotices(); watchAcks(); }
+    if(!isAttStaff()){ watchRoster(); watchNotices(); watchAcks(); watchReminders(); watchCronStatus(); }
     if(!isTLetter()) attStart();
   }
   /* ---------- O'quvchilar/o'qituvchilar bazasi (ism tanlab kiritish uchun) ---------- */
@@ -2411,6 +2455,8 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     student_contact_fixed: "O'quvchi raqami/ota-onasi tuzatildi (xatlar ham yangilandi)",
     wm_changed: "Watermark sozlamasi o'zgartirildi",
     parent_seen_qr: "Ota-ona QR orqali xatni ko'rdi",
+    parent_rsvp: "Ota-ona chaqiruvga javob berdi",
+    auto_changed: "Avtomatik xabarlar sozlamasi o'zgartirildi",
     letters_archived: "Xatlar arxivga ko'chirildi",
     letters_unarchived: "Xatlar arxivdan qaytarildi",
     student_letter_signed: "O'quvchi xatlari imzolandi",
@@ -2772,17 +2818,18 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     box.addEventListener('input',function(e){ if(e.target.id==='archQ'){ archShownQ=e.target.value; var pos=e.target.selectionStart; archRenderView(); var q=$('#archQ'); if(q){ q.focus(); try{ q.setSelectionRange(pos,pos); }catch(x){} } } });
   })();
 
-  /* ---------- QR orqali «Ko'rdim» tasdig'i ----------
+  /* ---------- QR orqali «Ko'rdim» tasdig'i, «Kelaman / Kela olmayman» va ko'rilmagan xatlar ----------
      Har bir xatga tasodifiy yashirin belgi (qt) beriladi va QR manziliga qo'shiladi (#x=...&k=<qt>).
-     Ota-ona QR ni skanerlab, ochilgan sahifada «Ko'rdim» tugmasini bossa, server (api/seen.js) buni letter_acks ga yozadi,
-     xatlar jurnalida «👁 QR orqali ko'rdi» belgisi chiqadi. Belgisi yo'q eski xatlarda QR avvalgidek ishlaydi (faqat tekshirish). */
+     Ota-ona QR ni skanerlab, ochilgan sahifada «Ko'rdim» tugmasini bossa (chaqiruv va taklifnomada: «Kelaman» / «Kela olmayman»),
+     server (api/seen.js) buni letter_acks ga yozadi, xatlar jurnalida belgi chiqadi. Belgisi yo'q eski xatlarda QR avvalgidek ishlaydi. */
   function newQt(){
     var a=new Uint8Array(10), s='';
     try{ crypto.getRandomValues(a); }catch(e){ for(var i=0;i<10;i++) a[i]=Math.floor(Math.random()*256); }
     for(var j=0;j<10;j++) s+=(a[j]%36).toString(36);
     return s;
   }
-  var acks={};
+  /* kuzatuvchilar: tasdiqlar (letter_acks), eslatmalar (letter_reminders) */
+  var acks={}, reminders={}, noticeByQt={};
   function watchAcks(){
     if(!db||!curUser||isTLetter()) return;
     var q=db.collection('letter_acks');
@@ -2792,10 +2839,70 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     } else q=q.orderBy('at','desc').limit(1000);
     unsubs.push(q.onSnapshot(function(snap){
       var m={}; snap.forEach(function(d){ m[d.id]=d.data(); });
-      acks=m; renderLog();
+      acks=m; renderLog(); try{ renderHome(); }catch(e){}
     },function(err){ console.warn('letter_acks:', err && err.code); }));
   }
-  /* --- ota-ona ochadigan ochiq sahifa (QR skanerlanganda) --- */
+  function watchReminders(){
+    if(!db||!curUser||isTLetter()) return;
+    var q=db.collection('letter_reminders');
+    if(isHomeroom()){
+      if(!myClasses.length) return;
+      q=q.where('clsKey','in',myClasses.slice(0,10)).limit(500);
+    } else q=q.orderBy('lastAt','desc').limit(1000);
+    unsubs.push(q.onSnapshot(function(snap){
+      var m={}; snap.forEach(function(d){ m[d.id]=d.data(); });
+      reminders=m; renderLog();
+    },function(err){ console.warn('letter_reminders:', err && err.code); }));
+  }
+  /* xat ko'rilganmi (Telegramda «Tanishdim», QR orqali «Ko'rdim»/javob, yoki qo'lda topshirilgan) */
+  function hash36(s){ var x=5381; s=String(s); for(var i=0;i<s.length;i++){ x=((x<<5)+x+s.charCodeAt(i))|0; } return (x>>>0).toString(36); }
+  function letterSeen(e){
+    var n=(e.tg && notices) ? notices[e.tg] : null;
+    if(n && n.ackAt) return true;
+    if(e.qt){ if(acks && acks[e.qt]) return true; if(noticeByQt[e.qt]) return true; }
+    return !!e.deliv;
+  }
+  function letterTracked(e){ return !!(e.qt || e.tg); }                       /* tasdiqlash mumkin bo'lgan xat */
+  function letterUnseen(e){ return e.kind!=='praise' && letterTracked(e) && !letterSeen(e); }
+  function remOf(e){ return e.qt ? reminders['q_'+e.qt] : reminders['h_'+hash36(e.id||(e.name+'|'+e.date))]; }
+  function unseenStats(list){
+    var n=0, over=0, lim=Date.now()-3*864e5;
+    list.forEach(function(e){ if(letterUnseen(e)){ n++; if((e.at||0)<lim) over++; } });
+    return {n:n, over:over};
+  }
+  function unseenHomeHTML(){
+    var u=unseenStats(loadLog().filter(function(e){ return inMyClasses(e.cls); }));
+    if(!u.n) return '';
+    return '<div class="card unseen-home"><div><b>📭 Ko\'rilmagan xatlar: '+u.n+' ta</b>'+(u.over?' <span class="badge warn">'+u.over+' tasi 3 kundan oshgan</span>':'')+
+      '<div class="hint">Ota-ona hali Telegramda «Tanishdim» yoki QR orqali «Ko\'rdim» tugmasini bosmagan.</div></div><button type="button" class="btn sm" data-unseen="1">Ko\'rish</button></div>';
+  }
+  (function(){
+    var box=$('#homeBody'); if(!box) return;
+    box.addEventListener('click',function(e){
+      if(e.target.closest('[data-unseen]')){ $('#qSeen').value='unseen'; goTab('log'); renderLog(); }
+    });
+  })();
+
+  /* --- ota-ona ochadigan ochiq sahifa: til (o'zbek / rus) --- */
+  var infoLang=(function(){ try{ var l=localStorage.getItem('m28_lang'); if(l==='ru'||l==='uz') return l; return (navigator.language||'').toLowerCase().indexOf('ru')===0 ? 'ru' : 'uz'; }catch(e){ return 'uz'; } })();
+  function IL(uz,ru){ return infoLang==='ru' ? ru : uz; }
+  var INFO_RU={
+    info:{'':'Предупредительное письмо',praise:'Благодарственное письмо',invite:'Приглашение на родительское собрание',summon:'Письмо-вызов в школу'}
+  };
+  function infoLangBar(){
+    var b=$('#infoLang'); if(!b) return;
+    b.innerHTML='<button type="button" data-il="uz" class="'+(infoLang==='uz'?'on':'')+'">O\'zbekcha</button><button type="button" data-il="ru" class="'+(infoLang==='ru'?'on':'')+'">Русский</button>';
+  }
+  (function(){
+    var b=$('#infoLang'); if(!b) return;
+    b.addEventListener('click',function(e){
+      var x=e.target.closest('[data-il]'); if(!x) return;
+      infoLang=x.getAttribute('data-il'); try{ localStorage.setItem('m28_lang',infoLang); }catch(er){}
+      showInfo();
+    });
+  })();
+
+  /* --- QR sahifadagi tasdiq paneli --- */
   function ackToken(){
     var m=/[#&]k=([a-z0-9]{8,16})(?:&|$)/.exec(location.hash||'');
     return m ? m[1] : '';
@@ -2805,35 +2912,285 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     box.innerHTML='';
     var t=ackToken();
     if(!t || !pl || pl.type!=='s') return;
-    box.innerHTML='<div class="ack-card"><div class="ack-h">Ota-onalar uchun</div><p id="ackTxt" class="sub" style="margin:6px 0 10px">Tekshirilmoqda...</p><button id="ackBtn" type="button" class="btn block hidden">✅ Ko\'rdim, tanishdim</button></div>';
+    box.innerHTML='<div class="ack-card"><div class="ack-h">'+IL('Ota-onalar uchun','Для родителей')+'</div><p id="ackTxt" class="sub" style="margin:6px 0 10px">'+IL('Tekshirilmoqda...','Проверка...')+'</p>'+
+      '<div id="ackRsvp" class="hidden"><div class="ack-q">'+IL('Xatda ko\'rsatilgan vaqtda kela olasizmi?','Сможете ли прийти в указанное в письме время?')+'</div>'+
+      '<div class="ack-yn"><button id="ackYes" type="button" class="btn">✅ '+IL('Kelaman','Приду')+'</button><button id="ackNo" type="button" class="btn line">❌ '+IL('Kela olmayman','Не смогу прийти')+'</button></div>'+
+      '<div id="ackNoteBox" class="hidden"><textarea id="ackNote" class="inp" rows="2" maxlength="140" placeholder="'+IL('Qachon kela olasiz yoki sababi (ixtiyoriy)','Когда сможете или причина (необязательно)')+'"></textarea><button id="ackNoSend" type="button" class="btn block" style="margin-top:6px">'+IL('Yuborish','Отправить')+'</button></div></div>'+
+      '<button id="ackBtn" type="button" class="btn block hidden">✅ '+IL('Ko\'rdim, tanishdim','Ознакомился(лась)')+'</button></div>';
     ackCall(t,'check');
     $('#ackBtn').addEventListener('click',function(){ this.disabled=true; ackCall(t,'ack'); });
+    $('#ackYes').addEventListener('click',function(){ ackCall(t,'rsvp',{v:'yes'}); });
+    $('#ackNo').addEventListener('click',function(){ $('#ackNoteBox').classList.remove('hidden'); $('#ackNote').focus(); });
+    $('#ackNoSend').addEventListener('click',function(){ this.disabled=true; ackCall(t,'rsvp',{v:'no',note:$('#ackNote').value}); });
   }
-  function ackCall(t,act){
-    fetch('/api/seen',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({t:t,act:act})})
+  function ackCall(t,act,extra){
+    var body=Object.assign({t:t,act:act},extra||{});
+    fetch('/api/seen',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
       .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return {s:r.status,j:j}; }); })
       .then(function(x){ ackShow(x.s,x.j); })
       .catch(function(){ ackShow(0,{}); });
   }
   function ackShow(st,j){
-    var txt=$('#ackTxt'), btn=$('#ackBtn'); if(!txt||!btn) return;
-    if(st===200 && j.state==='seen'){
-      txt.innerHTML='✅ Siz bu xat bilan tanishganingiz qayd etilgan'+(j.at?' · <b>'+esc(tsDate(j.at))+'</b>':'')+'. Rahmat!';
-      btn.classList.add('hidden');
-    } else if(st===200 && j.state==='none'){
-      txt.textContent="Xat bilan tanishgan bo'lsangiz, quyidagi tugmani bosing: maktab buni ko'radi.";
-      btn.classList.remove('hidden'); btn.disabled=false;
+    var txt=$('#ackTxt'), btn=$('#ackBtn'), rs=$('#ackRsvp'); if(!txt||!btn||!rs) return;
+    if($('#ackNoSend')) $('#ackNoSend').disabled=false;
+    if(st===200 && j.state){
+      var seen=(j.state==='seen');
+      if(j.canRsvp){
+        btn.classList.add('hidden'); rs.classList.remove('hidden');
+        if(j.rsvp){
+          txt.innerHTML=(j.rsvp==='yes'?'✅ '+IL('Javobingiz qabul qilindi: <b>Kelaman</b>','Ваш ответ принят: <b>Приду</b>'):'❌ '+IL('Javobingiz qabul qilindi: <b>Kela olmayman</b>','Ваш ответ принят: <b>Не смогу прийти</b>'))+(j.rsvpAt?' · <b>'+esc(tsDate(j.rsvpAt))+'</b>':'')+'. '+IL('Fikringiz o\'zgarsa, quyida qayta tanlang.','Если планы изменятся, выберите снова ниже.');
+        } else txt.textContent=IL('Iltimos, javobingizni tanlang: maktab buni ko\'radi.','Пожалуйста, выберите ответ: школа его увидит.');
+        if(j.rsvp) $('#ackNoteBox').classList.add('hidden');
+      } else if(seen){
+        txt.innerHTML='✅ '+IL('Siz bu xat bilan tanishganingiz qayd etilgan','Ваше ознакомление с этим письмом отмечено')+(j.at?' · <b>'+esc(tsDate(j.at))+'</b>':'')+'. '+IL('Rahmat!','Спасибо!');
+        btn.classList.add('hidden'); rs.classList.add('hidden');
+      } else {
+        txt.textContent=IL('Xat bilan tanishgan bo\'lsangiz, quyidagi tugmani bosing: maktab buni ko\'radi.','Если вы ознакомились с письмом, нажмите кнопку ниже: школа это увидит.');
+        btn.classList.remove('hidden'); btn.disabled=false; rs.classList.add('hidden');
+      }
     } else if(st===404){
-      txt.textContent="Bu xat tizimda topilmadi, shuning uchun tasdiqlab bo'lmaydi.";
-      btn.classList.add('hidden');
+      txt.textContent=IL('Bu xat tizimda topilmadi, shuning uchun tasdiqlab bo\'lmaydi.','Это письмо не найдено в системе, подтвердить нельзя.');
+      btn.classList.add('hidden'); rs.classList.add('hidden');
     } else if(st===429){
-      txt.textContent="Juda ko'p urinish bo'ldi. Birozdan keyin qayta urinib ko'ring.";
-      btn.classList.add('hidden');
+      txt.textContent=IL('Juda ko\'p urinish bo\'ldi. Birozdan keyin qayta urinib ko\'ring.','Слишком много попыток. Попробуйте чуть позже.');
+      btn.classList.add('hidden'); rs.classList.add('hidden');
     } else {
-      txt.textContent="Hozir tasdiqlab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring.";
+      txt.textContent=IL('Hozir tasdiqlab bo\'lmadi. Internetni tekshirib, qayta urinib ko\'ring.','Сейчас подтвердить не удалось. Проверьте интернет и попробуйте снова.');
       btn.classList.remove('hidden'); btn.disabled=false;
     }
   }
+
+  /* ---------- AVTOMATIK XABARLAR VA ZAXIRA (kunlik vazifalar, api/cron-daily.js) ----------
+     Har kuni Toshkent vaqti bilan soat 10:00 da server o'zi bajaradi: rejalashtirilgan yangiliklarni e'lon qilish, davomat xabarlari,
+     ko'rilmagan xatlar eslatmasi, dushanba kuni zaxira, 1-sanada oylik hisobot. Bu yerda ularni yoqish/o'chirish va qo'lda sinash. */
+  function normAuto(a){
+    a=(a && typeof a==='object')?a:{}; var r=a.rem||{}, b=a.bk||{}, s=a.abs||{};
+    return {rem:{on:!!r.on, days:wmClamp(r.days,1,14,3), max:wmClamp(r.max,1,3,1)}, bk:{on:b.on!==false}, abs:{on:!!s.on, late:!!s.late}};
+  }
+  function autoFill(){
+    if(!$('#au_rem_on')) return;
+    var a=settings.auto;
+    $('#au_rem_on').checked=a.rem.on; $('#au_rem_days').value=String(a.rem.days); $('#au_rem_max').value=String(a.rem.max);
+    $('#au_abs_on').checked=a.abs.on; $('#au_abs_late').checked=a.abs.late; $('#au_bk_on').checked=a.bk.on;
+  }
+  function autoRead(){
+    settings.auto=normAuto({rem:{on:$('#au_rem_on').checked, days:$('#au_rem_days').value, max:$('#au_rem_max').value},
+      abs:{on:$('#au_abs_on').checked, late:$('#au_abs_late').checked}, bk:{on:$('#au_bk_on').checked}});
+  }
+  function autoSave(){
+    autoRead(); lset('m28_settings',JSON.stringify(settings));
+    if(!db || !curUser) return setMsg('#auMsg','Saqlandi (faqat shu qurilmada)','ok');
+    cloudSaveSettings().then(function(){ setMsg('#auMsg',"Saqlandi. Server shu sozlamaga ko'ra ishlaydi",'ok'); try{ logAudit('auto_changed',{rem:settings.auto.rem.on,abs:settings.auto.abs.on,bk:settings.auto.bk.on}); }catch(e){} },
+      function(){ setMsg('#auMsg',"Shu qurilmada saqlandi, lekin bulutga yozib bo'lmadi",'err'); });
+  }
+  function autoDescribe(task, dry, r){
+    if(r.error) return r.error;
+    if(task==='reminders'){
+      var more=" Telegramga ulanmagan: "+(r.noLink||0)+", ko'rilgan: "+(r.seen||0)+", muddati yetmagan: "+(r.waiting||0)+", maksimumga yetgan: "+(r.maxed||0)+".";
+      return dry ? "Sinov: bugun "+(r.wouldSend||0)+" ta eslatma yuboriladi."+more : "Yuborildi: "+(r.sent||0)+" ta eslatma."+(r.errors?" Xato: "+r.errors+".":"")+more;
+    }
+    if(task==='absence'){
+      var m2=" Telefon yo'q: "+(r.noPhone||0)+", Telegramga ulanmagan: "+(r.noLink||0)+", to'xtatilgan: "+(r.muted||0)+", allaqachon yuborilgan: "+(r.already||0)+".";
+      return dry ? "Sinov: "+(r.wouldSend||0)+" ta davomat xabari yuboriladi."+m2 : "Yuborildi: "+(r.sent||0)+" ta davomat xabari."+(r.errors?" Xato: "+r.errors+".":"")+m2;
+    }
+    if(task==='backup'){
+      var d=(r.letters!=null?r.letters:0)+" ta xat, "+(r.students||0)+" ta o'quvchi, "+(r.kb||0)+" KB";
+      return dry ? "Zaxira tayyor ("+d+"). Sinov rejimi: yuborilmadi." : (r.sent ? "Zaxira fayli hisobot raqamiga Telegramda yuborildi ("+d+")." : "Yuborilmadi.");
+    }
+    if(task==='news') return dry ? "Muddati kelgan rejalashtirilgan yangilik: "+(r.due||0)+" ta." : "E'lon qilindi: "+(r.published||0)+" ta yangilik"+(r.tgSent?", Telegramga joylandi: "+r.tgSent:"")+".";
+    return 'Bajarildi';
+  }
+  function autoRun(task, dry){
+    if(isViewer()) return;
+    if(!db || !curUser) return setMsg('#auMsg',"Internet yo'q yoki tizimga kirilmagan",'err');
+    if(!dry && !confirm(task==='backup' ? "Zaxira fayli hozir hisobot raqamiga Telegramda yuboriladi. Davom etasizmi?" : (task==='news' ? "Muddati kelgan rejalashtirilgan yangiliklar hozir e'lon qilinadi. Davom etasizmi?" : "Xabarlar ota-onalarga hozir yuboriladi. Davom etasizmi?"))) return;
+    setMsg('#auMsg','Bajarilmoqda...','');
+    $$('#autoCard button').forEach(function(b){ b.disabled=true; });
+    curUser.getIdToken().then(function(tok){
+      return fetch('/api/run-task',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken:tok,task:task,dry:dry})});
+    }).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return {s:r.status,j:j}; }); })
+      .then(function(x){
+        if(x.s===200 && x.j.ok) setMsg('#auMsg',autoDescribe(task,dry,x.j.result||{}),(x.j.result&&x.j.result.error)?'err':'ok');
+        else setMsg('#auMsg',(x.j&&x.j.error)||('Xato ('+x.s+')'),'err');
+      }).catch(function(){ setMsg('#auMsg',"Server bilan aloqa yo'q",'err'); })
+      .then(function(){ $$('#autoCard button').forEach(function(b){ b.disabled=isViewer(); }); });
+  }
+  function autoSummary(results){
+    var names={news:'Yangiliklar',absence:'Davomat',reminders:'Eslatma',backup:'Zaxira',monthly:'Oylik hisobot'};
+    return (results||[]).map(function(r){
+      var s;
+      if(r.error) s='xato: '+esc(String(r.error).slice(0,80));
+      else if(r.skipped) s='o\'tkazib yuborildi';
+      else if(r.task==='news') s=(r.published||0)+" e'lon";
+      else if(r.task==='absence'||r.task==='reminders') s=(r.sent||0)+' ta xabar';
+      else if(r.task==='backup') s=r.sent?'yuborildi':'yuborilmadi';
+      else s=(r.status===200?'bajarildi':'xato');
+      return '<b>'+(names[r.task]||esc(r.task))+':</b> '+s;
+    }).join(' · ');
+  }
+  function watchCronStatus(){
+    if(!db||!curUser||isHomeroom()||isTLetter()) return;
+    unsubs.push(db.collection('cron_status').doc('last').onSnapshot(function(s){
+      var el=$('#auStatus'); if(!el) return;
+      var d=s.exists?s.data():null;
+      el.innerHTML = d ? 'Oxirgi avtomatik ishga tushish: <b>'+esc(tsDate(d.at))+' '+esc(new Date(d.at).toTimeString().slice(0,5))+'</b>. '+autoSummary(d.results) : 'Avtomatik vazifalar hali ishga tushmagan (har kuni soat 10:00 da ishlaydi).';
+    },function(e){ console.warn('cron_status:',e&&e.code); }));
+  }
+  (function(){
+    var card=$('#autoCard'); if(!card) return;
+    $('#auSave').addEventListener('click',autoSave);
+    card.addEventListener('click',function(e){
+      var b=e.target.closest('[data-au]'); if(!b) return;
+      var p=b.getAttribute('data-au').split(':'); autoRun(p[0], p[1]==='dry');
+    });
+  })();
+
+  /* ---------- SABAB SHABLONLARI (maktab bo'yicha, hamma xodimga umumiy) ----------
+     Ogohlantirish xati uchun tayyor ro'yxat (TPL) saqlanadi, unga «Maktab shablonlari» guruhi qo'shiladi.
+     Minnatdorchilik, taklifnoma va chaqiruv xatlari uchun tayyor matnlar shu yerdan olinadi. */
+  function reasonDef(){
+    return {
+      w:[],
+      p:["A'lo o'qigani uchun","Fan olimpiadasida yutuq qozongani uchun","Namunali xulq-atvori uchun","Jamoat ishlarida faol qatnashgani uchun","Sport musobaqasida yutuq qozongani uchun","Maktab tadbirida yaxshi ishtirok etgani uchun"],
+      i:["Ota-onalar yig'ilishi: chorak yakunlari","Ota-onalar yig'ilishi: o'quv yili boshi","Ota-onalar yig'ilishi: imtihonlarga tayyorgarlik"],
+      s:["O'quvchining o'zlashtirishi haqida suhbat uchun","O'quvchining xulq-atvori haqida suhbat uchun","Davomat (qoldirilgan darslar) haqida suhbat uchun","Maktab ma'muriyati bilan suhbat uchun"]
+    };
+  }
+  function normReasons(r){
+    r=(r && typeof r==='object')?r:{}; var D=reasonDef(), out={};
+    ['w','p','i','s'].forEach(function(k){
+      var a=Array.isArray(r[k])?r[k]:D[k], seen={};
+      out[k]=a.map(function(x){ return String(x==null?'':x).replace(/\s+/g,' ').trim().slice(0,200); }).filter(function(x){ if(!x||seen[x]) return false; seen[x]=1; return true; }).slice(0,40);
+    });
+    return out;
+  }
+  function reasonKey(kind){ return kind==='praise'?'p':(kind==='invite'?'i':(kind==='summon'?'s':'w')); }
+  function tplGroups(){
+    var k=(slots && slots[cur] && slots[cur].kind) || '', R=(settings && settings.reasons) || normReasons({});
+    if(!k) return TPL.concat(R.w.length ? [{g:'Maktab shablonlari',items:R.w}] : []);
+    return [{g:kindInfo(k).short+': tayyor matnlar',items:R[reasonKey(k)]||[]}];
+  }
+  function rzFill(){
+    if(!$('#rz_w')) return;
+    var R=settings.reasons; ['w','p','i','s'].forEach(function(k){ $('#rz_'+k).value=R[k].join('\n'); });
+  }
+  (function(){
+    if(!$('#rz_w')) return;
+    $('#rz_save').addEventListener('click',function(){
+      var o={}; ['w','p','i','s'].forEach(function(k){ o[k]=$('#rz_'+k).value.split(/\r?\n/); });
+      settings.reasons=normReasons(o); rzFill(); renderTpl();
+      lset('m28_settings',JSON.stringify(settings));
+      if(!db||!curUser) return setMsg('#rz_msg','Saqlandi (faqat shu qurilmada)','ok');
+      cloudSaveSettings().then(function(){ setMsg('#rz_msg',"Saqlandi. Barcha xodimlarda yangilanadi",'ok'); },function(){ setMsg('#rz_msg',"Shu qurilmada saqlandi, lekin bulutga yozib bo'lmadi",'err'); });
+    });
+    $('#rz_reset').addEventListener('click',function(){
+      if(!confirm("Hamma shablon ro'yxatlari boshlang'ich holatga qaytariladi. Davom etasizmi?")) return;
+      settings.reasons=normReasons({}); rzFill(); renderTpl();
+      lset('m28_settings',JSON.stringify(settings));
+      if(db&&curUser) cloudSaveSettings().then(function(){ setMsg('#rz_msg',"Boshlang'ich holatga qaytarildi",'ok'); });
+    });
+  })();
+
+  /* ---------- XAVF GURUHI, SINFLAR TAQQOSLASH VA HISOBOTLAR (Statistika bo'limida) ----------
+     Davr tanlanadi (joriy o'quv yili, oy, oxirgi 30 kun yoki barcha faol xatlar). Ko'rsatiladi:
+       - xavf guruhi: davr ichida 3 va undan ko'p ogohlantirish olgan o'quvchilar (ota-ona raqami va ko'rilmagan xatlar bilan);
+       - sinflar taqqoslash: ogohlantirishlar soni, har 100 o'quvchiga nisbati, ko'rilmagan xatlar ulushi.
+     Excel (.xlsx) va PDF qilib yuklab olinadi. Arxivlangan xatlar kirmaydi. Sinf rahbari faqat o'z sinflarini ko'radi. */
+  function rkRange(kind){
+    var t=new Date(), iso=dateISO(t);
+    if(kind==='month') return {from:iso.slice(0,8)+'01', to:iso, label:"Joriy oy ("+iso.slice(0,7)+")"};
+    if(kind==='d30'){ var a=new Date(); a.setDate(a.getDate()-29); return {from:dateISO(a), to:iso, label:'Oxirgi 30 kun'}; }
+    if(kind==='all') return {from:'', to:'', label:'Barcha faol xatlar'};
+    var y=curAcadYear(); return {from:y+'-09-01', to:(y+1)+'-08-31', label:acadLabel(y)};
+  }
+  function rkClsSort(a,b){ return String(a).localeCompare(String(b),'uz',{numeric:true}); }
+  function rkData(kind){
+    var R=rkRange(kind), all=loadLog(), pm=phoneMap(all);
+    var log=all.filter(function(e){ return inMyClasses(e.cls) && (!R.from || (e.date>=R.from && e.date<=R.to)); });
+    var byCls={}, people={}, rows=[];
+    var C=function(c){ return byCls[c]||(byCls[c]={c:c,n:0,w:0,all:0,praise:0,unseen:0,tracked:0}); };
+    roster.students.forEach(function(s){ if(s && s.name && inMyClasses(s.cls)) C(normClass(s.cls)||'—').n++; });
+    log.forEach(function(e){
+      var c=normClass(e.cls)||'—', o=C(c), un=letterUnseen(e), tr=(e.kind!=='praise' && letterTracked(e));
+      o.all++; if(tr) o.tracked++; if(un) o.unseen++;
+      if(isWarn(e)){
+        o.w++;
+        var k=personKey(e), p=people[k]||(people[k]={name:e.name,cls:normClass(e.cls),n:0,last:'',unseen:0,phone:'',parent:e.parent||''});
+        p.n++; if((e.date||'')>p.last) p.last=e.date||''; if(un) p.unseen++;
+        var ph=phoneOf(e,pm); if(ph) p.phone=ph; if(e.parent) p.parent=e.parent;
+      } else if(e.kind==='praise') o.praise++;
+      rows.push({date:e.date,name:e.name,cls:normClass(e.cls),parent:e.parent||'',phone:phoneOf(e,pm)||'',kind:e.kind?kindOf(e).short:'Ogohlantirish',reason:e.reason||'',
+        status:(!tr?'—':(letterSeen(e)?"Ko'rilgan":"Ko'rilmagan")),rsvp:(e.qt&&acks[e.qt]&&acks[e.qt].rsvp)?(acks[e.qt].rsvp==='yes'?'Kelaman':'Kela olmayman'):''});
+    });
+    var risk=Object.keys(people).map(function(k){ return people[k]; }).filter(function(p){ return p.n>=3; })
+      .sort(function(a,b){ return b.n-a.n || (b.last>a.last?1:-1) || String(a.name).localeCompare(String(b.name),'uz'); });
+    var classes=Object.keys(byCls).sort(rkClsSort).map(function(c){ var o=byCls[c]; o.per100=o.n?+(100*o.w/o.n).toFixed(1):null; o.unseenPct=o.tracked?Math.round(100*o.unseen/o.tracked):null; return o; });
+    rows.sort(function(a,b){ return a.date<b.date?1:a.date>b.date?-1:0; });
+    return {R:R, risk:risk, classes:classes, rows:rows, total:log.length, warn:log.filter(isWarn).length, unseen:log.filter(letterUnseen).length};
+  }
+  var rkCur=null;
+  function rkRender(){
+    var box=$('#riskBody'); if(!box) return;
+    var kind=$('#rkPeriod').value, D=rkCur=rkData(kind);
+    var mx=0; D.classes.forEach(function(o){ if(o.per100!=null && o.per100>mx) mx=o.per100; });
+    var h='<div class="stat-cards"><div class="stat-card"><b>'+D.total+'</b><span>Xatlar ('+esc(D.R.label)+')</span></div>'+
+      '<div class="stat-card"><b>'+D.warn+'</b><span>Ogohlantirishlar</span></div>'+
+      '<div class="stat-card'+(D.risk.length?' bad':'')+'"><b>'+D.risk.length+'</b><span>Xavf guruhi (3+)</span></div>'+
+      '<div class="stat-card'+(D.unseen?' bad':'')+'"><b>'+D.unseen+'</b><span>Ko\'rilmagan xatlar</span></div></div>';
+    h+='<h3 class="rk-h">🔴 Xavf guruhi: 3 va undan ko\'p ogohlantirish</h3>';
+    if(!D.risk.length) h+='<div class="hint">Bu davrda 3 va undan ko\'p ogohlantirish olgan o\'quvchi yo\'q.</div>';
+    else h+='<div class="rk-tw"><table class="arch-t"><thead><tr><th>O\'quvchi</th><th>Sinf</th><th>Xat</th><th>Oxirgisi</th><th>Ota-onasi</th><th>Ko\'rilmagan</th></tr></thead><tbody>'+
+      D.risk.slice(0,60).map(function(p){ return '<tr><td><b>'+esc(p.name)+'</b></td><td>'+esc(p.cls)+'</td><td><span class="badge warn">'+p.n+'</span></td><td>'+esc(fmtDate(p.last))+'</td><td>'+(p.parent?esc(p.parent)+'<br>':'')+(p.phone?esc(p.phone):'<span class="muted">raqam yo\'q</span>')+'</td><td>'+(p.unseen?'<span class="badge warn">'+p.unseen+'</span>':'—')+'</td></tr>'; }).join('')+
+      '</tbody></table></div>'+(D.risk.length>60?'<div class="hint">Dastlabki 60 tasi ko\'rsatilgan, to\'liq ro\'yxat Excel/PDF da.</div>':'');
+    h+='<h3 class="rk-h">📊 Sinflar taqqoslash</h3>';
+    if(!D.classes.length) h+='<div class="hint">Ma\'lumot yo\'q.</div>';
+    else h+='<div class="rk-tw"><table class="arch-t"><thead><tr><th>Sinf</th><th>O\'quvchi</th><th>Ogohl.</th><th>100 o\'quvchiga</th><th>Maqtov</th><th>Ko\'rilmagan</th></tr></thead><tbody>'+
+      D.classes.map(function(o){ return '<tr><td><b>'+esc(o.c)+'</b></td><td>'+(o.n||'—')+'</td><td>'+o.w+'</td><td>'+(o.per100==null?'<span class="muted">baza yo\'q</span>':'<div class="rk-bar"><i style="width:'+(mx?Math.max(3,Math.round(100*o.per100/mx)):0)+'%"></i><span>'+o.per100+'</span></div>')+'</td><td>'+o.praise+'</td><td>'+(o.unseenPct==null?'—':o.unseen+' ('+o.unseenPct+'%)')+'</td></tr>'; }).join('')+'</tbody></table></div>';
+    box.innerHTML=h;
+  }
+  function rkFile(ext){ return '28-maktab-hisobot-'+rkRange($('#rkPeriod').value).label.replace(/[^0-9A-Za-z\u0400-\u04FF-]+/g,'_')+'-'+todayISO()+'.'+ext; }
+  function rkExcel(){
+    if(!rkCur) rkRender();
+    if(!window.XLSX) return setMsg('#rkMsg',"Excel kutubxonasi yuklanmadi (internetni tekshiring)",'err');
+    var D=rkCur, wb=XLSX.utils.book_new(), add=function(name,aoa,w){ var ws=XLSX.utils.aoa_to_sheet(aoa); ws['!cols']=w.map(function(x){ return {wch:x}; }); XLSX.utils.book_append_sheet(wb,ws,name); };
+    add('Xavf guruhi',[["O'quvchi",'Sinf','Ogohlantirishlar','Oxirgi sana',"Ota-onasi",'Telefon',"Ko'rilmagan xatlar"]].concat(D.risk.map(function(p){ return [p.name,p.cls,p.n,fmtDate(p.last),p.parent,p.phone,p.unseen]; })),[28,8,16,12,26,18,16]);
+    add('Sinflar',[['Sinf',"O'quvchilar",'Ogohlantirishlar','100 o\'quvchiga','Maqtovlar',"Ko'rilmagan",'Kuzatiladigan xatlar']].concat(D.classes.map(function(o){ return [o.c,o.n,o.w,o.per100==null?'':o.per100,o.praise,o.unseen,o.tracked]; })),[8,12,16,16,12,14,20]);
+    add('Xatlar',[['Sana',"O'quvchi",'Sinf','Ota-onasi','Telefon','Turi','Sabab','Holat','Javob']].concat(D.rows.map(function(r){ return [fmtDate(r.date),r.name,r.cls,r.parent,r.phone,r.kind,r.reason,r.status,r.rsvp]; })),[12,26,8,24,18,16,48,12,14]);
+    try{ XLSX.writeFile(wb,rkFile('xlsx')); setMsg('#rkMsg','Excel fayl yuklab olindi','ok'); }catch(e){ setMsg('#rkMsg',"Excel faylni saqlab bo'lmadi",'err'); }
+  }
+  function rkPdf(){
+    if(!rkCur) rkRender();
+    var D=rkCur, host=document.createElement('div');
+    host.style.cssText='position:fixed;left:-10000px;top:0;width:794px;background:#fff;color:#111;font:13px/1.35 Arial,Helvetica,sans-serif;padding:34px 38px';
+    var th='style="text-align:left;border-bottom:2px solid #999;padding:4px 6px;font-size:12px"', td='style="border-bottom:1px solid #ddd;padding:4px 6px;font-size:12px;vertical-align:top"';
+    host.innerHTML='<div style="display:flex;justify-content:space-between;align-items:baseline"><h1 style="font-size:20px;margin:0">'+esc(settings.school)+': xavf guruhi va sinflar hisoboti</h1><span style="font-size:12px">'+esc(fmtDate(todayISO()))+'</span></div>'+
+      '<p style="margin:6px 0 14px">Davr: <b>'+esc(D.R.label)+'</b> · Xatlar: <b>'+D.total+'</b> · Ogohlantirishlar: <b>'+D.warn+'</b> · Xavf guruhi: <b>'+D.risk.length+'</b> · Ko\'rilmagan: <b>'+D.unseen+'</b></p>'+
+      '<h2 style="font-size:15px;margin:14px 0 6px">Xavf guruhi (3 va undan ko\'p ogohlantirish)</h2>'+
+      (D.risk.length?'<table style="width:100%;border-collapse:collapse"><thead><tr><th '+th+'>O\'quvchi</th><th '+th+'>Sinf</th><th '+th+'>Xat</th><th '+th+'>Oxirgisi</th><th '+th+'>Ota-onasi / telefon</th></tr></thead><tbody>'+
+        D.risk.map(function(p){ return '<tr><td '+td+'><b>'+esc(p.name)+'</b></td><td '+td+'>'+esc(p.cls)+'</td><td '+td+'>'+p.n+'</td><td '+td+'>'+esc(fmtDate(p.last))+'</td><td '+td+'>'+esc(p.parent)+(p.parent&&p.phone?' · ':'')+esc(p.phone)+'</td></tr>'; }).join('')+'</tbody></table>':'<p>Yo\'q</p>')+
+      '<h2 style="font-size:15px;margin:18px 0 6px">Sinflar taqqoslash</h2>'+
+      '<table style="width:100%;border-collapse:collapse"><thead><tr><th '+th+'>Sinf</th><th '+th+'>O\'quvchi</th><th '+th+'>Ogohlantirish</th><th '+th+'>100 o\'quvchiga</th><th '+th+'>Maqtov</th><th '+th+'>Ko\'rilmagan</th></tr></thead><tbody>'+
+        D.classes.map(function(o){ return '<tr><td '+td+'><b>'+esc(o.c)+'</b></td><td '+td+'>'+(o.n||'—')+'</td><td '+td+'>'+o.w+'</td><td '+td+'>'+(o.per100==null?'—':o.per100)+'</td><td '+td+'>'+o.praise+'</td><td '+td+'>'+(o.unseenPct==null?'—':o.unseen+' ('+o.unseenPct+'%)')+'</td></tr>'; }).join('')+'</tbody></table>';
+    document.body.appendChild(host);
+    return html2canvas(host,{scale:2,backgroundColor:'#ffffff',logging:false}).then(function(cv){
+      host.remove();
+      var pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true}), pw=210, ph=297;
+      var pxPerPage=Math.floor(cv.width*ph/pw), pages=Math.max(1,Math.ceil(cv.height/pxPerPage));
+      for(var i=0;i<pages;i++){
+        var sh=Math.min(pxPerPage,cv.height-i*pxPerPage), part=document.createElement('canvas'); part.width=cv.width; part.height=sh;
+        var cx=part.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,part.width,part.height); cx.drawImage(cv,0,i*pxPerPage,cv.width,sh,0,0,cv.width,sh);
+        if(i) pdf.addPage();
+        pdf.addImage(part.toDataURL('image/jpeg',0.92),'JPEG',0,0,pw,sh*pw/cv.width,undefined,'FAST');
+      }
+      return pdf.output('blob');
+    },function(e){ host.remove(); throw e; }).then(function(blob){ return saveFile(rkFile('pdf'),blob); }).then(function(){ setMsg('#rkMsg','PDF yuklab olindi','ok'); },function(e){ setMsg('#rkMsg',"PDF tayyorlab bo'lmadi",'err'); });
+  }
+  (function(){
+    if(!$('#riskCard')) return;
+    $('#rkPeriod').addEventListener('change',rkRender);
+    $('#rkExcel').addEventListener('click',rkExcel);
+    $('#rkPdf').addEventListener('click',function(){ var b=this; b.disabled=true; rkPdf().then(function(){ b.disabled=false; },function(){ b.disabled=false; }); });
+  })();
 
   function normSettings(o){
     o = (o && typeof o === 'object') ? o : {};
@@ -2842,6 +3199,8 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     if(!Array.isArray(o.admins)) o.admins = JSON.parse(JSON.stringify(DEF_ADMINS));
     if(typeof o.telegramBot !== 'string') o.telegramBot = '';
     o.wm = normWm(o.wm);
+    o.auto = normAuto(o.auto);
+    o.reasons = normReasons(o.reasons);
     return o;
   }
   var settings = normSettings(jparse(lget('m28_settings'), null));
@@ -2976,7 +3335,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       fClass.readOnly = false;
     }
     $('#wipeBtn').classList.toggle('hidden', homeroom || viewer);
-    $('#backupCard').classList.toggle('hidden', homeroom || viewer); $('#archCard').classList.toggle('hidden', homeroom);
+    $('#backupCard').classList.toggle('hidden', homeroom || viewer); $('#archCard').classList.toggle('hidden', homeroom); $('#autoCard').classList.toggle('hidden', homeroom); $$('#autoCard button, #reasonCard button').forEach(function(b){ b.disabled=viewer; });
     $('#selLoad').classList.toggle('hidden', homeroom);
     fillDatalists();
   }
@@ -3000,16 +3359,16 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     }catch(e){return null}
   }
   function showInfo(){
-    hideAll(); $('#infoView').classList.remove('hidden');
+    hideAll(); $('#infoView').classList.remove('hidden'); infoLangBar();
     var pl=readPayload();
-    $('#infoTitle').textContent = pl ? (pl.type==='t' ? "O'qituvchiga ogohlantirish xati" : kindInfo(pl.kind).info) : settings.school;
-    $('#infoSub').textContent = pl ? settings.school : "Maktab ma'muriyati";
+    $('#infoTitle').textContent = pl ? (pl.type==='t' ? IL("O'qituvchiga ogohlantirish xati",'Предупреждение учителю') : IL(kindInfo(pl.kind).info, INFO_RU.info[pl.kind||'']||INFO_RU.info[''])) : settings.school;
+    $('#infoSub').textContent = pl ? settings.school : IL("Maktab ma'muriyati",'Администрация школы');
     function row(k,v){return v?'<div class="adm"><span>'+k+'</span><b>'+esc(String(v).slice(0,300))+'</b></div>':''}
-    $('#infoData').innerHTML = !pl ? '' : (pl.type==='t' ? (row("O'qituvchi",pl.name)+row('Fani',pl.subject)+row('Aniqlangan holat',pl.issue)+row('Berilgan sana',fmtDate(pl.date))+row('Imzolagan',pl.signer)) : (row("O'quvchi",pl.name)+row('Sinf',pl.cls)+row('Ota-onasi',pl.parent)+row('Sababi',pl.reason)+row('Berilgan sana',fmtDate(pl.date))));
+    $('#infoData').innerHTML = !pl ? '' : (pl.type==='t' ? (row(IL("O'qituvchi",'Учитель'),pl.name)+row(IL('Fani','Предмет'),pl.subject)+row(IL('Aniqlangan holat','Выявленный факт'),pl.issue)+row(IL('Berilgan sana','Дата выдачи'),fmtDate(pl.date))+row(IL('Imzolagan','Подписал'),pl.signer)) : (row(IL("O'quvchi",'Ученик'),pl.name)+row(IL('Sinf','Класс'),pl.cls)+row(IL('Ota-onasi','Родители'),pl.parent)+row(IL('Sababi','Причина'),pl.reason)+row(IL('Berilgan sana','Дата выдачи'),fmtDate(pl.date))));
     var adm=settings.admins.filter(function(a){return a.name&&a.name.trim()}).map(function(a){
       return '<div class="adm">'+(a.role?'<span>'+esc(a.role)+'</span>':'')+'<b>'+esc(a.name)+'</b></div>';
     }).join('');
-    $('#infoAdm').innerHTML = (pl?'<p class="sub" style="margin:18px 0 4px">Maktab ma\'muriyati</p>':'')+adm;
+    $('#infoAdm').innerHTML = (pl?'<p class="sub" style="margin:18px 0 4px">'+IL("Maktab ma'muriyati",'Администрация школы')+'</p>':'')+adm;
     ackInit(pl);
   }
   function authMsg(t,cls){var m=$('#authMsg');m.textContent=t;m.className='msg '+(cls||'')}
@@ -3389,6 +3748,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
 
     statCtx={log:log, logAll:logAll, tlog:tlog};
     renderCharts();
+    rkRender();
   }
   $$('nav.tabs [data-tab]').forEach(function(b){b.addEventListener('click',function(){goTab(b.getAttribute('data-tab'))})});
 
@@ -3418,7 +3778,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     $('#s_full').value=settings.schoolFull;
     $('#s_url').value=platformUrl();
     $('#s_tgbot').value=settings.telegramBot||'';
-    admRows(); renderQrPrev(); renderTgCard(); renderRosterTextareas(); wmFill(); archRender(); if(!archLoaded) archLoadIdx();
+    admRows(); renderQrPrev(); renderTgCard(); renderRosterTextareas(); wmFill(); archRender(); if(!archLoaded) archLoadIdx(); autoFill(); rzFill();
   }
   $('#addAdm').addEventListener('click',function(){settings.admins.push({role:'',name:''});admRows();renderSheet()});
   $('#s_full').addEventListener('input',function(){settings.schoolFull=this.value;renderTSheet()});
@@ -3569,7 +3929,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     var k=slots[cur].kind||'', K=kindInfo(k);
     $('#f_reason').placeholder=K.ph;
     var lab=document.querySelector('label[for="f_reason"]'); if(lab) lab.textContent = k ? K.lb.replace(/:$/,'') : 'Sababi';
-    var tp=document.querySelector('details.tpl'); if(tp) tp.classList.toggle('hidden', !!k);
+    try{ renderTpl(); }catch(e){}   /* tayyor shablonlar xat turiga qarab almashadi */
   }
   document.getElementById('f_kind').addEventListener('input',function(){ applyKindUI(); checkRepeatWarn(); renderSlots(); });
   applyDateLimits();
@@ -3616,7 +3976,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   var custom=jparse(lget('m28_tpl'),[]); if(!Array.isArray(custom)) custom=[];
   function reasonParts(){return $('#f_reason').value.split(/\s*;\s*/).filter(Boolean)}
   function renderTpl(){
-    var h=TPL.map(function(g){
+    var h=tplGroups().map(function(g){
       return '<div class="tg">'+esc(g.g)+'</div><div class="chips">'+g.items.map(function(t){return '<button type="button" class="chip" data-t="'+esc(t)+'">'+esc(t)+'</button>'}).join('')+'</div>';
     }).join('');
     if(custom.length) h+='<div class="tg">Mening shablonlarim</div><div class="chips">'+custom.map(function(t,i){
@@ -3774,13 +4134,15 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   }
   function filteredLog(){
     var log=loadLog(), q=($('#q').value||'').toLowerCase().trim(), cl=$('#qClass').value;
-    var from=$('#qFrom').value, to=$('#qTo').value;
+    var from=$('#qFrom').value, to=$('#qTo').value, sn=($('#qSeen')||{}).value||'';
     log.sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.at-a.at});
     return log.filter(function(e){
       if(!inMyClasses(e.cls)) return false;
       if(cl && normClass(e.cls)!==cl) return false;
       if(from && e.date && e.date<from) return false;
       if(to && e.date && e.date>to) return false;
+      if(sn==='unseen' && !letterUnseen(e)) return false;
+      if(sn==='seen' && !(letterTracked(e) && letterSeen(e))) return false;
       if(!q) return true;
       return (e.name+' '+e.cls+' '+e.parent+' '+e.reason).toLowerCase().indexOf(q)>=0;
     });
@@ -3986,7 +4348,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     } else q=q.orderBy('sentAt','desc').limit(500);
     unsubs.push(q.onSnapshot(function(snap){
       var m={}; snap.forEach(function(d){ m[d.id]=d.data(); });
-      notices=m; renderLog();
+      notices=m; var bq={}; Object.keys(m).forEach(function(id){ var v=m[id]; if(v && v.qt && v.ackAt) bq[v.qt]=1; }); noticeByQt=bq; renderLog();
     },function(err){ console.warn('notify_log:', err && err.code); }));
   }
   function tsDate(ms){ return fmtDate(dateISO(new Date(ms))); }
@@ -3998,7 +4360,11 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       else out+='<span class="dv">📨 Telegramga yuborildi'+(n&&n.sentAt?' · '+tsDate(n.sentAt):'')+'</span>';
     }
     var qa=(e.qt && acks) ? acks[e.qt] : null;
-    if(qa && qa.at) out+='<span class="dv ok">👁 QR orqali ko\'rdi · '+tsDate(qa.at)+'</span>';
+    if(qa && qa.rsvp) out+=(qa.rsvp==='yes' ? '<span class="dv ok">✅ Kelaman deb javob berdi</span>' : '<span class="dv bad">❌ Kela olmayman'+(qa.rsvpNote?': '+esc(qa.rsvpNote):'')+'</span>')+(qa.rsvpAt?' <span class="hint">'+tsDate(qa.rsvpAt)+'</span>':'');
+    else if(qa && qa.at) out+='<span class="dv ok">👁 QR orqali ko\'rdi · '+tsDate(qa.at)+'</span>';
+    var rm=(!letterSeen(e)) ? remOf(e) : null;
+    if(rm && rm.count) out+='<span class="dv">🔔 Eslatma yuborildi ('+rm.count+') · '+tsDate(rm.lastAt)+'</span>';
+    if(letterUnseen(e) && !(e.tg && notices && notices[e.tg] && notices[e.tg].sentAt && (Date.now()-notices[e.tg].sentAt)>=3*864e5)) out+='<span class="dv">⏳ Ko\'rilmagan</span>';
     if(e.deliv) out+='<span class="dv ok">'+(e.deliv.t==='hand'?"✋ Qo'lda topshirildi":"📞 Qo'ng'iroq qilindi")+(e.deliv.at?' · '+tsDate(e.deliv.at):'')+'</span>';
     return out;
   }
@@ -4069,7 +4435,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     var ord={}, ordById={}; all.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:(a.at||0)-(b.at||0)}).forEach(function(e){if(!isWarn(e))return;var k=personKey(e);ord[k]=(ord[k]||0)+1;ordById[e.id]=ord[k]});
     var rows=filteredLog();
     var tot = isHomeroom() ? all.filter(function(e){return inMyClasses(e.cls)}).length : all.length;
-    $('#logCount').textContent = tot? ("Jami: "+tot+" ta xat"+(rows.length!==tot?" · ko'rsatilgan: "+rows.length:"")) : '';
+    $('#logCount').textContent = tot? ("Jami: "+tot+" ta xat"+(rows.length!==tot?" · ko'rsatilgan: "+rows.length:"")+(function(){ var u=unseenStats(all.filter(function(e){return inMyClasses(e.cls)})); return u.n?" · ko'rilmagan: "+u.n+(u.over?" ("+u.over+" tasi 3 kundan oshgan)":""):""; })()) : '';
     $('#logBody').innerHTML = rows.length ? rows.map(function(e){
       var n=counts[personKey(e)]||0;
       return '<tr class="rowlink'+(isHomeroom()?' nolink':'')+(!e.kind&&n>=3?' danger':'')+'" data-open="'+esc(e.id)+'"><td><input type="checkbox" data-sel="'+esc(e.id)+'"'+(selected[e.id]?' checked':'')+'></td>'+
@@ -4186,9 +4552,9 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     if(ids.length>4) return toast("Xatga joylash uchun ko'pi bilan 4 ta xat tanlang");
     selected={}; openEntries(ids);
   });
-  $('#q').addEventListener('input',renderLog); $('#qClass').addEventListener('change',renderLog);
+  $('#q').addEventListener('input',renderLog); $('#qClass').addEventListener('change',renderLog); $('#qSeen').addEventListener('change',renderLog);
   $('#qFrom').addEventListener('change',renderLog); $('#qTo').addEventListener('change',renderLog);
-  $('#qClear').addEventListener('click',function(){$('#q').value='';$('#qClass').value='';$('#qFrom').value='';$('#qTo').value='';renderLog()});
+  $('#qClear').addEventListener('click',function(){$('#q').value='';$('#qClass').value='';$('#qSeen').value='';$('#qFrom').value='';$('#qTo').value='';renderLog()});
   var wipeArmed=false;
   $('#wipeBtn').addEventListener('click',function(){
     var b=this;
@@ -4245,7 +4611,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       return fetch('/api/send-parent-notice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+idToken },
-        body: JSON.stringify({ phone: phone, name: f.name||'', cls: f.cls||'', date: f.date||'', kind: f.kind||'', reason: f.reason||'', infoUrl: platformUrl(), pdfBase64: pdfBase64||null })
+        body: JSON.stringify({ phone: phone, name: f.name||'', cls: f.cls||'', date: f.date||'', kind: f.kind||'', reason: f.reason||'', infoUrl: letterQrUrl(f), qt: f.qt||'', pdfBase64: pdfBase64||null })
       });
     }).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, body:j}; }) })
     .then(function(res){
@@ -4881,6 +5247,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     var st=attVisible().filter(function(s){return s.cls!==ATT_TCLS}), t=new Date(), iso=dateISO(t), hr=t.getHours();
     var gr=hr<5?'Xayrli tun':hr<12?'Xayrli tong':hr<18?'Xayrli kun':'Xayrli kech';
     var h='<div class="home-hero"><div><h2>'+gr+'!</h2><p>'+ATT_WDF[t.getDay()]+', '+esc(fmtDate(iso))+'</p></div><div class="home-act">'+(isViewer()?'':'<button type="button" class="btn sm" data-gonav="letter">✍️ Xat yozish</button>')+(newsAllowed()?'<button type="button" class="btn ghost sm" data-gonav="news">📰 Yangilik yozish</button>':'')+'<button type="button" class="btn ghost sm" data-gonav="att">📅 Davomat</button><button type="button" class="btn line sm" data-gonav="stats">📊 Statistika</button></div></div>';
+    h+=unseenHomeHTML();
     if(!st.length){ box.innerHTML=h+'<div class="card">'+__ui.empty('chart',"Hali o'quvchilar yo'q","Davomat bo'limiga o'quvchilar ro'yxatini yuklang, shunda bu yerda kunlik holat ko'rinadi.",{label:'Davomatga o\'tish',go:'att'})+'</div>'; return }
     var a=new Date(); a.setDate(a.getDate()-6); var b=new Date(); b.setDate(b.getDate()-29);
     var T=attCalc(st,[iso,iso]), W=attCalc(st,[dateISO(a),iso]), M=attCalc(st,[dateISO(b),iso]);
@@ -5063,12 +5430,12 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     var box=$('#newsList'); if(!box) return;
     box.innerHTML=newsDocs.length?newsDocs.map(function(n){
       var ni=Array.isArray(n.imgs)?n.imgs.length:(n.img?1:0), pub=n.status==='published', mine=newsMine(n);
-      return '<div class="nw-row'+(n.id===newsEditId?' on':'')+'"><div class="nw-t"><b>'+esc(n.title)+'</b><span class="hint">'+esc(fmtDate(n.date))+' · '+esc(NCAT[n.cat]||'')+(ni?' · 🖼 '+ni:'')+(newsVidsOf(n).length?' · ▶ video':'')+(n.views?' · 👁 '+n.views:'')+'</span><span class="nw-chips"><i class="'+(pub?'ok':'dr')+'">'+(pub?"E'lon qilingan":'Qoralama')+'</i>'+(n.pinned?'<i class="pn">📌 Muhim</i>':'')+((n.tg||n.tgAt)?'<i class="tgc">✈️ Telegramga joylangan</i>':'')+'</span></div><div class="nw-a">'+(mine?('<button type="button" class="mini" data-nedit="'+esc(n.id)+'">Tahrirlash</button>'+(pub?'<button type="button" class="mini" data-ntg="'+esc(n.id)+'" title="Telegram kanal">'+(n.tg?'↻ Telegramni yangilash':(n.tgAt?'✈️ Qayta yuborish':'✈️ Telegram'))+'</button><button type="button" class="mini" data-ncopy="'+esc(n.id)+'" title="Telegram uchun havola">🔗 Havola</button><a class="mini" target="_blank" rel="noopener" href="/#/yangilik/'+esc(n.id)+'">Ko\'rish</a>':'')+'<button type="button" class="mini danger" data-ndel="'+esc(n.id)+'">O\'chirish</button>'):'<span class="hint">Muallif: '+esc(n.by||'—')+'</span>')+'</div></div>';
+      return '<div class="nw-row'+(n.id===newsEditId?' on':'')+'"><div class="nw-t"><b>'+esc(n.title)+'</b><span class="hint">'+esc(fmtDate(n.date))+' · '+esc(NCAT[n.cat]||'')+(ni?' · 🖼 '+ni:'')+(newsVidsOf(n).length?' · ▶ video':'')+(n.views?' · 👁 '+n.views:'')+'</span><span class="nw-chips">'+(n.status==='scheduled'?'<i class="sc">⏰ '+esc(fmtDate(n.publishAt))+' kuni</i>':'<i class="'+(pub?'ok':'dr')+'">'+(pub?"E'lon qilingan":'Qoralama')+'</i>')+''+(n.pinned?'<i class="pn">📌 Muhim</i>':'')+((n.tg||n.tgAt)?'<i class="tgc">✈️ Telegramga joylangan</i>':'')+'</span></div><div class="nw-a">'+(mine?('<button type="button" class="mini" data-nedit="'+esc(n.id)+'">Tahrirlash</button>'+(pub?'<button type="button" class="mini" data-ntg="'+esc(n.id)+'" title="Telegram kanal">'+(n.tg?'↻ Telegramni yangilash':(n.tgAt?'✈️ Qayta yuborish':'✈️ Telegram'))+'</button><button type="button" class="mini" data-ncopy="'+esc(n.id)+'" title="Telegram uchun havola">🔗 Havola</button><a class="mini" target="_blank" rel="noopener" href="/#/yangilik/'+esc(n.id)+'">Ko\'rish</a>':'')+'<button type="button" class="mini danger" data-ndel="'+esc(n.id)+'">O\'chirish</button>'):'<span class="hint">Muallif: '+esc(n.by||'—')+'</span>')+'</div></div>';
     }).join(''):'<p class="hint">Hali yangilik yozilmagan.</p>';
   }
   function newsMsg(t,err){ var m=$('#nMsg'); m.textContent=t; m.style.color=err?'var(--danger)':'' }
   function newsClear(){
-    newsEditId=null; newsImgs=[]; $('#nTitle').value=''; $('#nBody').value=''; $('#nVideo').value=''; newsTgTxt(); $('#nCat').value='yangilik'; $('#nDate').value=dateISO(new Date()); $('#nPin').checked=false; newsPrev(); newsMsg(''); newsRender();
+    newsEditId=null; newsImgs=[]; $('#nTitle').value=''; $('#nBody').value=''; $('#nVideo').value=''; newsTgTxt(); $('#nCat').value='yangilik'; $('#nDate').value=dateISO(new Date()); $('#nPin').checked=false; $('#nWhen').value=''; newsPrev(); newsMsg(''); newsRender();
   }
   function newsPrev(){
     var tot=newsImgs.reduce(function(a,s){return a+s.length},0);
@@ -5146,14 +5513,19 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     var data={title:title,body:body,cat:$('#nCat').value,date:$('#nDate').value||dateISO(new Date()),status:status,pinned:$('#nPin').checked,imgs:newsImgs.slice(),ni:newsImgs.length,videos:videos,by:(curUser.email||'').toLowerCase(),updated:firebase.firestore.FieldValue.serverTimestamp()};
     var old=newsEditId?newsDocs.filter(function(x){return x.id===newsEditId})[0]:null, hadTg=!!(old&&old.tg), legacyTg=!!(old&&!old.tg&&old.tgAt);
     if(old&&old.by) data.by=String(old.by).toLowerCase();   /* muallif o'zgarmaydi: boshqa admin tahrirlasa ham */
+    if(status==='scheduled'){
+      var wh=($('#nWhen').value||'');
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(wh) || wh<=dateISO(new Date())) return newsMsg("Rejalashtirish uchun kelajakdagi sanani tanlang",true);
+      data.publishAt=wh; data.tgPlan=$('#nTg').checked;
+    } else if(newsEditId){ data.publishAt=firebase.firestore.FieldValue.delete(); data.tgPlan=firebase.firestore.FieldValue.delete(); }
     var ref;
     if(newsEditId){ data.img=firebase.firestore.FieldValue.delete(); data.video=firebase.firestore.FieldValue.delete(); ref=db.collection('news').doc(newsEditId).set(data,{merge:true}); }   // merge: ko'rishlar soni va Telegram belgisi saqlanadi
     else ref=db.collection('news').add(data);
-    var btns=[$('#nPublish'),$('#nDraft')]; btns.forEach(function(b){b.disabled=true});
+    var btns=[$('#nPublish'),$('#nDraft'),$('#nSchedule')]; btns.forEach(function(b){b.disabled=true});
     ref.then(function(r){
       if(!newsEditId&&r&&r.id) newsEditId=r.id;
       var id=newsEditId, link=id?newsLink(id):'';
-      newsMsg(status==='published'?"✅ E'lon qilindi. Havola: "+link:'💾 Qoralama saqlandi.'); toast(status==='published'?"E'lon qilindi":'Saqlandi');
+      newsMsg(status==='published'?"✅ E'lon qilindi. Havola: "+link:(status==='scheduled'?"⏰ Rejalashtirildi: "+fmtDate($('#nWhen').value)+" kuni soat 10:00 atrofida e'lon qilinadi"+($('#nTg').checked?" va Telegram kanalga joylanadi":"")+".":'💾 Qoralama saqlandi.')); toast(status==='published'?"E'lon qilindi":(status==='scheduled'?'Rejalashtirildi':'Saqlandi'));
       try{ logAudit(status==='published'?'news_publish':'news_save',title) }catch(e){} newsRender();
       if(status==='published'&&$('#nTg').checked&&id&&!legacyTg){
         var act=hadTg?'edit':'post';
@@ -5176,6 +5548,8 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     });
     $('#nPublish').addEventListener('click',function(){ newsSave('published') });
     $('#nDraft').addEventListener('click',function(){ newsSave('draft') });
+    $('#nSchedule').addEventListener('click',function(){ newsSave('scheduled') });
+    (function(){ var t=new Date(); t.setDate(t.getDate()+1); $('#nWhen').min=dateISO(t); })();
     $('#nNew').addEventListener('click',newsClear);
     $('#nPrevBtn').addEventListener('click',newsPreview);
     $('#tab-news').addEventListener('click',function(e){ var fb=e.target.closest('[data-fmt]'); if(fb&&$('#nBody')) newsFmt(fb.getAttribute('data-fmt')) });
@@ -5190,7 +5564,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
         newsTelegram(tid,act2).then(function(j){ newsMsg(act2==='edit'?"✅ Telegramdagi post yangilandi":"✅ Telegram kanalga joylandi"); toast(act2==='edit'?"Telegram yangilandi":"Telegram'ga joylandi") }).catch(function(er){ newsMsg("Telegram: "+(er.message||'xato'),true) }).then(function(){ tg.disabled=false }); return }
       if(cp){ try{ copyText(newsLink(cp.getAttribute('data-ncopy')),"Havola nusxalandi, Telegram'ga qo'ying") }catch(er){} return }
       if(ed){ var n=newsDocs.filter(function(x){return x.id===ed.getAttribute('data-nedit')})[0]; if(!n) return;
-        newsEditId=n.id; $('#nTitle').value=n.title||''; $('#nBody').value=n.body||''; $('#nCat').value=n.cat||'yangilik'; $('#nDate').value=n.date||dateISO(new Date()); $('#nPin').checked=!!n.pinned; $('#nVideo').value=newsVidsOf(n).join('\n'); newsTgTxt();
+        newsEditId=n.id; $('#nTitle').value=n.title||''; $('#nBody').value=n.body||''; $('#nCat').value=n.cat||'yangilik'; $('#nDate').value=n.date||dateISO(new Date()); $('#nPin').checked=!!n.pinned; $('#nWhen').value=n.publishAt||''; if(n.status==='scheduled') $('#nTg').checked=!!n.tgPlan; $('#nVideo').value=newsVidsOf(n).join('\n'); newsTgTxt();
         newsImgs=(Array.isArray(n.imgs)?n.imgs:(n.img?[n.img]:[])).slice(); newsPrev(); newsMsg('Tahrirlanmoqda: '+n.title); newsRender(); $('#nTitle').scrollIntoView({behavior:'smooth',block:'center'}); }
       if(dl){ var id=dl.getAttribute('data-ndel'), n2=newsDocs.filter(function(x){return x.id===id})[0]; if(!n2||!confirm('«'+n2.title+'» yangiligi o\'chirilsinmi? Bu qaytarilmaydi.')) return;
         db.collection('news').doc(id).delete().then(function(){ toast("O'chirildi"); try{logAudit('news_delete',n2.title)}catch(e){} if(newsEditId===id) newsClear(); }).catch(function(er){ toast('Xato: '+(er.message||'')) }); }
