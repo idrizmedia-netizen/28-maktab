@@ -246,7 +246,7 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
 .kb-link{border:0;background:none;color:var(--blue);font:700 14px var(--body);cursor:pointer;padding:0;text-decoration:underline}
 .kb-data{position:relative;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .kb-wm{position:absolute;inset:0;pointer-events:none;z-index:5}
-.kb-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;background:#FFF6DC;border:1px solid #F0D58A;border-radius:14px;padding:12px 16px;margin-bottom:16px;font-size:14px}
+.kb-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;background:#FFF6DC;border:1px solid #F0D58A;border-radius:14px;padding:12px 16px;margin-bottom:16px;font-size:14px}.kb-lang{display:flex;gap:6px;justify-content:flex-end;margin:0 0 8px}.kb-lang button{border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;border-radius:999px;padding:3px 11px;font-size:12px;cursor:pointer;font-family:inherit}.kb-lang button.on{background:#0f3d7a;color:#fff;border-color:#0f3d7a}.kb-top .kb-lang{margin:0}
 .kb-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .kb-chips button{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:10px 16px;font:700 15px var(--body);color:var(--muted);cursor:pointer}
 .kb-chips button.on{background:var(--navy);border-color:var(--navy);color:#fff}
@@ -565,57 +565,64 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
   function kbSay(t,err,html){ KB.msg=t||''; KB.html=html||''; KB.err=!!err }
   function kbPost(b){ return fetch('/api/parent',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify(b)}).then(function(r){return r.json().catch(function(){return {ok:false,status:'server',error:"Server javobi noto'g'ri"}})}).catch(function(){return {ok:false,status:'server',error:"Internetga ulanib bo'lmadi"}}) }
   function kbMaskPhone(p){ var d=String(p||'').replace(/\D/g,''); if(d.length===9) d='998'+d; return d.length===12?'+'+d.slice(0,5)+' *** ** '+d.slice(-2):'' }
-  function kbWM(){ var t=KB.wm||'', svg="<svg xmlns='http://www.w3.org/2000/svg' width='260' height='150'><text x='10' y='90' transform='rotate(-22 130 75)' font-family='Arial' font-size='15' font-weight='700' fill='rgba(15,61,122,.2)'>"+esc('Faqat ko\'rish uchun · '+t)+"</text></svg>"; return 'url("data:image/svg+xml;utf8,'+encodeURIComponent(svg)+'")' }
-  function kbMonth(mk){ var x=/^(\d{4})-(\d{2})$/.exec(mk); return x?(MON[+x[2]-1].charAt(0).toUpperCase()+MON[+x[2]-1].slice(1))+' '+x[1]:mk }
+  /* til: o'zbek / rus (QR sahifasi bilan bir xil sozlama: localStorage m28_lang; brauzer tili rus bo'lsa, avtomatik rus) */
+  var KLANG=(function(){ try{ var l=localStorage.getItem('m28_lang'); if(l==='ru'||l==='uz') return l; return (navigator.language||'').toLowerCase().indexOf('ru')===0?'ru':'uz'; }catch(e){ return 'uz'; } })();
+  function tr(u,r){ return KLANG==='ru'?r:u }
+  var MONRU=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+  function kcode(c){ return ({Sz:tr('Sababsiz','Без уважительной причины'),Kas:tr('Kasal','Болезнь'),Sb:tr('Sababli','По уважительной причине'),Tad:tr('Tadbir','Мероприятие'),Kch:tr('Kechikdi','Опоздание')})[c]||c }
+  function klabel(l){ return KLANG==='ru' ? (({'':'Предупредительное письмо',praise:'Благодарственное письмо',invite:'Приглашение на родительское собрание',summon:'Письмо-вызов в школу'})[l.k||'']||l.label) : l.label }
+  function klangBar(){ return '<div class="kb-lang"><button type="button" data-kb="lang" data-l="uz" class="'+(KLANG==='uz'?'on':'')+'">O\'zbekcha</button><button type="button" data-kb="lang" data-l="ru" class="'+(KLANG==='ru'?'on':'')+'">Русский</button></div>' }
+  function kbWM(){ var t=KB.wm||'', svg="<svg xmlns='http://www.w3.org/2000/svg' width='260' height='150'><text x='10' y='90' transform='rotate(-22 130 75)' font-family='Arial' font-size='15' font-weight='700' fill='rgba(15,61,122,.2)'>"+esc(tr('Faqat ko\'rish uchun · ','Только для просмотра · ')+t)+"</text></svg>"; return 'url("data:image/svg+xml;utf8,'+encodeURIComponent(svg)+'")' }
+  function kbMonth(mk){ var x=/^(\d{4})-(\d{2})$/.exec(mk); if(!x) return mk; var nm=KLANG==='ru'?MONRU[+x[2]-1]:MON[+x[2]-1]; return nm.charAt(0).toUpperCase()+nm.slice(1)+' '+x[1] }
   function kabinet(){
     var msg=(KB.msg||KB.html)?'<div class="kb-msg '+(KB.err?'err':'ok')+'" role="status">'+(KB.html||esc(KB.msg))+'</div>':'';
-    if(KB.step==='phone') return '<div class="wrap"><section class="blk"><div class="kb-box"><h2>👨‍👩‍👧 Ota-onalar kabineti</h2><p>Farzandingizning davomati va olgan xatlarini ko\'ring. Xavfsizlik uchun kirish kodi maktabning Telegram botiga yuboriladi.</p><label for="kbPhone" class="hint" style="display:block;margin-bottom:6px;font-weight:700">Maktabga bergan telefon raqamingiz</label><input id="kbPhone" class="kb-in" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67" value="'+esc(KB.phone)+'"><button type="button" class="btn navy" style="width:100%;justify-content:center" data-kb="send"'+(KB.busy?' disabled':'')+'>'+(KB.busy?'Yuborilmoqda...':'Telegram\'dan kod olish')+'</button>'+msg+'<p class="kb-note">Raqamingiz botga ulangan bo\'lishi kerak: <a href="https://t.me/'+BOT+'" target="_blank" rel="noopener noreferrer">@'+BOT+'</a> ga kirib, «Start» ni bosing va telefon raqamingizni ulashing.</p></div></section></div>';
-    if(KB.step==='code') return '<div class="wrap"><section class="blk"><div class="kb-box"><h2>Kodni kiriting</h2><p>Kod <b>@'+BOT+'</b> orqali Telegram\'ingizga yuborildi. U 5 daqiqa amal qiladi.</p><input id="kbCode" class="kb-in kb-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••"><button type="button" class="btn navy" style="width:100%;justify-content:center" data-kb="verify"'+(KB.busy?' disabled':'')+'>'+(KB.busy?'Tekshirilmoqda...':'Kirish')+'</button>'+msg+'<div class="kb-sub"><span>Amal qilish muddati: <b id="kbTimer">5:00</b></span><span><button type="button" class="kb-link" data-kb="resend">Kodni qayta yuborish</button> · <button type="button" class="kb-link" data-kb="back">Raqamni o\'zgartirish</button></span></div></div></section></div>';
+    if(KB.step==='phone') return '<div class="wrap"><section class="blk"><div class="kb-box">'+klangBar()+'<h2>👨‍👩‍👧 '+tr('Ota-onalar kabineti','Кабинет родителей')+'</h2><p>'+tr('Farzandingizning davomati va olgan xatlarini ko\'ring. Xavfsizlik uchun kirish kodi maktabning Telegram botiga yuboriladi.','Посмотрите посещаемость и письма вашего ребёнка. Для безопасности код входа отправляется в Telegram-бот школы.')+'</p><label for="kbPhone" class="hint" style="display:block;margin-bottom:6px;font-weight:700">'+tr('Maktabga bergan telefon raqamingiz','Номер телефона, указанный в школе')+'</label><input id="kbPhone" class="kb-in" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67" value="'+esc(KB.phone)+'"><button type="button" class="btn navy" style="width:100%;justify-content:center" data-kb="send"'+(KB.busy?' disabled':'')+'>'+(KB.busy?tr('Yuborilmoqda...','Отправка...'):tr('Telegram\'dan kod olish','Получить код в Telegram'))+'</button>'+msg+'<p class="kb-note">'+tr('Raqamingiz botga ulangan bo\'lishi kerak: ','Ваш номер должен быть подключён к боту: ')+'<a href="https://t.me/'+BOT+'" target="_blank" rel="noopener noreferrer">@'+BOT+'</a> '+tr('ga kirib, «Start» ni bosing va telefon raqamingizni ulashing.','— нажмите «Start» и поделитесь номером телефона.')+'</p></div></section></div>';
+    if(KB.step==='code') return '<div class="wrap"><section class="blk"><div class="kb-box">'+klangBar()+'<h2>'+tr('Kodni kiriting','Введите код')+'</h2><p>'+tr('Kod <b>@'+BOT+'</b> orqali Telegram\'ingizga yuborildi. U 5 daqiqa amal qiladi.','Код отправлен в ваш Telegram через <b>@'+BOT+'</b>. Он действует 5 минут.')+'</p><input id="kbCode" class="kb-in kb-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••"><button type="button" class="btn navy" style="width:100%;justify-content:center" data-kb="verify"'+(KB.busy?' disabled':'')+'>'+(KB.busy?tr('Tekshirilmoqda...','Проверка...'):tr('Kirish','Войти'))+'</button>'+msg+'<div class="kb-sub"><span>'+tr('Amal qilish muddati: ','Срок действия: ')+'<b id="kbTimer">5:00</b></span><span><button type="button" class="kb-link" data-kb="resend">'+tr('Kodni qayta yuborish','Отправить код снова')+'</button> · <button type="button" class="kb-link" data-kb="back">'+tr('Raqamni o\'zgartirish','Изменить номер')+'</button></span></div></div></section></div>';
     // ma'lumot
     var ch=KB.data||[], c=ch[KB.cur]||ch[0];
-    if(!c) return '<div class="wrap"><section class="blk"><div class="kb-box"><h2>Ma\'lumot topilmadi</h2><button type="button" class="btn navy" data-kb="exit">Orqaga</button></div></section></div>';
+    if(!c) return '<div class="wrap"><section class="blk"><div class="kb-box"><h2>'+tr('Ma\'lumot topilmadi','Данные не найдены')+'</h2><button type="button" class="btn navy" data-kb="exit">'+tr('Orqaga','Назад')+'</button></div></section></div>';
     var tot=c.att.tot, months=c.att.months.slice().reverse();
-    var h='<div class="wrap"><section class="blk kb-data" oncontextmenu="return false"><div class="kb-wm" style="background-image:'+kbWM()+'"></div><div class="kb-top"><span>🔒 Xavfsiz ko\'rinish · yopilishiga: <b id="kbTimer">10:00</b></span><button type="button" class="kb-link" data-kb="exit">Chiqish</button></div>';
+    var h='<div class="wrap"><section class="blk kb-data" oncontextmenu="return false"><div class="kb-wm" style="background-image:'+kbWM()+'"></div><div class="kb-top"><span>🔒 '+tr('Xavfsiz ko\'rinish · yopilishiga: ','Защищённый просмотр · закроется через: ')+'<b id="kbTimer">10:00</b></span>'+klangBar()+'<button type="button" class="kb-link" data-kb="exit">'+tr('Chiqish','Выйти')+'</button></div>';
     if(ch.length>1) h+='<div class="kb-chips" role="tablist">'+ch.map(function(x,i){return '<button type="button" data-kb="child" data-i="'+i+'" class="'+(i===KB.cur?'on':'')+'">'+esc(x.name.split(' ').slice(0,2).join(' '))+' · '+esc(x.cls)+'</button>'}).join('')+'</div>';
-    h+='<div class="hd"><h2>'+esc(c.name)+'</h2><span class="chip">'+esc(c.cls)+' sinf</span></div>';
-    h+='<div class="kb-kpi"><div><b>'+(tot.pct!=null?tot.pct+'%':'—')+'</b><span>Davomat (o\'quv yili)</span></div><div><b>'+tot.abs+'</b><span>Kelmagan kun</span></div><div><b class="'+(tot.sz?'bad':'')+'">'+tot.sz+'</b><span>Sababsiz</span></div><div><b class="'+(c.warn?'bad':'')+'">'+c.warn+'</b><span>Ogohlantirish xati</span></div></div>';
-    h+='<div class="sub">Davomat</div>';
-    if(!c.linked||!months.length) h+='<p class="hint">Bu o\'quvchi uchun davomat ma\'lumoti hozircha yo\'q.</p>';
-    else h+=months.map(function(mo){ return '<div class="kb-m"><h4>'+esc(kbMonth(mo.m))+'<small>'+mo.days+' ta dars kuni</small></h4>'+(mo.absent.length?'<div class="kb-days">'+mo.absent.map(function(a){return '<span class="dchip '+esc(a.c)+'">'+a.d+'-kun · '+esc(KCODE[a.c]||a.c)+'</span>'}).join('')+'</div>':'<span class="hint">✅ Kelmagan kun yo\'q</span>')+'</div>' }).join('');
-    h+='<div class="sub">Xatlar</div>'+(c.letters.length?c.letters.map(function(l){return '<div class="kb-let"><i>'+(KICON[l.k]||'✉️')+'</i><div><b>'+esc(l.label)+'</b><small>'+esc(fdate(l.date))+'</small>'+(l.reason?'<p>'+esc(l.reason)+'</p>':'')+'</div></div>'}).join(''):'<p class="hint">Xat berilmagan 👍</p>');
-    h+='<p class="kb-note">Bu ma\'lumot faqat ko\'rish uchun. Uni yuklab olish yoki chop etish mumkin emas va u shu oynada saqlanmaydi. Qayta ko\'rish uchun yangi kod olinadi.</p></section></div><div class="kb-print">Bu ma\'lumotni chop etish mumkin emas.</div>';
+    h+='<div class="hd"><h2>'+esc(c.name)+'</h2><span class="chip">'+esc(c.cls)+' '+tr('sinf','класс')+'</span></div>';
+    h+='<div class="kb-kpi"><div><b>'+(tot.pct!=null?tot.pct+'%':'—')+'</b><span>'+tr('Davomat (o\'quv yili)','Посещаемость (учебный год)')+'</span></div><div><b>'+tot.abs+'</b><span>'+tr('Kelmagan kun','Пропущено дней')+'</span></div><div><b class="'+(tot.sz?'bad':'')+'">'+tot.sz+'</b><span>'+tr('Sababsiz','Без причины')+'</span></div><div><b class="'+(c.warn?'bad':'')+'">'+c.warn+'</b><span>'+tr('Ogohlantirish xati','Предупредительные письма')+'</span></div></div>';
+    h+='<div class="sub">'+tr('Davomat','Посещаемость')+'</div>';
+    if(!c.linked||!months.length) h+='<p class="hint">'+tr('Bu o\'quvchi uchun davomat ma\'lumoti hozircha yo\'q.','Данных о посещаемости для этого ученика пока нет.')+'</p>';
+    else h+=months.map(function(mo){ return '<div class="kb-m"><h4>'+esc(kbMonth(mo.m))+'<small>'+mo.days+' '+tr('ta dars kuni','учебных дней')+'</small></h4>'+(mo.absent.length?'<div class="kb-days">'+mo.absent.map(function(a){return '<span class="dchip '+esc(a.c)+'">'+a.d+tr('-kun · ',' число · ')+esc(kcode(a.c))+'</span>'}).join('')+'</div>':'<span class="hint">✅ '+tr('Kelmagan kun yo\'q','Пропусков нет')+'</span>')+'</div>' }).join('');
+    h+='<div class="sub">'+tr('Xatlar','Письма')+'</div>'+(c.letters.length?c.letters.map(function(l){return '<div class="kb-let"><i>'+(KICON[l.k]||'✉️')+'</i><div><b>'+esc(klabel(l))+'</b><small>'+esc(fdate(l.date))+'</small>'+(l.reason?'<p>'+esc(l.reason)+'</p>':'')+'</div></div>'}).join(''):'<p class="hint">'+tr('Xat berilmagan 👍','Писем нет 👍')+'</p>');
+    h+='<p class="kb-note">'+tr('Bu ma\'lumot faqat ko\'rish uchun. Uni yuklab olish yoki chop etish mumkin emas va u shu oynada saqlanmaydi. Qayta ko\'rish uchun yangi kod olinadi.','Эти данные только для просмотра. Их нельзя скачать или распечатать, они не сохраняются в этом окне. Для повторного просмотра нужен новый код.')+'</p></section></div><div class="kb-print">'+tr('Bu ma\'lumotni chop etish mumkin emas.','Эти данные нельзя распечатать.')+'</div>';
     return h;
   }
   function kbTick(){
     var el=document.getElementById('kbTimer'); if(!el) return; var left=Math.max(0,Math.round((KB.exp-Date.now())/1000));
     el.textContent=Math.floor(left/60)+':'+('0'+(left%60)).slice(-2);
-    if(left<=0){ var wasData=KB.step==='data'; if(wasData){ kbReset(true); kbSay("Xavfsizlik uchun ma'lumot yopildi. Qayta ko'rish uchun yangi kod oling.",false) } else { KB.step='phone'; kbSay("Kod muddati tugadi. Yangi kod oling.",true) } clearInterval(KBI); route() }
+    if(left<=0){ var wasData=KB.step==='data'; if(wasData){ kbReset(true); kbSay(tr("Xavfsizlik uchun ma'lumot yopildi. Qayta ko'rish uchun yangi kod oling.","В целях безопасности данные закрыты. Для повторного просмотра получите новый код."),false) } else { KB.step='phone'; kbSay(tr("Kod muddati tugadi. Yangi kod oling.","Срок действия кода истёк. Получите новый код."),true) } clearInterval(KBI); route() }
   }
   function kbStart(sec){ KB.exp=Date.now()+sec*1000; clearInterval(KBI); KBI=setInterval(kbTick,1000) }
   function kbSend(resend){
     var p=resend?KB.phone:(document.getElementById('kbPhone')||{}).value||''; var d=p.replace(/\D/g,'');
-    if(!(d.length===9||(d.length===12&&d.indexOf('998')===0))){ kbSay("Telefon raqamini to'liq kiriting. Masalan: +998 90 123 45 67",true); route(); return }
+    if(!(d.length===9||(d.length===12&&d.indexOf('998')===0))){ kbSay(tr("Telefon raqamini to'liq kiriting. Masalan: +998 90 123 45 67","Введите номер телефона полностью. Например: +998 90 123 45 67"),true); route(); return }
     KB.phone=p; KB.busy=true; kbSay(''); route();
     kbPost({action:'code',phone:p}).then(function(j){
       KB.busy=false;
-      if(j.status==='sent'){ KB.step='code'; kbSay("Kod yuborildi.",false); kbStart(j.expiresIn||300) }
-      else if(j.status==='no_student') kbSay("Sizning raqamingiz bazada yo'q. Maktab ma'muriyati bilan bog'laning.",true);
-      else if(j.status==='not_linked') kbSay('',true,"Raqamingiz bazada bor, lekin Telegram botga ulanmagan. <a href=\"https://t.me/"+BOT+"\" target=\"_blank\" rel=\"noopener noreferrer\">@"+BOT+"</a> ga kiring, «Start» ni bosing va telefon raqamingizni ulashing. So'ng qayta urinib ko'ring.");
-      else if(j.status==='wait') kbSay("Kod yaqinda yuborilgan. "+(j.seconds||45)+" soniyadan keyin qayta urinib ko'ring.",true);
-      else kbSay(j.error||"Xatolik yuz berdi. Qayta urinib ko'ring.",true);
+      if(j.status==='sent'){ KB.step='code'; kbSay(tr("Kod yuborildi.","Код отправлен."),false); kbStart(j.expiresIn||300) }
+      else if(j.status==='no_student') kbSay(tr("Sizning raqamingiz bazada yo'q. Maktab ma'muriyati bilan bog'laning.","Вашего номера нет в базе. Обратитесь в администрацию школы."),true);
+      else if(j.status==='not_linked') kbSay('',true,tr("Raqamingiz bazada bor, lekin Telegram botga ulanmagan. ","Ваш номер есть в базе, но не подключён к Telegram-боту. ")+"<a href=\"https://t.me/"+BOT+"\" target=\"_blank\" rel=\"noopener noreferrer\">@"+BOT+"</a> "+tr("ga kiring, «Start» ni bosing va telefon raqamingizni ulashing. So'ng qayta urinib ko'ring.","— нажмите «Start» и поделитесь номером телефона. Затем повторите попытку."));
+      else if(j.status==='wait') kbSay(tr("Kod yaqinda yuborilgan. "+(j.seconds||45)+" soniyadan keyin qayta urinib ko'ring.","Код был отправлен недавно. Повторите попытку через "+(j.seconds||45)+" сек."),true);
+      else kbSay(KLANG==='ru'?"Произошла ошибка. Попробуйте ещё раз.":(j.error||"Xatolik yuz berdi. Qayta urinib ko'ring."),true);
       route();
     });
   }
   function kbVerify(){
     var code=((document.getElementById('kbCode')||{}).value||'').replace(/\D/g,'');
-    if(code.length!==6){ kbSay("6 xonali kodni kiriting",true); route(); return }
+    if(code.length!==6){ kbSay(tr("6 xonali kodni kiriting","Введите 6-значный код"),true); route(); return }
     KB.busy=true; kbSay(''); route();
     kbPost({action:'verify',phone:KB.phone,code:code}).then(function(j){
       KB.busy=false;
       if(j.status==='ok'){ KB.data=j.children||[]; KB.cur=0; KB.step='data'; KB.wm=kbMaskPhone(KB.phone); kbSay(''); document.body.classList.add('kb-on'); clearTimeout(KBT); kbStart(600) }
-      else if(j.status==='bad_code') kbSay("Kod noto'g'ri. Qolgan urinish: "+(j.left!=null?j.left:'—'),true);
-      else if(j.status==='expired'||j.status==='too_many'){ KB.step='phone'; kbSay(j.error||'Yangi kod oling.',true) }
-      else kbSay(j.error||"Xatolik yuz berdi",true);
+      else if(j.status==='bad_code') kbSay(tr("Kod noto'g'ri. Qolgan urinish: ","Неверный код. Осталось попыток: ")+(j.left!=null?j.left:'—'),true);
+      else if(j.status==='expired'||j.status==='too_many'){ KB.step='phone'; kbSay(KLANG==='ru'?"Код недействителен или слишком много попыток. Получите новый код.":(j.error||'Yangi kod oling.'),true) }
+      else kbSay(KLANG==='ru'?"Произошла ошибка":(j.error||"Xatolik yuz berdi"),true);
       route();
     });
   }
@@ -625,6 +632,7 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
     else if(a==='back'){ KB.step='phone'; clearInterval(KBI); kbSay(''); route() }
     else if(a==='exit'){ kbReset(true); route() }
     else if(a==='child'){ KB.cur=+b.getAttribute('data-i'); route() }
+    else if(a==='lang'){ KLANG=b.getAttribute('data-l')==='ru'?'ru':'uz'; try{ localStorage.setItem('m28_lang',KLANG) }catch(er){} route() }
   });
   document.addEventListener('keydown',function(e){ if(e.key==='Enter'&&e.target.id==='kbPhone') kbSend(false); else if(e.key==='Enter'&&e.target.id==='kbCode') kbVerify() });
   ['copy','cut','dragstart','selectstart'].forEach(function(ev){ document.addEventListener(ev,function(e){ if(KB.step==='data'&&e.target&&e.target.closest&&e.target.closest('.kb-data')) e.preventDefault() }) });
