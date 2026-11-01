@@ -11,6 +11,7 @@
  */
 const L = require('./_lib');
 const { db, normPhone, tgApi } = L;
+const { t, normLang } = require('./_i18n');
 
 /* Majburiy kanalga obuna. Kanal: Vercel'da REQUIRED_CHANNEL (@nom), bo'sh bo'lsa platformadagi «Telegram kanal nomi».
    Bot shu kanalda ADMIN bo'lishi shart. Kanal sozlanmagan bo'lsa yoki Telegram tekshirishga ruxsat bermasa, ota-ona bloklanmaydi. */
@@ -30,14 +31,37 @@ async function isSubscribed(ch, userId) {   // false faqat aniq "obuna emas" bo'
   if (st === 'restricted') return !!j.result.is_member;
   return false;
 }
-function subMarkup(ch) {
+/* ---------- til (o'zbek / rus) ---------- */
+async function getLang(chatId) {
+  try { const s = await db().collection('tg_chats').doc(String(chatId)).get(); const l = s.exists ? s.data().lang : null; return l === 'ru' || l === 'uz' ? l : null; } catch (e) { return null; }
+}
+async function linkByChat(chatId) {
+  const q = await db().collection('telegram_links').where('chatId', '==', chatId).limit(1).get();
+  return q.empty ? null : q.docs[0];
+}
+async function setLang(chatId, lang) {
+  lang = normLang(lang);
+  await db().collection('tg_chats').doc(String(chatId)).set({ lang, at: Date.now() });
+  try {
+    const q = await db().collection('telegram_links').where('chatId', '==', chatId).limit(5).get();
+    for (const d of q.docs) await d.ref.update({ lang });
+  } catch (e) { console.error('til yangilanmadi:', e); }
+  return lang;
+}
+function langMarkup() { return { inline_keyboard: [[{ text: t('uz', 'btn_uz'), callback_data: 'lang|uz' }, { text: t('ru', 'btn_ru'), callback_data: 'lang|ru' }]] }; }
+function subMarkup(ch, lang) {
   const rows = [];
-  if (ch.charAt(0) === '@') rows.push([{ text: "📢 Kanalga o'tish", url: 'https://t.me/' + ch.slice(1) }]);
-  rows.push([{ text: '✅ Obunani tekshirish', callback_data: 'sub' }]);
+  if (ch.charAt(0) === '@') rows.push([{ text: t(lang, 'btn_channel'), url: 'https://t.me/' + ch.slice(1) }]);
+  rows.push([{ text: t(lang, 'btn_check'), callback_data: 'sub' }]);
   return { inline_keyboard: rows };
 }
-const CONTACT_MARKUP = { keyboard: [[{ text: '📱 Telefon raqamimni yuborish', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true };
-const READY = "✅ Tayyor! Raqamingiz ulandi va kanalga obuna tasdiqlandi. Endi farzandingiz haqida berilgan xatlar shu yerga yuboriladi va saytdagi ota-onalar kabinetidan kod olishingiz mumkin.";
+function contactMarkup(lang) { return { keyboard: [[{ text: t(lang, 'btn_contact'), request_contact: true }]], resize_keyboard: true, one_time_keyboard: true }; }
+/* /start dan keyingi asosiy qadam: kanalga obuna so'raladi yoki raqam ulash tugmasi chiqadi */
+async function startFlow(chatId, userId, lang) {
+  const ch = await reqChannel();
+  if (!(await isSubscribed(ch, userId))) await tgApi('sendMessage', { chat_id: chatId, text: t(lang, 'welcome_sub', { ch }), reply_markup: subMarkup(ch, lang) });
+  else await tgApi('sendMessage', { chat_id: chatId, text: t(lang, 'welcome_phone'), reply_markup: contactMarkup(lang) });
+}
 
 /**
  * "✅ Tanishdim" tugmasi bosilganda: notify_log yozuviga ackAt qo'shadi va
@@ -45,23 +69,30 @@ const READY = "✅ Tayyor! Raqamingiz ulandi va kanalga obuna tasdiqlandi. Endi 
  * yoki 'ack|<telefon>|<sana>' (eski xabarlar uchun).
  */
 async function handleCallback(cq) {
-  const answer = (text) => tgApi('answerCallbackQuery', { callback_query_id: cq.id, text: text || '' });
+  const answer = (text, alert) => tgApi('answerCallbackQuery', { callback_query_id: cq.id, text: text || '', show_alert: !!alert });
   const data = String(cq.data || '');
   const chatId = cq.message && cq.message.chat && cq.message.chat.id;
   const parts = data.split('|');
+  if (parts[0] === 'lang' && chatId) {
+    const lang = await setLang(chatId, parts[1]);
+    await answer(t(lang, 'lang_set'));
+    let linked = null;
+    try { linked = await linkByChat(chatId); } catch (e) { console.error('telegram_links tekshiruvi xato:', e); }
+    if (linked) await tgApi('sendMessage', { chat_id: chatId, text: t(lang, 'ready'), reply_markup: { remove_keyboard: true } });
+    else await startFlow(chatId, cq.from && cq.from.id, lang);
+    return;
+  }
+  const chatLang = (chatId && await getLang(chatId)) || 'uz';
   if (parts[0] === 'sub' && chatId) {
     const ch = await reqChannel();
-    if (!(await isSubscribed(ch, cq.from && cq.from.id))) {
-      await tgApi('answerCallbackQuery', { callback_query_id: cq.id, text: "Siz hali kanalga obuna bo'lmagansiz", show_alert: true });
-      return;
-    }
-    await answer('Obuna tasdiqlandi ✅');
+    if (!(await isSubscribed(ch, cq.from && cq.from.id))) { await answer(t(chatLang, 'toast_not_sub'), true); return; }
+    await answer(t(chatLang, 'toast_sub_ok'));
     /* Firestore ishlamasa ham tugma yuboriladi (avval shu yerda bot jim qolardi) */
     let linked = false;
-    try { linked = !(await db().collection('telegram_links').where('chatId', '==', chatId).limit(1).get()).empty; }
+    try { linked = !!(await linkByChat(chatId)); }
     catch (e) { console.error('telegram_links tekshiruvi xato:', e); }
-    if (!linked) await tgApi('sendMessage', { chat_id: chatId, text: "✅ Obuna tasdiqlandi.\n\nEndi pastdagi tugmani bosib, telefon raqamingizni ulashing (faqat bir marta).", reply_markup: CONTACT_MARKUP });
-    else await tgApi('sendMessage', { chat_id: chatId, text: READY, reply_markup: { remove_keyboard: true } });
+    if (!linked) await tgApi('sendMessage', { chat_id: chatId, text: t(chatLang, 'sub_ok_phone'), reply_markup: contactMarkup(chatLang) });
+    else await tgApi('sendMessage', { chat_id: chatId, text: t(chatLang, 'ready'), reply_markup: { remove_keyboard: true } });
     return;
   }
   if (parts[0] !== 'ack' || !chatId) { await answer(); return; }
@@ -77,14 +108,15 @@ async function handleCallback(cq) {
     const open = docs.filter((d) => !d.data().ackAt)[0] || docs[docs.length - 1];
     if (open) { ref = open.ref; snap = open; }
   }
-  if (!snap || !snap.exists) { await answer('Xabar topilmadi'); return; }
+  if (!snap || !snap.exists) { await answer(t(chatLang, 'ack_notfound')); return; }
   const rec = snap.data();
 
   // Faqat shu raqamga ulangan Telegram hisobi tasdiqlay oladi
   const link = await db().collection('telegram_links').doc(String(rec.phone || '')).get();
-  if (!link.exists || String(link.data().chatId) !== String(chatId)) { await answer('Ruxsat yo\'q'); return; }
+  if (!link.exists || String(link.data().chatId) !== String(chatId)) { await answer(t(chatLang, 'ack_denied')); return; }
+  const lang = normLang(link.data().lang || chatLang);
 
-  if (rec.ackAt) { await answer('Siz allaqachon tanishgansiz ✅'); return; }
+  if (rec.ackAt) { await answer(t(lang, 'ack_already')); return; }
   await ref.update({ ackAt: Date.now(), ackChatId: chatId });
   try {
     await db().collection('audit_log').add({
@@ -94,12 +126,12 @@ async function handleCallback(cq) {
       at: Date.now(),
     });
   } catch (e) { console.warn('audit yozilmadi:', e); }
-  await answer('Rahmat! Tanishganingiz qayd etildi ✅');
+  await answer(t(lang, 'ack_thanks'));
   if (cq.message && cq.message.message_id) {
     await tgApi('editMessageReplyMarkup', {
       chat_id: chatId,
       message_id: cq.message.message_id,
-      reply_markup: { inline_keyboard: [[{ text: '✅ Tanishdingiz', callback_data: 'noop' }]] },
+      reply_markup: { inline_keyboard: [[{ text: t(lang, 'btn_ack_done'), callback_data: 'noop' }]] },
     });
   }
 }
@@ -137,47 +169,52 @@ module.exports = async (req, res) => {
     const msg = update.message;
     if (!msg) { res.status(200).send('ok'); return; }
     const chatId = msg.chat && msg.chat.id;
+    const text = String(msg.text || '');
+    const lang = (await getLang(chatId)) || 'uz';
 
     if (msg.contact && msg.contact.phone_number) {
       // Faqat O'ZINING raqamini ulashganda qabul qilinadi (boshqa odamning kontakt kartasi emas)
       if (!msg.from || !msg.contact.user_id || String(msg.contact.user_id) !== String(msg.from.id)) {
-        await tgApi('sendMessage', { chat_id: chatId, text: "Iltimos, faqat o'zingizning raqamingizni ulashing: pastdagi «📱 Telefon raqamimni yuborish» tugmasini bosing.", reply_markup: CONTACT_MARKUP });
+        await tgApi('sendMessage', { chat_id: chatId, text: t(lang, 'contact_foreign'), reply_markup: contactMarkup(lang) });
         res.status(200).send('ok');
         return;
       }
       const phone = normPhone(msg.contact.phone_number);
       if (phone.length === 12) {
-        await db().collection('telegram_links').doc(phone).set({ chatId, phone, linkedAt: Date.now() });
+        await db().collection('telegram_links').doc(phone).set({ chatId, phone, linkedAt: Date.now(), lang });
         const ch = await reqChannel();
         if (await isSubscribed(ch, msg.from && msg.from.id)) {
-          await tgApi('sendMessage', {
-            chat_id: chatId,
-            text: "✅ Raqamingiz ulandi. Endi farzandingiz haqida berilgan ogohlantirish xatlari shu yerga yuboriladi.",
-            reply_markup: { remove_keyboard: true },
-          });
+          await tgApi('sendMessage', { chat_id: chatId, text: t(lang, 'linked_ok') + '\n\n' + t(lang, 'ready'), reply_markup: { remove_keyboard: true } });
         } else {
-          await tgApi('sendMessage', { chat_id: chatId, text: "✅ Raqamingiz ulandi.\n\n📢 Davom etish uchun avval maktab kanaliga obuna bo'ling: " + ch + "\n\nObuna bo'lgach, pastdagi «✅ Obunani tekshirish» tugmasini bosing.", reply_markup: subMarkup(ch) });
+          await tgApi('sendMessage', { chat_id: chatId, text: t(lang, 'linked_sub', { ch }), reply_markup: subMarkup(ch, lang) });
         }
       } else {
-        await tgApi('sendMessage', { chat_id: chatId, text: "Raqamni tanib bo'lmadi, birozdan so'ng qaytadan urinib ko'ring." });
+        await tgApi('sendMessage', { chat_id: chatId, text: t(lang, 'contact_fail') });
       }
       res.status(200).send('ok');
       return;
     }
 
-    if (msg.text && msg.text.indexOf('/start') === 0) {
-      const ch = await reqChannel();
-      if (!(await isSubscribed(ch, msg.from && msg.from.id))) {
-        await tgApi('sendMessage', { chat_id: chatId, text: "Assalomu alaykum! Bu — 28-maktab ota-onalar boti.\n\n📢 Davom etish uchun avval maktab kanaliga obuna bo'ling: " + ch + "\n\nObuna bo'lgach, pastdagi «✅ Obunani tekshirish» tugmasini bosing.", reply_markup: subMarkup(ch) });
-      } else {
-        await tgApi('sendMessage', { chat_id: chatId, text: "Assalomu alaykum! Bu — 28-maktab ota-onalar boti.\n\nFarzandingiz haqidagi xatlar va saytdagi ota-onalar kabineti kodi shu yerga yuboriladi. Buning uchun pastdagi tugma orqali telefon raqamingizni ulashing (faqat bir marta).", reply_markup: CONTACT_MARKUP });
+    const cmd = text.split(/[\s@]/)[0].toLowerCase();
+    if (cmd === '/start') {
+      const chosen = await getLang(chatId);
+      if (!chosen) await tgApi('sendMessage', { chat_id: chatId, text: t('uz', 'choose_lang'), reply_markup: langMarkup() });
+      else await startFlow(chatId, msg.from && msg.from.id, chosen);
+    } else if (cmd === '/til' || cmd === '/lang') {
+      await tgApi('sendMessage', { chat_id: chatId, text: t('uz', 'choose_lang'), reply_markup: langMarkup() });
+    } else if (cmd === '/toxtat' || cmd === '/yoqish') {
+      const d = await linkByChat(chatId);
+      if (!d) await tgApi('sendMessage', { chat_id: chatId, text: t(lang, 'need_start') });
+      else {
+        const mute = cmd === '/toxtat';
+        await d.ref.update({ muteAbsence: mute });
+        await tgApi('sendMessage', { chat_id: chatId, text: t(lang, mute ? 'mute_on' : 'mute_off') });
       }
-      res.status(200).send('ok');
-      return;
+    } else {
+      await tgApi('sendMessage', { chat_id: chatId, text: t(lang, 'need_start') });
     }
-
-    await tgApi('sendMessage', { chat_id: chatId, text: "Telefon raqamingizni ulashish uchun /start buyrug'ini yuboring." });
     res.status(200).send('ok');
+    return;
   } catch (e) {
     console.error('telegram-webhook xato:', e);
     try {   // foydalanuvchi jim qolmasin
