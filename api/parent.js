@@ -5,6 +5,7 @@
 const crypto = require('crypto');
 const L = require('./_lib.js');
 const A = require('./_admin.js');
+const { t } = require('./_i18n');
 
 /* Majburiy kanalga obuna (kanal: REQUIRED_CHANNEL yoki platformadagi «Telegram kanal nomi»). Bot kanalda ADMIN bo'lishi shart.
    Kanal sozlanmagan bo'lsa yoki Telegram tekshirishga ruxsat bermasa, ota-ona bloklanmaydi. */
@@ -134,8 +135,9 @@ module.exports = async function (req, res) {
       if (cur.sentAt && now - cur.sentAt < GAP) return out(res, 200, { ok: false, status: 'wait', seconds: Math.ceil((GAP - (now - cur.sentAt)) / 1000) });
       if (cnt >= MAX_SENDS) return out(res, 200, { ok: false, status: 'too_many', error: "Juda ko'p kod so'raldi. 10 daqiqadan keyin qayta urinib ko'ring." });
       const code = String(crypto.randomInt(100000, 1000000));
+      const lk = (await A.getDoc('telegram_links/' + phone)) || {}, parentLang = lk.lang === 'ru' ? 'ru' : 'uz';   // kod ota-onaning tilida yuboriladi
       const r = await fetch('https://api.telegram.org/bot' + botToken + '/sendMessage', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chat, text: '🔐 <b>28-maktab</b>: ota-onalar kabineti uchun kirish kodi:\n\n<b>' + code + '</b>\n\nKod 5 daqiqa amal qiladi. Uni hech kimga aytmang. Agar bu so\'rovni siz yubormagan bo\'lsangiz, e\'tibor bermang.', parse_mode: 'HTML' }) });
+        body: JSON.stringify({ chat_id: chat, text: t(parentLang, 'parent_code', { code }), parse_mode: 'HTML' }) });
       const j = await r.json();
       if (!j.ok) return out(res, 200, { ok: false, status: 'send_failed', error: "Kodni Telegram'ga yuborib bo'lmadi. Botni qayta ishga tushiring (/start) va qayta urinib ko'ring." });
       await A.setDoc('parent_codes/p_' + phone, { h: hmac(phone + ':' + code), exp: now + TTL, tries: 0, sentAt: now, win: win, cnt: cnt + 1 });
