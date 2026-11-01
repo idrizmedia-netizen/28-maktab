@@ -21,6 +21,25 @@ function buildCaption(n, id) {
     '🔗 <a href="' + esc(L.ORIGIN + '/yangilik/' + id) + '">Batafsil o\'qish</a>';
 }
 
+/* Yangilikni kanalga yuboradi (rasmlar bo'lsa, rasm yoki albom bilan). call(method, payload) -> Telegram natijasi.
+   Platformadagi "E'lon qilish" va kunlik vazifa (rejalashtirilgan yangiliklar) shu funksiyadan foydalanadi. */
+async function postToChannel(call, ch, n, id) {
+  const caption = buildCaption(n, id), nImgs = imgCount(n), sig = imgSig(n);
+  const photo = function (i) { return L.ORIGIN + '/api/rasm?id=' + encodeURIComponent(id) + '&i=' + i + '&v=' + sig; };
+  const kindNow = nImgs >= 2 ? 'group' : (nImgs === 1 ? 'photo' : 'text');
+  let result, ids;
+  if (kindNow === 'group') {
+    const media = [];
+    for (let i = 0; i < Math.min(nImgs, 10); i++) media.push(i === 0 ? { type: 'photo', media: photo(i), caption: caption, parse_mode: 'HTML' } : { type: 'photo', media: photo(i) });
+    result = await call('sendMediaGroup', { chat_id: ch, media: media }); ids = result.map(function (m) { return m.message_id; });
+  } else if (kindNow === 'photo') {
+    result = await call('sendPhoto', { chat_id: ch, photo: photo(0), caption: caption, parse_mode: 'HTML' }); ids = [result.message_id];
+  } else {
+    result = await call('sendMessage', { chat_id: ch, text: caption, parse_mode: 'HTML', link_preview_options: { is_disabled: true } }); ids = [result.message_id];
+  }
+  return { chat: ch, ids: ids, kind: kindNow, n: Math.min(nImgs, 10), sig: sig, at: new Date().toISOString() };
+}
+
 module.exports = async function (req, res) {
   if (req.method !== 'POST') return reply(res, 405, { ok: false, error: 'Faqat POST' });
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -61,20 +80,8 @@ module.exports = async function (req, res) {
     const photo = function (i) { return L.ORIGIN + '/api/rasm?id=' + encodeURIComponent(id) + '&i=' + i + '&v=' + sig; };
     const kindNow = nImgs >= 2 ? 'group' : (nImgs === 1 ? 'photo' : 'text');
 
-    // yangi xabar yuborish
-    const send = async function (ch) {
-      let result, ids;
-      if (kindNow === 'group') {
-        const media = [];
-        for (let i = 0; i < Math.min(nImgs, 10); i++) media.push(i === 0 ? { type: 'photo', media: photo(i), caption: caption, parse_mode: 'HTML' } : { type: 'photo', media: photo(i) });
-        result = await call('sendMediaGroup', { chat_id: ch, media: media }); ids = result.map(function (m) { return m.message_id; });
-      } else if (kindNow === 'photo') {
-        result = await call('sendPhoto', { chat_id: ch, photo: photo(0), caption: caption, parse_mode: 'HTML' }); ids = [result.message_id];
-      } else {
-        result = await call('sendMessage', { chat_id: ch, text: caption, parse_mode: 'HTML', link_preview_options: { is_disabled: true } }); ids = [result.message_id];
-      }
-      return { chat: ch, ids: ids, kind: kindNow, n: Math.min(nImgs, 10), sig: sig, at: new Date().toISOString() };
-    };
+    // yangi xabar yuborish (umumiy funksiya: rejalashtirilgan yangiliklar ham shu orqali yuboriladi)
+    const send = function (ch) { return postToChannel(call, ch, n, id); };
     const channel = async function () {
       const info = await L.getDoc('publicinfo/maktab', { mask: ['tgChannel'] });
       const ch = info && String(info.tgChannel || '').trim();
@@ -122,3 +129,4 @@ module.exports = async function (req, res) {
     return reply(res, 502, { ok: false, error: msg });
   }
 };
+module.exports.postToChannel = postToChannel;
