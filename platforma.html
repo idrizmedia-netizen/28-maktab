@@ -1333,7 +1333,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
           <div><label class="fl" for="eg_sn">O'quvchi</label><input class="inp" id="eg_sn" list="eg_sl" autocomplete="off" placeholder="Ism familiya"><datalist id="eg_sl"></datalist></div>
           <div><label class="fl" for="eg_sc">O'quvchi sinfi</label><input class="inp" id="eg_sc" maxlength="8" placeholder="9-A"></div>
         </div>
-        <div class="eg-btns"><button class="btn" id="eg_print" type="button">Chop etish</button><button class="btn line" id="eg_pdf" type="button">PDF yuklab olish</button></div>
+        <div class="eg-btns"><button class="btn" id="eg_print" type="button">Chop etish</button><button class="btn line" id="eg_pdf" type="button">PDF yuklab olish</button><button class="btn" id="eg_site" type="button" style="background:var(--ok)">🌐 Saytda e'lon qilish</button></div>
         <div class="msg" id="eg_msg"></div>
       </div>
       <div class="eg-stage" id="eg_stage"></div>
@@ -3543,6 +3543,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     if(!$('#eg_yr').value) $('#eg_yr').value=(lget('m28_egyr')||egYearDefault());
     $('#eg_sl').innerHTML=roster.students.map(function(x){return '<option value="'+esc(x.name)+'">'+esc(x.cls||'')+'</option>'}).join('');
     $('#eg_tl').innerHTML=roster.teachers.map(function(x){return '<option value="'+esc(x.name)+'">'+esc(x.subject||'')+'</option>'}).join('');
+    $('#eg_site').classList.toggle('hidden',!newsPostAllowed());
     egDraw();
   }
   function egMsg(t){ var m=$('#eg_msg'); if(m) m.textContent=t||''; }
@@ -3572,6 +3573,35 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   }
   ['eg_per','eg_yr','eg_role','eg_tn','eg_sn','eg_sc'].forEach(function(id){ var e=$('#'+id); if(e) e.addEventListener('input',egDraw); });
   (function(){ var e=$('#eg_sn'); if(e) e.addEventListener('input',function(){ var v=e.value.trim(); roster.students.some(function(x){ if(x.name===v&&x.cls){ $('#eg_sc').value=x.cls; egDraw(); return true } }); }); })();
+
+  function egSite(){
+    var r=$('#eg_role').value, tn=$('#eg_tn').value.trim(), sn=$('#eg_sn').value.trim(), sc=$('#eg_sc').value.trim();
+    if((r!=='s'&&!tn)||(r!=='t'&&!sn)){ egMsg('Avval ism-familiyani yozing'); return; }
+    if(!db||!curUser){ egMsg("Internet yoki kirish yo'q"); return; }
+    if(!newsPostAllowed()){ egMsg("E'lon qilishga ruxsatingiz yo'q"); return; }
+    var per=$('#eg_per').value, yr=$('#eg_yr').value.trim(), full=per.indexOf('Butun')===0;
+    var title=(full?yr+" o\u2018quv yili":per)+" eng yaxshilari";
+    if(!confirm('"'+title+'" maktab sahifasida hamma uchun e\u2019lon qilinsinmi?')) return;
+    var subj=''; roster.teachers.some(function(x){ if(x.name===tn){ subj=x.subject||''; return true } });
+    var lines=[(full?yr+" o\u2018quv yili":per)+" yakunlariga ko\u2018ra:"];
+    if(r!=='s') lines.push("\ud83c\udfc5 Eng yaxshi o\u2018qituvchi \u2014 "+tn+(subj?' ('+subj+')':''));
+    if(r!=='t') lines.push("\ud83c\udfc5 Eng yaxshi o\u2018quvchi \u2014 "+sn+(sc?', '+sc+' sinf':''));
+    lines.push("Tabriklaymiz! Yangi muvaffaqiyatlar tilaymiz.");
+    egMsg("E\u2019lon tayyorlanmoqda\u2026"); $('#eg_site').disabled=true;
+    var host=document.createElement('div'); host.style.cssText='position:fixed;left:-9999px;top:0;width:794px'; host.innerHTML='<style>'+EG_CSS+'</style>'+egList().join(''); document.body.appendChild(host);
+    var els=[].slice.call(host.querySelectorAll('.egp')), imgs=[], i=0;
+    function shot(q){ return html2canvas(els[i],{scale:1,backgroundColor:'#ffffff',logging:false,useCORS:true}).then(function(cv){ imgs.push(cv.toDataURL('image/jpeg',q)); i++; if(i<els.length) return shot(q); }); }
+    shot(0.8).then(function(){
+      host.remove();
+      if(imgs.reduce(function(a,x){return a+x.length},0)>850000) throw new Error('Rasm hajmi katta');
+      return db.collection('news').add({title:title,body:lines.join('\n\n'),cat:'elon',date:dateISO(new Date()),status:'published',pinned:false,imgs:imgs,ni:imgs.length,videos:[],by:(curUser.email||'').toLowerCase(),updated:firebase.firestore.FieldValue.serverTimestamp()});
+    }).then(function(ref){
+      egMsg("\u2705 Saytda e\u2019lon qilindi. Havola: "+newsLink(ref.id)); toast("E'lon qilindi");
+      try{ copyText(newsLink(ref.id),'Havola nusxalandi') }catch(e){}
+      try{ logAudit('news_publish',title) }catch(e){}
+    }).catch(function(e){ try{host.remove()}catch(x){} egMsg("E'lon qilib bo'lmadi: "+(e&&e.message||'xato')); }).then(function(){ $('#eg_site').disabled=false; });
+  }
+  $('#eg_site').addEventListener('click',egSite);
   $('#eg_print').addEventListener('click',egPrint); $('#eg_pdf').addEventListener('click',egPdf);
 
   /* ---------- tabs ---------- */
