@@ -944,6 +944,31 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
 .eg-stage{display:flex;flex-direction:column;align-items:center;gap:16px;padding:16px 0;overflow:hidden}
 .eg-w{width:calc(794px*.42);height:calc(1123px*.42);flex:none}.eg-w .egp{zoom:.42}
 @media(min-width:720px){.eg-w{width:calc(794px*.7);height:calc(1123px*.7)}.eg-w .egp{zoom:.7}}
+
+.egp{width:794px;height:1123px;background:#143A7B;padding:24px;color:#143A7B;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;overflow:hidden}
+.egp,.egp *{box-sizing:border-box}
+.egp .in{height:100%;background:#fff;border:6px solid #F2B632;display:flex;flex-direction:column;align-items:center;padding:56px 70px 40px;text-align:center}
+.egp .hd{width:440px}.egp .gl{width:150px;height:4px;background:#F2B632;margin:26px 0 30px;flex:none}
+.egp .pl{color:#8A6414;font-weight:700;font-size:21px;letter-spacing:.5px}
+.egp .t1{font-weight:800;font-size:56px;line-height:1.1;margin-top:18px}.egp .t2{font-weight:800;font-size:62px;line-height:1.1}
+.egp .sh{width:230px;margin:30px 0 22px}
+.egp .ph{width:230px;height:230px;border-radius:50%;border:8px solid #F2B632;margin:30px 0 22px;display:block}
+.egp .nm{font-family:Georgia,"Times New Roman",serif;font-weight:700;width:100%;border-bottom:2px solid #143A7B;min-height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;line-height:1.1}
+.egp .cap{color:#8A6414;font-size:15px;margin-top:6px}
+.egp .pr{margin-top:auto;font-size:17px;line-height:1.5}.egp .ad{color:#8A6414;font-weight:700;font-size:16px;margin-top:10px}
+.egl{width:1123px;height:794px}.egl .in{padding:34px 60px 30px}
+.egp .sg{display:flex;justify-content:space-between;width:100%;margin-top:auto;font-size:15px}.egp .sg div{width:260px;border-top:2px solid #143A7B;padding-top:6px}
+.egp .lt{text-align:left;width:100%;font-size:19px;line-height:1.7}.egp .lh{text-align:left;width:100%;font-weight:700;font-size:23px;margin:6px 0 14px}
+.egp .sec{width:100%;text-align:left;margin-top:14px}.egp .sec h3{margin:0 0 8px;font-size:22px;color:#8A6414;border-bottom:3px solid #F2B632;padding-bottom:4px}
+.egp .cols{display:flex;gap:30px}.egp .cols>div{flex:1}.egp .li{padding:3px 0}
+.egp .hm{font-size:24px;line-height:1.55;margin:6px 0}
+.egp .dt{display:inline-block;background:#F2B632;color:#143A7B;font-weight:800;font-size:26px;padding:8px 26px;border-radius:30px;margin:16px 0}
+
+.eg-modes{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px}.eg-g{margin-top:12px}.eg-row{display:grid;grid-template-columns:110px 1.6fr 1fr auto auto;gap:6px;margin-bottom:6px}
+@media(max-width:640px){.eg-row{grid-template-columns:1fr 1fr}.eg-row input[data-k="n"]{grid-column:1/-1}}
+.eg-wl{width:calc(1123px*.3)!important;height:calc(794px*.3)!important}.eg-wl .egp{zoom:.3!important}
+@media(min-width:720px){.eg-wl{width:calc(1123px*.62)!important;height:calc(794px*.62)!important}.eg-wl .egp{zoom:.62!important}}
+.eg-site{border-top:1px solid var(--line);padding-top:10px}
 </style>
 </head>
 <body>
@@ -1323,20 +1348,61 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     <!-- Statistika -->
     <section id="tab-eng" class="hidden">
       <div class="card">
-        <h2>Eng yaxshilar e'lonlari</h2>
-        <p class="hint">Chorak, yarim yillik yoki butun o'quv yili bo'yicha eng yaxshi o'qituvchi va o'quvchi uchun e'lonlar taxtasiga A4 e'lon tayyorlaydi. Ismni yozsangiz, bazadan taklif chiqadi.</p>
-        <div class="eg-form">
-          <div><label class="fl" for="eg_per">Davr</label><select class="inp" id="eg_per"><option>1-chorak</option><option>2-chorak</option><option>3-chorak</option><option>4-chorak</option><option>1-yarim yillik</option><option>2-yarim yillik</option><option>Butun o'quv yili</option></select></div>
-          <div><label class="fl" for="eg_yr">O'quv yili</label><input class="inp" id="eg_yr" maxlength="12"></div>
-          <div><label class="fl" for="eg_role">E'lon turi</label><select class="inp" id="eg_role"><option value="both">Ikkalasi</option><option value="t">Faqat o'qituvchi</option><option value="s">Faqat o'quvchi</option></select></div>
-          <div><label class="fl" for="eg_tn">O'qituvchi</label><input class="inp" id="eg_tn" list="eg_tl" autocomplete="off" placeholder="Ism familiya"><datalist id="eg_tl"></datalist></div>
-          <div><label class="fl" for="eg_sn">O'quvchi</label><input class="inp" id="eg_sn" list="eg_sl" autocomplete="off" placeholder="Ism familiya"><datalist id="eg_sl"></datalist></div>
-          <div><label class="fl" for="eg_sc">O'quvchi sinfi</label><input class="inp" id="eg_sc" maxlength="8" placeholder="9-A"></div>
+        <h2>E'lonlar studiyasi</h2>
+        <p class="hint">Maktab e'lonlar taxtasi uchun A4 hujjatlar. Turini tanlang, ma'lumotni kiriting, chop eting yoki PDF qiling. Eng yaxshilar, chorak natijalari va bayram e'lonlarini saytda ham e'lon qilish mumkin.</p>
+        <div class="eg-modes" id="eg_modes">
+          <button type="button" class="btn sm" data-m="win">🏅 Eng yaxshilar</button>
+          <button type="button" class="btn line sm" data-m="cert">📜 Sertifikat</button>
+          <button type="button" class="btn line sm" data-m="letter">✉️ Minnatdorchilik xati</button>
+          <button type="button" class="btn line sm" data-m="res">📊 Chorak natijalari</button>
+          <button type="button" class="btn line sm" data-m="hol">🎉 Bayram e'lonlari</button>
         </div>
-        <div class="eg-btns"><button class="btn" id="eg_print" type="button">Chop etish</button><button class="btn line" id="eg_pdf" type="button">PDF yuklab olish</button><button class="btn" id="eg_site" type="button" style="background:var(--ok)">🌐 Saytda e'lon qilish</button></div>
+        <div class="eg-g" data-for="win cert res">
+          <div class="eg-form">
+            <div><label class="fl" for="eg_per">Davr</label><select class="inp" id="eg_per"><option>1-chorak</option><option>2-chorak</option><option>3-chorak</option><option>4-chorak</option><option>1-yarim yillik</option><option>2-yarim yillik</option><option>Butun o'quv yili</option></select></div>
+            <div><label class="fl" for="eg_yr">O'quv yili</label><input class="inp" id="eg_yr" maxlength="12"></div>
+          </div>
+        </div>
+        <div class="eg-g" data-for="win cert">
+          <label class="fl">G'oliblar (har biri uchun alohida e'lon)</label>
+          <div id="eg_rows"></div>
+          <datalist id="eg_nl"></datalist>
+          <button type="button" class="btn line sm" id="eg_add" style="margin-top:8px">＋ G'olib qo'shish</button>
+        </div>
+        <div class="eg-g" data-for="letter">
+          <div class="eg-form">
+            <div><label class="fl" for="eg_lk">Kimga</label><select class="inp" id="eg_lk"><option value="p">Ota-onaga</option><option value="t">O'qituvchiga</option></select></div>
+            <div><label class="fl" for="eg_ln">Ism familiya</label><input class="inp" id="eg_ln" list="eg_nl" autocomplete="off"></div>
+            <div><label class="fl" for="eg_ld">Sana</label><input class="inp" id="eg_ld" type="date"></div>
+            <div><label class="fl" for="eg_ls">Imzo egasi</label><input class="inp" id="eg_ls" placeholder="Direktor ismi (ixtiyoriy)"></div>
+          </div>
+          <label class="fl" for="eg_lt">Matn</label><textarea class="inp" id="eg_lt" rows="5"></textarea>
+        </div>
+        <div class="eg-g" data-for="res">
+          <label class="fl" for="eg_ra">A'lochilar (har qatorda: Ism familiya, sinf)</label><textarea class="inp" id="eg_ra" rows="5" placeholder="Karamatova Sojida, 9-A"></textarea>
+          <label class="fl" for="eg_rr">Sinflar reytingi (eng yuqoridan boshlab, har qatorda: sinf — natija)</label><textarea class="inp" id="eg_rr" rows="4" placeholder="9-A — 92%"></textarea>
+        </div>
+        <div class="eg-g" data-for="hol">
+          <div class="eg-form">
+            <div><label class="fl" for="eg_hs">Bayram</label><select class="inp" id="eg_hs"><option value="nav">Navro'z</option><option value="mus">Mustaqillik kuni</option><option value="bil">Bilimlar kuni (1-sentabr)</option><option value="ust">O'qituvchi va murabbiylar kuni</option><option value="usz">Ustozlar kuni</option><option value="oth">Boshqa</option></select></div>
+            <div><label class="fl" for="eg_hd">Sana</label><input class="inp" id="eg_hd" maxlength="30"></div>
+          </div>
+          <label class="fl" for="eg_ht">Sarlavha</label><input class="inp" id="eg_ht" maxlength="70">
+          <label class="fl" for="eg_hm">Tabrik matni</label><textarea class="inp" id="eg_hm" rows="4"></textarea>
+        </div>
+        <div class="eg-btns"><button class="btn" id="eg_print" type="button">Chop etish</button><button class="btn line" id="eg_pdf" type="button">PDF yuklab olish</button></div>
+        <div class="eg-g eg-site" data-for="win res hol">
+          <label class="fl" for="eg_cat">Saytda e'lon qilish</label>
+          <div class="eg-form">
+            <div><select class="inp" id="eg_cat"><option value="yutuq">Yutuqlar bo'limida</option><option value="elon">E'lonlar bo'limida</option><option value="yangilik">Yangiliklar bo'limida</option></select></div>
+            <div><label style="display:flex;gap:8px;align-items:center;min-height:42px"><input type="checkbox" id="eg_tg"> Telegram kanalga ham yuborish</label></div>
+          </div>
+          <button class="btn" id="eg_site" type="button" style="background:var(--ok);margin-top:8px">🌐 Saytda e'lon qilish</button>
+        </div>
         <div class="msg" id="eg_msg"></div>
       </div>
       <div class="eg-stage" id="eg_stage"></div>
+      <div class="card eg-g" data-for="win" id="eg_histc"><h2 style="font-size:17px">G'oliblar tarixi</h2><p class="hint">Saytda e'lon qilingan g'oliblar.</p><div id="eg_hist"></div></div>
     </section>
     <section id="tab-stats" class="hidden">
       <div class="card">
@@ -3514,95 +3580,149 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   });
 
 
-  /* ---------- Eng yaxshilar (e'lon) ---------- */
-  var EG_CSS=`.egp{width:794px;height:1123px;background:#143A7B;padding:24px;color:#143A7B;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  /* ---------- E'lonlar studiyasi ---------- */
+  var EG_CSS=`.egp{width:794px;height:1123px;background:#143A7B;padding:24px;color:#143A7B;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;overflow:hidden}
 .egp,.egp *{box-sizing:border-box}
 .egp .in{height:100%;background:#fff;border:6px solid #F2B632;display:flex;flex-direction:column;align-items:center;padding:56px 70px 40px;text-align:center}
-.egp .hd{width:440px}.egp .gl{width:150px;height:4px;background:#F2B632;margin:26px 0 30px}
+.egp .hd{width:440px}.egp .gl{width:150px;height:4px;background:#F2B632;margin:26px 0 30px;flex:none}
 .egp .pl{color:#8A6414;font-weight:700;font-size:21px;letter-spacing:.5px}
 .egp .t1{font-weight:800;font-size:56px;line-height:1.1;margin-top:18px}.egp .t2{font-weight:800;font-size:62px;line-height:1.1}
 .egp .sh{width:230px;margin:30px 0 22px}
+.egp .ph{width:230px;height:230px;border-radius:50%;border:8px solid #F2B632;margin:30px 0 22px;display:block}
 .egp .nm{font-family:Georgia,"Times New Roman",serif;font-weight:700;width:100%;border-bottom:2px solid #143A7B;min-height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;line-height:1.1}
 .egp .cap{color:#8A6414;font-size:15px;margin-top:6px}
 .egp .pr{margin-top:auto;font-size:17px;line-height:1.5}.egp .ad{color:#8A6414;font-weight:700;font-size:16px;margin-top:10px}
+.egl{width:1123px;height:794px}.egl .in{padding:34px 60px 30px}
+.egp .sg{display:flex;justify-content:space-between;width:100%;margin-top:auto;font-size:15px}.egp .sg div{width:260px;border-top:2px solid #143A7B;padding-top:6px}
+.egp .lt{text-align:left;width:100%;font-size:19px;line-height:1.7}.egp .lh{text-align:left;width:100%;font-weight:700;font-size:23px;margin:6px 0 14px}
+.egp .sec{width:100%;text-align:left;margin-top:14px}.egp .sec h3{margin:0 0 8px;font-size:22px;color:#8A6414;border-bottom:3px solid #F2B632;padding-bottom:4px}
+.egp .cols{display:flex;gap:30px}.egp .cols>div{flex:1}.egp .li{padding:3px 0}
+.egp .hm{font-size:24px;line-height:1.55;margin:6px 0}
+.egp .dt{display:inline-block;background:#F2B632;color:#143A7B;font-weight:800;font-size:26px;padding:8px 26px;border-radius:30px;margin:16px 0}
 `;
-  function egYearDefault(){ var d=new Date(), y=d.getFullYear(); if(d.getMonth()<8) y--; return y+'\u2013'+(y+1); }
-  function egPoster(t){
-    var per=$('#eg_per').value, yr=$('#eg_yr').value.trim(), full=per.indexOf('Butun')===0;
-    var pl=full ? yr+" O\u2018QUV YILI YAKUNI" : per.toUpperCase()+'  \u2022  '+yr+" O\u2018QUV YILI";
-    var name=($(t?'#eg_tn':'#eg_sn').value||'').trim(), sc=$('#eg_sc').value.trim(), subj='';
-    if(t){ roster.teachers.some(function(x){ if(x.name===name){ subj=x.subject||''; return true } }); }
-    var fs=name.length>26?26:name.length>20?32:40;
-    var cap=t ? "O\u2018qituvchi"+(subj?' \u00b7 '+esc(subj):'') : "O\u2018quvchi"+(sc?', '+esc(sc)+' sinf':'');
-    var pr=t ? "Fidokorona mehnati, bilim va tarbiya yo\u2018lidagi<br>xizmatlari uchun chin dildan minnatdorchilik bildiramiz!" : "A\u2019lo o\u2018qishi va intizomi uchun tabriklaymiz.<br>Yangi muvaffaqiyatlar tilaymiz!";
-    return '<div class="egp"><div class="in"><img class="hd" src="icons/eng/header.jpg" alt="28-maktab"><div class="gl"></div><div class="pl">'+esc(pl)+'</div><div class="t1">ENG YAXSHI</div><div class="t2">'+(t?"O\u2018QITUVCHI":"O\u2018QUVCHI")+'</div><img class="sh" src="icons/eng/shield.jpg" alt=""><div class="nm" style="font-size:'+fs+'px">'+esc(name)+'</div><div class="cap">'+cap+'</div><div class="pr">'+pr+'<div class="ad">28-MAKTAB MA\u2019MURIYATI</div></div></div></div>';
-  }
-  function egList(){ var r=$('#eg_role').value, a=[]; if(r!=='s') a.push(egPoster(true)); if(r!=='t') a.push(egPoster(false)); return a; }
-  function egDraw(){ $('#eg_stage').innerHTML=egList().map(function(h){return '<div class="eg-w">'+h+'</div>'}).join(''); try{lset('m28_egyr',$('#eg_yr').value)}catch(e){} }
+  var EG={m:'win',w:[{r:'s',n:'',c:'',ph:''}],lTouched:false};
+  var EG_HOL={
+    nav:{t:'NAVRO‘Z BAYRAMI MUBORAK!',d:'21-mart',m:'Aziz o‘quvchilar, ustozlar va ota-onalar!\nSizni Navro‘z bayrami bilan chin qalbdan tabriklaymiz. Bahor yurtimizga ezgulik, oilalaringizga baxt va farovonlik olib kelsin!'},
+    mus:{t:'MUSTAQILLIK KUNI MUBORAK!',d:'1-sentabr',m:'Aziz yurtdoshlar!\nSizni O‘zbekiston Respublikasining Mustaqillik kuni bilan tabriklaymiz. Yurtimiz tinch, osmonimiz musaffo, kelajagimiz porloq bo‘lsin!'},
+    bil:{t:'BILIMLAR KUNI MUBORAK!',d:'1-sentabr',m:'Aziz o‘quvchilar va ustozlar!\nYangi o‘quv yili bilan tabriklaymiz. Bilim yo‘lida yangi marralar va katta g‘alabalar tilaymiz!'},
+    ust:{t:'O‘QITUVCHI VA MURABBIYLAR KUNI MUBORAK!',d:'1-oktyabr',m:'Aziz ustozlar!\nFidokorona mehnatingiz va ezgu ishlaringiz uchun chuqur minnatdorchilik bildiramiz. Sizga sog‘lik, baxt va ishlaringizda zafar tilaymiz!'},
+    usz:{t:'USTOZLAR KUNI MUBORAK!',d:'',m:'Aziz ustozlar!\nBizga bilim va tarbiya bergan, yo‘l ko‘rsatgan barcha ustozlarga chuqur hurmat va minnatdorchilik bildiramiz. Sizga sihat-salomatlik va baxt tilaymiz!'},
+    oth:{t:'',d:'',m:''}
+  };
+  var EG_LT={p:'Farzandingizning o‘qishdagi yutuqlari, intizomi va maktab hayotidagi faolligi uchun, shuningdek uni mehr bilan tarbiyalayotganingiz uchun maktab jamoasi nomidan chuqur minnatdorchilik bildiramiz.\nOilangizga sihat-salomatlik, baxt va farzandlaringizdan quvonch tilaymiz.',
+             t:'O‘quvchilarga bilim va tarbiya berishdagi fidokorona mehnatingiz hamda maktab hayotidagi faol ishtirokingiz uchun jamoa nomidan chin dildan minnatdorchilik bildiramiz.\nSizga sog‘lik, baxt va kasbiy yutuqlar tilaymiz.'};
+  function egYearDefault(){ var d=new Date(), y=d.getFullYear(); if(d.getMonth()<8) y--; return y+'–'+(y+1); }
+  function egBr(t){ return esc(t||'').replace(/\n/g,'<br>'); }
+  function egPer(){ var per=$('#eg_per').value, yr=$('#eg_yr').value.trim(), full=per.indexOf('Butun')===0;
+    return {per:per,yr:yr,full:full,label:full?yr+' O‘QUV YILI YAKUNI':per.toUpperCase()+'  •  '+yr+' O‘QUV YILI',tit:full?yr+' o‘quv yili':per}; }
+  function egShell(inner,land){ return '<div class="egp'+(land?' egl':'')+'"><div class="in">'+inner+'</div></div>'; }
+  function egHead(w){ return '<img class="hd" style="width:'+(w||440)+'px" src="icons/eng/header.jpg" alt="28-maktab">'; }
+  function egAd(){ return '<div class="ad">28-MAKTAB MA’MURIYATI</div>'; }
+  function egCap(w){ var t=w.r==='t'; return (t?'O‘qituvchi':'O‘quvchi')+(w.c?(t?' · '+esc(w.c):', '+esc(w.c)+' sinf'):''); }
+  function egWin(w){ var P=egPer(), t=w.r==='t', fs=w.n.length>26?26:w.n.length>20?32:40;
+    var pic=w.ph?'<img class="ph" src="'+w.ph+'" alt="">':'<img class="sh" src="icons/eng/shield.jpg" alt="">';
+    var pr=t?'Fidokorona mehnati, bilim va tarbiya yo‘lidagi<br>xizmatlari uchun chin dildan minnatdorchilik bildiramiz!':'A’lo o‘qishi va intizomi uchun tabriklaymiz.<br>Yangi muvaffaqiyatlar tilaymiz!';
+    return egShell(egHead()+'<div class="gl"></div><div class="pl">'+esc(P.label)+'</div><div class="t1">ENG YAXSHI</div><div class="t2">'+(t?'O‘QITUVCHI':'O‘QUVCHI')+'</div>'+pic+'<div class="nm" style="font-size:'+fs+'px">'+esc(w.n)+'</div><div class="cap">'+egCap(w)+'</div><div class="pr">'+pr+egAd()+'</div>'); }
+  function egCert(w){ var P=egPer(), t=w.r==='t', fs=w.n.length>26?34:w.n.length>20?40:46;
+    return egShell(egHead(300)+'<div class="gl" style="margin:12px 0 14px"></div><div class="t1" style="font-size:54px;margin:0">FAXRIY YORLIQ</div><div class="pl" style="margin-top:8px">'+esc(P.label)+'</div><div class="cap" style="font-size:19px;margin:16px 0 8px">'+(t?'Eng yaxshi o‘qituvchi':'Eng yaxshi o‘quvchi')+' deb topilgani uchun taqdirlanadi</div><div class="nm" style="font-size:'+fs+'px;width:72%">'+esc(w.n)+'</div><div class="cap">'+egCap(w)+'</div>'+(w.ph?'<img class="ph" style="width:130px;height:130px;margin:auto 0" src="'+w.ph+'" alt="">':'<img class="sh" style="width:130px;margin:auto 0" src="icons/eng/shield.jpg" alt="">')+'<div class="sg" style="margin-top:0"><div>Maktab direktori</div><div style="text-align:right">Sana: '+esc(egDate())+'</div></div>',true); }
+  function egDate(){ var v=$('#eg_ld').value||dateISO(new Date()), a=v.split('-'); return a.length===3?a[2]+'.'+a[1]+'.'+a[0]:v; }
+  function egLetter(){ var n=$('#eg_ln').value.trim(), s=$('#eg_ls').value.trim();
+    return egShell(egHead(400)+'<div class="gl" style="margin:16px 0 18px"></div><div class="t1" style="font-size:38px;margin:0 0 6px">MINNATDORCHILIK XATI</div><div class="cap" style="width:100%;text-align:right;font-size:17px">'+esc(egDate())+'</div><div class="lh" style="margin-top:22px">Hurmatli '+(n?esc(n):'__________________')+'!</div><div class="lt">'+egBr($('#eg_lt').value)+'</div><div class="sg"><div>Maktab direktori'+(s?'<br><b>'+esc(s)+'</b>':'')+'</div><div style="border:0"></div></div>'); }
+  function egLines(id){ return ($(id).value||'').split('\n').map(function(x){return x.trim()}).filter(Boolean); }
+  function egCols(a,fs){ var h=Math.ceil(a.length/2), f=function(x){return x.map(function(y){return '<div class="li" style="font-size:'+fs+'px">'+y+'</div>'}).join('')}; return '<div class="cols"><div>'+f(a.slice(0,h))+'</div><div>'+f(a.slice(h))+'</div></div>'; }
+  function egResTitle(P){ return P.full?'O‘QUV YILI NATIJALARI':(P.per.indexOf('yarim')>0?'YARIM YILLIK NATIJALARI':'CHORAK NATIJALARI'); }
+  function egRes(){ var P=egPer(), A=egLines('#eg_ra'), R=egLines('#eg_rr'), med=['🥇','🥈','🥉'];
+    var fs=A.length>34?13:A.length>24?15:A.length>14?17:19;
+    var ah=A.length?egCols(A.map(function(x){return '★ '+esc(x)}),fs):'<div class="li" style="font-size:16px;color:#8A6414">—</div>';
+    var rh=R.length?R.map(function(x,i){return '<div class="li" style="font-size:20px"><b>'+(i<3?med[i]:(i+1)+'.')+'</b> '+esc(x)+'</div>'}).join(''):'<div class="li" style="font-size:16px;color:#8A6414">—</div>';
+    return egShell(egHead(380)+'<div class="gl" style="margin:14px 0 14px"></div><div class="pl">'+esc(P.label)+'</div><div class="t1" style="font-size:44px;margin:6px 0 0">'+egResTitle(P)+'</div><div class="sec"><h3>A’lochi o‘quvchilar</h3>'+ah+'</div><div class="sec"><h3>Sinflar reytingi</h3>'+rh+'</div><div class="pr" style="font-size:16px">Barcha o‘quvchi va ustozlarga rahmat!'+egAd()+'</div>'); }
+  function egHol(){ var t=$('#eg_ht').value.trim(), d=$('#eg_hd').value.trim(), fs=t.length>40?36:t.length>26?44:52;
+    return egShell(egHead()+'<div class="gl"></div><div class="t1" style="font-size:'+fs+'px;margin:0;line-height:1.15">'+esc(t)+'</div>'+(d?'<div class="dt">'+esc(d)+'</div>':'')+'<img class="sh" style="width:200px;margin:20px 0" src="icons/eng/shield.jpg" alt=""><div class="hm">'+egBr($('#eg_hm').value)+'</div><div class="pr">'+egAd()+'</div>'); }
+  function egPages(pub){ var m=EG.m, w=EG.w.filter(function(x){return !pub||x.n.trim()});
+    if(m==='win') return {h:w.map(egWin),land:false};
+    if(m==='cert') return {h:w.map(egCert),land:true};
+    if(m==='letter') return {h:[egLetter()],land:false};
+    if(m==='res') return {h:[egRes()],land:false};
+    return {h:[egHol()],land:false}; }
+  function egMsg(t){ var e=$('#eg_msg'); if(e) e.textContent=t||''; }
+  function egDraw(){ var P=egPages(false); $('#eg_stage').innerHTML=P.h.map(function(h){return '<div class="eg-w'+(P.land?' eg-wl':'')+'">'+h+'</div>'}).join(''); try{lset('m28_egyr',$('#eg_yr').value)}catch(e){} }
+  function egRows(){ $('#eg_rows').innerHTML=EG.w.map(function(w,i){ var a='data-i="'+i+'"';
+    return '<div class="eg-row"><select class="inp" data-k="r" '+a+'><option value="s"'+(w.r==='s'?' selected':'')+'>O‘quvchi</option><option value="t"'+(w.r==='t'?' selected':'')+'>O‘qituvchi</option></select>'+
+      '<input class="inp" data-k="n" '+a+' list="eg_nl" autocomplete="off" placeholder="Ism familiya" value="'+esc(w.n)+'">'+
+      '<input class="inp" data-k="c" '+a+' maxlength="40" placeholder="Sinf / fan" value="'+esc(w.c)+'">'+
+      '<button type="button" class="btn line sm" data-a="ph" '+a+' title="Surat">'+(w.ph?'📷✓':'📷')+'</button><input type="file" accept="image/*" hidden data-a="file" '+a+'>'+
+      '<button type="button" class="btn line sm" data-a="del" '+a+' title="O‘chirish">✕</button></div>'; }).join(''); }
+  function egPhoto(file,i){ var fr=new FileReader(); fr.onload=function(){ var im=new Image(); im.onload=function(){ var s=Math.min(im.width,im.height), c=document.createElement('canvas'); c.width=c.height=420; c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,420,420); if(EG.w[i]){ EG.w[i].ph=c.toDataURL('image/jpeg',.82); egRows(); egDraw(); } }; im.src=fr.result; }; fr.readAsDataURL(file); }
+  function egSetMode(m){ EG.m=m; $$('#eg_modes [data-m]').forEach(function(b){ b.classList.toggle('line',b.getAttribute('data-m')!==m) });
+    $$('#tab-eng .eg-g').forEach(function(g){ g.classList.toggle('hidden',(' '+g.getAttribute('data-for')+' ').indexOf(' '+m+' ')<0) });
+    var c=$('#eg_cat'); if(m==='win'||m==='res') c.value='yutuq'; else if(m==='hol') c.value='elon';
+    egMsg(''); egDraw(); if(m==='win') egHist(); }
+  function egHolFill(){ var h=EG_HOL[$('#eg_hs').value]; $('#eg_ht').value=h.t; $('#eg_hd').value=h.d; $('#eg_hm').value=h.m; egDraw(); }
   function egInit(){
     if(!$('#eg_yr').value) $('#eg_yr').value=(lget('m28_egyr')||egYearDefault());
-    $('#eg_sl').innerHTML=roster.students.map(function(x){return '<option value="'+esc(x.name)+'">'+esc(x.cls||'')+'</option>'}).join('');
-    $('#eg_tl').innerHTML=roster.teachers.map(function(x){return '<option value="'+esc(x.name)+'">'+esc(x.subject||'')+'</option>'}).join('');
-    $('#eg_site').classList.toggle('hidden',!newsPostAllowed());
-    egDraw();
+    if(!$('#eg_ld').value) $('#eg_ld').value=dateISO(new Date());
+    if(!$('#eg_lt').value) $('#eg_lt').value=EG_LT.p;
+    if(!$('#eg_ht').value) egHolFill();
+    $('#eg_nl').innerHTML=roster.students.map(function(x){return '<option value="'+esc(x.name)+'">'+esc(x.cls||'')+'</option>'}).join('')+roster.teachers.map(function(x){return '<option value="'+esc(x.name)+'">'+esc(x.subject||'')+'</option>'}).join('');
+    var ok=newsPostAllowed(); $$('#tab-eng .eg-site').forEach(function(g){ g.setAttribute('data-ok',ok?'1':'0') });
+    egRows(); egSetMode(EG.m); if(!ok) $$('#tab-eng .eg-site').forEach(function(g){ g.classList.add('hidden') });
   }
-  function egMsg(t){ var m=$('#eg_msg'); if(m) m.textContent=t||''; }
-  function egPrint(){
-    var h=egList(); if(!h.length) return;
-    var f=document.createElement('iframe'); f.style.cssText='position:fixed;left:-9999px;width:794px;height:1123px;border:0';
-    document.body.appendChild(f);
+  function egHist(){ var el=$('#eg_hist'); if(!el) return;
+    var a=(typeof newsDocs!=='undefined'?newsDocs:[]).filter(function(x){return x.eng}).sort(function(x,y){return String(y.date||'').localeCompare(String(x.date||''))}).slice(0,30);
+    el.innerHTML=a.length?a.map(function(x){ var e=x.eng||{}; return '<div class="li" style="padding:6px 0;border-bottom:1px solid var(--line)"><b>'+esc((e.per||'')+' · '+(e.yr||''))+'</b> — '+(e.w||[]).map(function(w){return esc(w.n)+(w.c?' ('+esc(w.c)+')':'')}).join(', ')+' <small style="color:var(--muted)">'+esc(x.date||'')+'</small></div>'}).join(''):'<div class="hint">Hali saytda e’lon qilingan g‘oliblar yo‘q.</div>'; }
+  function egPrint(){ var P=egPages(false); if(!P.h.length) return;
+    var f=document.createElement('iframe'); f.style.cssText='position:fixed;left:-9999px;width:'+(P.land?1123:794)+'px;height:'+(P.land?794:1123)+'px;border:0'; document.body.appendChild(f);
     var d=f.contentWindow.document; d.open();
-    d.write('<!doctype html><html><head><meta charset="utf-8"><base href="'+document.baseURI+'"><style>@page{size:A4;margin:0}html,body{margin:0}.egp{page-break-after:always;break-after:page}.egp:last-child{page-break-after:auto}'+EG_CSS+'</style></head><body>'+h.join('')+'</body></html>'); d.close();
+    d.write('<!doctype html><html><head><meta charset="utf-8"><base href="'+document.baseURI+'"><style>@page{size:A4 '+(P.land?'landscape':'portrait')+';margin:0}html,body{margin:0}.egp{page-break-after:always;break-after:page}.egp:last-child{page-break-after:auto}'+EG_CSS+'</style></head><body>'+P.h.join('')+'</body></html>'); d.close();
     var imgs=[].slice.call(d.images), left=imgs.length, done=false;
     function go(){ if(done) return; done=true; try{f.contentWindow.focus(); f.contentWindow.print();}catch(e){} setTimeout(function(){f.remove()},60000); }
     if(!left) return go();
     imgs.forEach(function(im){ if(im.complete){ if(!--left) go(); } else { im.onload=im.onerror=function(){ if(!--left) go(); } } });
-    setTimeout(go,4000);
-  }
-  function egPdf(){
-    var h=egList(); if(!h.length) return; egMsg('PDF tayyorlanmoqda\u2026');
-    var host=document.createElement('div'); host.style.cssText='position:fixed;left:-9999px;top:0;width:794px'; host.innerHTML='<style>'+EG_CSS+'</style>'+h.join(''); document.body.appendChild(host);
-    var pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true}), els=[].slice.call(host.querySelectorAll('.egp')), i=0;
-    function next(){
-      if(i>=els.length){ host.remove(); pdf.save('28-maktab_eng-yaxshilar_'+$('#eg_per').value.replace(/[^A-Za-z0-9\u0400-\u04FF-]+/g,'_')+'.pdf'); egMsg(''); return; }
-      return html2canvas(els[i],{scale:2,backgroundColor:'#ffffff',logging:false,useCORS:true}).then(function(cv){
-        if(i) pdf.addPage(); pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',0,0,210,297); i++; return next();
-      });
-    }
-    Promise.resolve(next()).catch(function(){ host.remove(); egMsg("PDF qilib bo'lmadi, \u00abChop etish\u00bb dan foydalaning"); });
-  }
-  ['eg_per','eg_yr','eg_role','eg_tn','eg_sn','eg_sc'].forEach(function(id){ var e=$('#'+id); if(e) e.addEventListener('input',egDraw); });
-  (function(){ var e=$('#eg_sn'); if(e) e.addEventListener('input',function(){ var v=e.value.trim(); roster.students.some(function(x){ if(x.name===v&&x.cls){ $('#eg_sc').value=x.cls; egDraw(); return true } }); }); })();
-
+    setTimeout(go,4000); }
+  function egShots(html,land,scale,q){ var host=document.createElement('div'); host.style.cssText='position:fixed;left:-9999px;top:0;width:'+(land?1123:794)+'px'; host.innerHTML='<style>'+EG_CSS+'</style>'+html.join(''); document.body.appendChild(host);
+    var els=[].slice.call(host.querySelectorAll('.egp')), out=[], i=0;
+    function nx(){ if(i>=els.length){ host.remove(); return out; } return html2canvas(els[i],{scale:scale,backgroundColor:'#ffffff',logging:false,useCORS:true}).then(function(cv){ out.push(cv); i++; return nx(); }); }
+    return Promise.resolve(nx()).catch(function(e){ host.remove(); throw e; }); }
+  function egPdf(){ var P=egPages(false); if(!P.h.length) return; egMsg('PDF tayyorlanmoqda…');
+    egShots(P.h,P.land,2).then(function(cvs){ var pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4',orientation:P.land?'landscape':'portrait',compress:true}), W=P.land?297:210, H=P.land?210:297;
+      cvs.forEach(function(cv,i){ if(i) pdf.addPage(); pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',0,0,W,H); });
+      pdf.save('28-maktab_'+EG.m+'_'+$('#eg_per').value.replace(/[^A-Za-z0-9-]+/g,'_')+'.pdf'); egMsg(''); }).catch(function(){ egMsg("PDF qilib bo‘lmadi, «Chop etish» dan foydalaning"); }); }
   function egSite(){
-    var r=$('#eg_role').value, tn=$('#eg_tn').value.trim(), sn=$('#eg_sn').value.trim(), sc=$('#eg_sc').value.trim();
-    if((r!=='s'&&!tn)||(r!=='t'&&!sn)){ egMsg('Avval ism-familiyani yozing'); return; }
-    if(!db||!curUser){ egMsg("Internet yoki kirish yo'q"); return; }
-    if(!newsPostAllowed()){ egMsg("E'lon qilishga ruxsatingiz yo'q"); return; }
-    var per=$('#eg_per').value, yr=$('#eg_yr').value.trim(), full=per.indexOf('Butun')===0;
-    var title=(full?yr+" o\u2018quv yili":per)+" eng yaxshilari";
-    if(!confirm('"'+title+'" maktab sahifasida hamma uchun e\u2019lon qilinsinmi?')) return;
-    var subj=''; roster.teachers.some(function(x){ if(x.name===tn){ subj=x.subject||''; return true } });
-    var lines=[(full?yr+" o\u2018quv yili":per)+" yakunlariga ko\u2018ra:"];
-    if(r!=='s') lines.push("\ud83c\udfc5 Eng yaxshi o\u2018qituvchi \u2014 "+tn+(subj?' ('+subj+')':''));
-    if(r!=='t') lines.push("\ud83c\udfc5 Eng yaxshi o\u2018quvchi \u2014 "+sn+(sc?', '+sc+' sinf':''));
-    lines.push("Tabriklaymiz! Yangi muvaffaqiyatlar tilaymiz.");
-    egMsg("E\u2019lon tayyorlanmoqda\u2026"); $('#eg_site').disabled=true;
-    var host=document.createElement('div'); host.style.cssText='position:fixed;left:-9999px;top:0;width:794px'; host.innerHTML='<style>'+EG_CSS+'</style>'+egList().join(''); document.body.appendChild(host);
-    var els=[].slice.call(host.querySelectorAll('.egp')), imgs=[], i=0;
-    function shot(q){ return html2canvas(els[i],{scale:1,backgroundColor:'#ffffff',logging:false,useCORS:true}).then(function(cv){ imgs.push(cv.toDataURL('image/jpeg',q)); i++; if(i<els.length) return shot(q); }); }
-    shot(0.8).then(function(){
-      host.remove();
-      if(imgs.reduce(function(a,x){return a+x.length},0)>850000) throw new Error('Rasm hajmi katta');
-      return db.collection('news').add({title:title,body:lines.join('\n\n'),cat:'elon',date:dateISO(new Date()),status:'published',pinned:false,imgs:imgs,ni:imgs.length,videos:[],by:(curUser.email||'').toLowerCase(),updated:firebase.firestore.FieldValue.serverTimestamp()});
-    }).then(function(ref){
-      egMsg("\u2705 Saytda e\u2019lon qilindi. Havola: "+newsLink(ref.id)); toast("E'lon qilindi");
-      try{ copyText(newsLink(ref.id),'Havola nusxalandi') }catch(e){}
-      try{ logAudit('news_publish',title) }catch(e){}
-    }).catch(function(e){ try{host.remove()}catch(x){} egMsg("E'lon qilib bo'lmadi: "+(e&&e.message||'xato')); }).then(function(){ $('#eg_site').disabled=false; });
-  }
-  $('#eg_site').addEventListener('click',egSite);
-  $('#eg_print').addEventListener('click',egPrint); $('#eg_pdf').addEventListener('click',egPdf);
+    var m=EG.m; if(!db||!curUser) return egMsg("Internet yoki kirish yo‘q"); if(!newsPostAllowed()) return egMsg('E’lon qilishga ruxsatingiz yo‘q');
+    var P=egPer(), pg=egPages(true), W=EG.w.filter(function(x){return x.n.trim()}), title, body;
+    if(m==='win'){ if(!W.length) return egMsg('Avval kamida bitta g‘olib ismini yozing'); title=P.tit+' eng yaxshilari'; }
+    else if(m==='res'){ title=P.tit+' natijalari'; } else { title=$('#eg_ht').value.trim(); if(!title) return egMsg('Sarlavhani yozing'); title=title.charAt(0)+title.slice(1).toLowerCase(); }
+    if(!confirm('«'+title+'» maktab sahifasida hamma uchun e’lon qilinsinmi?')) return;
+    var chunks=[], size=m==='win'?4:1; if(m==='win'){ for(var i=0;i<pg.h.length;i+=size) chunks.push({h:pg.h.slice(i,i+size),w:W.slice(i,i+size)}); } else chunks.push({h:pg.h,w:[]});
+    $('#eg_site').disabled=true; egMsg('E’lon tayyorlanmoqda…'); var tg=$('#eg_tg').checked, cat=$('#eg_cat').value, links=[];
+    function one(k){ var ch=chunks[k], t=chunks.length>1?title+' ('+(k+1)+'/'+chunks.length+')':title, lines;
+      if(m==='win'){ lines=[P.tit+' yakunlariga ko‘ra:'].concat(ch.w.map(function(w){ return '🏅 Eng yaxshi '+(w.r==='t'?'o‘qituvchi':'o‘quvchi')+' — '+w.n+(w.c?(w.r==='t'?' ('+w.c+')':', '+w.c+' sinf'):''); })); lines.push('Tabriklaymiz! Yangi muvaffaqiyatlar tilaymiz.'); }
+      else if(m==='res'){ lines=[P.label.replace(/\s+/g,' ')+' natijalari e’lon qilindi.',egLines('#eg_ra').length+' nafar a’lochi o‘quvchi. Barchani tabriklaymiz!']; }
+      else lines=[$('#eg_hm').value.trim()];
+      return egShots(ch.h,false,1).then(function(cvs){ var qs=[.8,.65,.5], imgs; for(var j=0;j<qs.length;j++){ imgs=cvs.map(function(cv){return cv.toDataURL('image/jpeg',qs[j])}); if(imgs.reduce(function(a,x){return a+x.length},0)<=850000) break; }
+        var doc={title:t,body:lines.join('\n\n'),cat:cat,date:dateISO(new Date()),status:'published',pinned:false,imgs:imgs,ni:imgs.length,videos:[],by:(curUser.email||'').toLowerCase(),updated:firebase.firestore.FieldValue.serverTimestamp()};
+        var withEng=m==='win'?Object.assign({eng:{per:P.per,yr:P.yr,w:ch.w.map(function(w){return {r:w.r,n:w.n,c:w.c}})}},doc):doc;
+        return db.collection('news').add(withEng).catch(function(e){ if(withEng!==doc) return db.collection('news').add(doc); throw e; }); })
+      .then(function(ref){ links.push(newsLink(ref.id)); try{ logAudit('news_publish',t) }catch(e){}
+        if(tg) return newsTelegram(ref.id,'post').catch(function(e){ egMsg('E’lon qilindi, lekin Telegram’ga yuborilmadi: '+(e.message||'xato')); }); })
+      .then(function(){ if(k+1<chunks.length) return one(k+1); }); }
+    one(0).then(function(){ egMsg('✅ Saytda e’lon qilindi. Havola: '+links[0]+(links.length>1?' (+'+(links.length-1)+' ta)':'')+(tg?' · Telegram so‘rovi yuborildi':'')); toast('E’lon qilindi'); try{ copyText(links[0],'Havola nusxalandi') }catch(e){} setTimeout(egHist,1500); })
+    .catch(function(e){ egMsg('E’lon qilib bo‘lmadi: '+(e&&e.message||'xato')); }).then(function(){ $('#eg_site').disabled=false; }); }
+  $('#eg_modes').addEventListener('click',function(e){ var b=e.target.closest('[data-m]'); if(b) egSetMode(b.getAttribute('data-m')); });
+  $('#eg_add').addEventListener('click',function(){ EG.w.push({r:'s',n:'',c:'',ph:''}); egRows(); egDraw(); });
+  $('#eg_rows').addEventListener('input',function(e){ var t=e.target, i=+t.getAttribute('data-i'), k=t.getAttribute('data-k'); if(!k||!EG.w[i]) return; EG.w[i][k]=t.value;
+    if(k==='n'){ var v=t.value.trim(), hit=null; roster.students.some(function(x){ if(x.name===v){ hit={r:'s',c:x.cls||''}; return true } }); if(!hit) roster.teachers.some(function(x){ if(x.name===v){ hit={r:'t',c:x.subject||''}; return true } });
+      if(hit){ EG.w[i].r=hit.r; EG.w[i].c=hit.c; $('#eg_rows [data-k="r"][data-i="'+i+'"]').value=hit.r; $('#eg_rows [data-k="c"][data-i="'+i+'"]').value=hit.c; } }
+    egDraw(); });
+  $('#eg_rows').addEventListener('click',function(e){ var b=e.target.closest('[data-a]'); if(!b) return; var i=+b.getAttribute('data-i'), a=b.getAttribute('data-a');
+    if(a==='del'){ if(EG.w.length>1) EG.w.splice(i,1); else EG.w[0]={r:'s',n:'',c:'',ph:''}; egRows(); egDraw(); }
+    else if(a==='ph'){ if(EG.w[i].ph){ EG.w[i].ph=''; egRows(); egDraw(); } else { var f=b.parentNode.querySelector('input[type=file]'); if(f) f.click(); } } });
+  $('#eg_rows').addEventListener('change',function(e){ var t=e.target; if(t.type==='file'&&t.files&&t.files[0]) egPhoto(t.files[0],+t.getAttribute('data-i')); });
+  ['eg_per','eg_yr','eg_ln','eg_ld','eg_ls','eg_ra','eg_rr','eg_ht','eg_hd','eg_hm'].forEach(function(id){ $('#'+id).addEventListener('input',egDraw); });
+  $('#eg_lt').addEventListener('input',function(){ EG.lTouched=true; egDraw(); });
+  $('#eg_lk').addEventListener('change',function(){ if(!EG.lTouched||confirm('Matn almashtirilsinmi?')){ $('#eg_lt').value=EG_LT[$('#eg_lk').value]; EG.lTouched=false; } egDraw(); });
+  $('#eg_hs').addEventListener('change',egHolFill);
+  $('#eg_print').addEventListener('click',egPrint); $('#eg_pdf').addEventListener('click',egPdf); $('#eg_site').addEventListener('click',egSite);
 
   /* ---------- tabs ---------- */
   function goTab(t){
