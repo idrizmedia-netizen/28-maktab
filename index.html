@@ -537,7 +537,7 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
   function apSend(btn){ var g=function(i){ var e=document.getElementById(i); return e?e.value:'' }, msg=document.getElementById('apMsg'), n=g('apN').trim(), m=g('apM').trim();
     if(n.length<2){ msg.textContent='Ismingizni yozing'; return } if(m.length<10){ msg.textContent='Murojaat matnini yozing (kamida 10 belgi)'; return }
     btn.disabled=true; msg.textContent='Yuborilmoqda…';
-    fetch('/api/appeal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,phone:g('apP'),cls:g('apC'),topic:g('apT'),msg:m,hp:g('apH'),t:Date.now()-APT0})})
+    fetch('/api/forms?a=appeal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,phone:g('apP'),cls:g('apC'),topic:g('apT'),msg:m,hp:g('apH'),t:Date.now()-APT0})})
       .then(function(r){ return r.json().catch(function(){ return {ok:false} }) })
       .then(function(j){ if(j&&j.ok){ var b=document.getElementById('apBox'); if(b) b.innerHTML='<div class="ap-ok"><b>✅ Murojaatingiz yuborildi</b><p>Rahmat! Murojaatingiz maktab direktoriga yetkazildi.</p></div>' } else { msg.textContent=(j&&j.error)||'Yuborib bo‘lmadi. Qayta urinib ko‘ring.'; btn.disabled=false } })
       .catch(function(){ msg.textContent='Internet bilan aloqa yo‘q. Qayta urinib ko‘ring.'; btn.disabled=false }) }
