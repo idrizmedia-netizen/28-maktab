@@ -365,6 +365,12 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
 .acc-b{padding:0 20px 16px}.acc.nn .acc-b{padding-left:64px}.acc-b p{margin:0 0 10px;font-size:16px;line-height:1.7}.acc-b ul{margin:0 0 10px}
 .acc-all{border:1.5px solid var(--line);background:var(--card);color:var(--navy);font:800 13.5px var(--body);padding:8px 16px;border-radius:99px;cursor:pointer;margin:2px 0 12px}.acc-all:hover{border-color:var(--gold)}
 @media(max-width:560px){.acc.nn .acc-b{padding-left:20px}.acc summary{font-size:15.5px;padding:13px 14px}}
+
+.tick{list-style:none;padding:0!important;margin:0 0 10px!important}
+.tick li{position:relative;padding:9px 0 9px 34px;line-height:1.65;font-size:16px;border-bottom:1px dashed var(--line)}.tick li:last-child{border-bottom:0}
+.tick li::before{content:"";position:absolute;left:2px;top:13px;width:20px;height:20px;border-radius:50%;background:var(--gold)}
+.tick li::after{content:"";position:absolute;left:8.5px;top:17px;width:5px;height:9px;border-right:2.5px solid var(--navy);border-bottom:2.5px solid var(--navy);transform:rotate(45deg)}
+.ip-main .tick li strong{color:var(--navy)}
 </style>
 </head>
 <body>
@@ -545,21 +551,24 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
   var PGS=['about','director','values','jobs'], PGL={about:'#/maktab',director:'#/direktor',values:'#/qadriyatlar',jobs:'#/vakansiya',adm:'#/qabul',edu:'#/talim'};
   function pgItem(title){ var a=Array.isArray(SEC.pages)?SEC.pages:[]; for(var i=0;i<a.length;i++){ if(a[i]&&nkey(a[i].title)===nkey(title)) return a[i] } return null }
   function inl(t){ return esc(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>') }
-  function richBlock(lines){ var out='', ul=false; lines.forEach(function(l){ l=l.trim(); if(/^[-•]\s+/.test(l)){ if(!ul){ out+='<ul>'; ul=true } out+='<li>'+inl(l.replace(/^[-•]\s+/,''))+'</li>'; return } if(ul){ out+='</ul>'; ul=false } if(l) out+='<p>'+inl(l)+'</p>' }); if(ul) out+='</ul>'; return out }
+  function lab(t){ var m=t.match(/^([^:.!?]{3,42}):\s+(\S.*)$/); return m?'<strong>'+esc(m[1])+':</strong> '+inl(m[2]):inl(t) }
+  function richBlock(lines,listy){ var out='', ul=false, items=lines.map(function(x){return x.trim()}).filter(Boolean);
+    if(listy&&items.length>=2&&items.every(function(x){ return x.length<=180&&!/^[-•]\s/.test(x) })) return '<ul class="tick">'+items.map(function(x){ return '<li>'+lab(x)+'</li>' }).join('')+'</ul>';
+    lines.forEach(function(l){ l=l.trim(); if(/^[-•]\s+/.test(l)){ if(!ul){ out+='<ul class="tick">'; ul=true } out+='<li>'+lab(l.replace(/^[-•]\s+/,''))+'</li>'; return } if(ul){ out+='</ul>'; ul=false } if(l) out+='<p>'+lab(l)+'</p>' }); if(ul) out+='</ul>'; return out }
   function isHead(l){ l=l.trim(); var m=l.match(/^#{1,3}\s+(\S.*)$/); if(m) return {n:'',t:m[1]}; m=l.match(/^(\d{1,2})[.)]\s+(\S.*)$/); if(m&&m[2].length<=100&&!/[.!?:;,]$/.test(m[2])) return {n:m[1],t:m[2]}; return null }
   function rich(t){ var lines=String(t||'').split(/\r?\n/), n=lines.length, heads={}, explicit=false, i, h;
     for(i=0;i<n;i++){ h=isHead(lines[i]); if(h){ heads[i]=h; explicit=true } }
     var lead=-1;
     if(!explicit){   // belgisiz matn: bo'sh qatordan keyin keladigan qisqa, nuqtasiz qator — sarlavha
       var nextBody=function(k){ for(var j=k+1;j<n;j++){ var x=lines[j].trim(); if(x) return x } return '' };
-      for(i=0;i<n;i++){ var l=lines[i].trim(); if(l.length<3||l.length>70||/[.!?:;,)"»]$/.test(l)||/^[-•]\s/.test(l)) continue; if(i>0&&lines[i-1].trim()) continue;
-        var nb=nextBody(i); if(nb&&(nb.length>60||/[.!?]$/.test(nb)||/^[-•]\s/.test(nb))) heads[i]={n:'',t:l} }
+      for(i=0;i<n;i++){ var l=lines[i].trim(), col=/:$/.test(l), core=col?l.slice(0,-1).trim():l; if(core.length<3||core.length>70||/[.!?;,)"»]$/.test(core)||/^[-•]\s/.test(core)) continue; if(!col&&i>0&&lines[i-1].trim()) continue;
+        var nb=nextBody(i); if(nb&&(nb.length>60||/[.!?]$/.test(nb)||/^[-•]\s/.test(nb))) heads[i]={n:'',t:core} }
       var first=-1; for(i=0;i<n;i++){ if(lines[i].trim()){ first=i; break } } if(first>=0&&heads[first]){ lead=first; delete heads[first] }
     }
     var intro=[], secs=[], cur=null;
     lines.forEach(function(l,k){ if(heads[k]){ cur={n:heads[k].n,t:heads[k].t,b:[]}; secs.push(cur) } else if(k===lead){ intro.push('**'+l.trim()+'**') } else if(cur) cur.b.push(l); else intro.push(l) });
     if(!secs.length) return richBlock(lines);
-    return richBlock(intro)+(secs.length>2?'<button type="button" class="acc-all" data-acc>Hammasini ochish</button>':'')+'<div class="acc-w">'+secs.map(function(x){ return '<details class="acc'+(x.n?' nn':'')+'"><summary><span class="acc-t">'+(x.n?'<span class="acc-n">'+esc(x.n)+'</span>':'')+inl(x.t)+'</span><span class="acc-c" aria-hidden="true"></span></summary><div class="acc-b">'+(richBlock(x.b)||'<p>—</p>')+'</div></details>' }).join('')+'</div>'; }
+    return richBlock(intro)+(secs.length>2?'<button type="button" class="acc-all" data-acc>Hammasini ochish</button>':'')+'<div class="acc-w">'+secs.map(function(x){ return '<details class="acc'+(x.n?' nn':'')+'"><summary><span class="acc-t">'+(x.n?'<span class="acc-n">'+esc(x.n)+'</span>':'')+inl(x.t)+'</span><span class="acc-c" aria-hidden="true"></span></summary><div class="acc-b">'+(richBlock(x.b,true)||'<p>—</p>')+'</div></details>' }).join('')+'</div>'; }
   document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[data-acc]'); if(!b) return; var w=b.closest('.ip-main')||document, d=[].slice.call(w.querySelectorAll('details.acc')), open=d.some(function(x){ return !x.open }); d.forEach(function(x){ x.open=open }); b.textContent=open?'Hammasini yopish':'Hammasini ochish' });
   function stats(){ var it=pgItem('Raqamlar'); if(!it||!it.text) return ''; var r=String(it.text).split(/\r?\n/).map(function(l){ var p=l.split('|'); return p.length>1&&p[0].trim()?'<div><b>'+esc(p[0].trim())+'</b><span>'+esc(p.slice(1).join('|').trim())+'</span></div>':'' }).join(''); return r?'<div class="stt">'+r+'</div>':'' }
   var APT0=Date.now();
