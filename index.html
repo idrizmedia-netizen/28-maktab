@@ -285,6 +285,53 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
 }
 @media (max-width:1200px){nav.m{order:3;width:100%;overflow-x:auto;margin:0 0 6px;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}nav.m::-webkit-scrollbar{display:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* jamoa: katta ramkali kartalar */
+.tm-chips{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 8px}
+.tm-chip{border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:800 14px var(--body);padding:11px 20px;border-radius:99px;cursor:pointer;transition:background-color .15s,color .15s,border-color .15s}
+.tm-chip:hover{border-color:var(--navy)}.tm-chip[aria-pressed=true]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.tm-sec{margin:34px 0 0}.tm-sec>h3{font:700 clamp(20px,3vw,26px)/1.2 var(--head);color:var(--ink);margin:0 0 18px}
+.tm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.tm-card{align-self:start;display:block;width:100%;text-align:left;background:none;border:0;padding:0;cursor:pointer;font:inherit;color:inherit}
+.tm-ph{aspect-ratio:4/5;border-radius:24px;overflow:hidden;background:linear-gradient(135deg,#E9EFFA,#F7ECCB);display:grid;place-items:center;font:700 64px var(--head);color:var(--navy);box-shadow:0 1px 0 var(--line),0 10px 28px rgba(15,61,122,.10);transition:transform .25s,box-shadow .25s}
+.tm-ph img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block}
+.tm-card:hover .tm-ph,.tm-card:focus-visible .tm-ph{transform:translateY(-4px);box-shadow:0 14px 34px rgba(15,61,122,.18)}
+.tm-card:focus-visible{outline:3px solid var(--gold);outline-offset:4px;border-radius:24px}
+.tm-card b{display:block;margin:14px 2px 4px;font:700 17px/1.3 var(--head);color:var(--ink)}
+.tm-card span{display:block;margin:0 2px;color:var(--muted);font-weight:600;font-size:14.5px;line-height:1.4}
+.tm-bg{position:fixed;inset:0;background:rgba(7,20,45,.62);z-index:90;display:grid;place-items:center;padding:16px;overflow:auto}
+.tm-md{background:var(--card);color:var(--ink);border-radius:24px;max-width:780px;width:100%;display:grid;grid-template-columns:300px 1fr;overflow:hidden;position:relative;animation:in .25s ease-out}
+.tm-md .tm-ph{border-radius:0;aspect-ratio:auto;height:100%;min-height:380px;box-shadow:none}
+.tm-md .tx{padding:30px 30px 32px}.tm-md h3{font:700 22px/1.25 var(--head);margin:0 0 6px;color:var(--ink)}
+.tm-md .rl{color:var(--gold-d);font-weight:800;margin-bottom:14px}.tm-md p{color:var(--muted);line-height:1.7;margin:0;white-space:pre-line}
+.tm-x{position:absolute;top:10px;right:12px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#0B2447;font-size:18px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+@media(max-width:1000px){.tm-grid{grid-template-columns:repeat(3,1fr);gap:18px}}
+@media(max-width:700px){.tm-grid{grid-template-columns:repeat(2,1fr);gap:14px}.tm-ph{border-radius:18px;font-size:48px}.tm-card b{font-size:14.5px}.tm-card span{font-size:13px}}
+@media(max-width:640px){.tm-md{grid-template-columns:1fr}.tm-md .tm-ph{min-height:0;aspect-ratio:4/5}.tm-md .tx{padding:22px}}
+/* menyu: Maktab haqida */
+.dd{position:relative;display:flex}.ddm{display:none}
+@media (min-width:1201px){.dd>a::after{content:"▾";margin-left:5px;font-size:11px}.dd:hover .ddm,.dd:focus-within .ddm{display:flex}.ddm{position:absolute;top:100%;left:0;min-width:250px;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px;box-shadow:0 14px 34px rgba(15,61,122,.16);z-index:60}.ddm a{padding:10px 12px}}
+/* ma'lumot sahifalari */
+.pg-sub{color:var(--muted);font-weight:600;margin:-6px 0 22px;max-width:720px}
+.ip{display:grid;grid-template-columns:1fr 290px;gap:28px;align-items:start}
+.ip-main{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:30px 32px}
+.ip-main h3{font:700 21px/1.3 var(--head);color:var(--navy);margin:26px 0 10px}.ip-main h3:first-child{margin-top:0}
+.ip-main p{line-height:1.75;margin:0 0 14px;font-size:16.5px}.ip-main ul{margin:0 0 16px;padding-left:22px;line-height:1.8}.ip-main li::marker{color:var(--gold-d)}
+.ip-main .dir{display:flex;gap:20px;align-items:center;margin:0 0 22px;padding:0 0 22px;border-bottom:1px solid var(--line)}
+.ip-main .dir .tm-ph{width:130px;flex:none;border-radius:18px;font-size:40px}.ip-main .dir b{font:700 19px/1.3 var(--head);display:block}.ip-main .dir span{color:var(--gold-d);font-weight:800}
+.ip-side{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;position:sticky;top:96px}
+.ip-side small{display:block;font:800 12px var(--body);letter-spacing:.1em;color:var(--gold-d);margin:2px 8px 10px;text-transform:uppercase}
+.ip-side a{display:block;padding:11px 12px;border-radius:12px;text-decoration:none;font-weight:700;color:var(--ink)}
+.ip-side a:hover{background:var(--soft)}.ip-side a[aria-current=page]{background:var(--soft);color:var(--navy);box-shadow:inset 3px 0 0 var(--gold)}
+.stt{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:0 0 24px}
+.stt div{background:var(--soft);border-radius:16px;padding:16px;text-align:center}.stt b{display:block;font:700 28px var(--head);color:var(--navy)}.stt span{color:var(--muted);font-weight:700;font-size:14px}
+.hub{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:8px 0 0}
+.hub a{display:block;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;text-decoration:none;color:var(--ink);transition:transform .2s,box-shadow .2s,border-color .2s}
+.hub a:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(15,61,122,.12);border-color:var(--gold)}
+.hub i{font-style:normal;font-size:28px;display:block;margin-bottom:8px}.hub b{font:700 16px/1.3 var(--head);display:block;margin-bottom:5px}.hub span{color:var(--muted);font-size:14.5px;line-height:1.5}
+.hq{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;border-radius:24px;padding:26px;display:flex;gap:22px;align-items:center;margin:0 0 6px}
+.hq .tm-ph{width:150px;flex:none;border-radius:18px;font-size:44px}.hq p{margin:0 0 10px;line-height:1.65;color:#E4ECFA}.hq b{font:700 18px var(--head);display:block}.hq span{color:var(--gold);font-weight:800}.hq a{color:var(--gold);font-weight:800;text-decoration:none}
+@media(max-width:860px){.ip{grid-template-columns:1fr}.ip-side{position:static;order:-1}.ip-main{padding:22px 18px}.hq{flex-direction:column;text-align:center}}
 </style>
 </head>
 <body>
@@ -296,7 +343,7 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
 
 <header class="top"><div class="wrap bar">
   <a class="brand" href="#/" aria-label="28-maktab, bosh sahifa"><svg class="emb" width="42" height="42" role="img" aria-label="28-maktab emblemasi"><use href="#emb"/></svg><span><b>28-MAKTAB</b><small>TARBIYA · BILIM · KELAJAK</small></span></a>
-  <nav class="m" aria-label="Asosiy menyu"><a href="#/" data-r="home">Bosh</a><a href="#/yangiliklar" data-r="news">Yangiliklar</a><a href="#/tadbirlar" data-r="events">Tadbirlar</a><a href="#/jamoa" data-r="team">Jamoa</a><a href="#/yutuqlar" data-r="ach">Yutuqlar</a><a href="#/jadval" data-r="schedule">Jadval</a><a href="#/galereya" data-r="gallery">Galereya</a><a href="#/aloqa" data-r="contact">Aloqa</a><a class="staff" data-staff hidden href="/platforma">Platforma →</a></nav>
+  <nav class="m" aria-label="Asosiy menyu"><a href="#/" data-r="home">Bosh</a><div class="dd"><a href="#/maktab" data-r="about">Maktab haqida</a><div class="ddm"><a href="#/maktab">Maktab haqida</a><a href="#/direktor">Direktor murojaati</a><a href="#/qadriyatlar">Jamoa qadriyatlari</a><a href="#/jamoa">Rahbariyat va xodimlar</a><a href="#/vakansiya">Bo‘sh ish o‘rinlari</a></div></div><a href="#/qabul" data-r="adm">Qabul</a><a href="#/talim" data-r="edu">Ta’lim</a><a href="#/yangiliklar" data-r="news">Yangiliklar</a><a href="#/tadbirlar" data-r="events">Tadbirlar</a><a href="#/yutuqlar" data-r="ach">Yutuqlar</a><a href="#/jadval" data-r="schedule">Jadval</a><a href="#/galereya" data-r="gallery">Galereya</a><a href="#/aloqa" data-r="contact">Aloqa</a><a class="staff" data-staff hidden href="/platforma">Platforma →</a></nav>
 </div></header>
 
 <main id="app" tabindex="-1"></main>
@@ -393,7 +440,7 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
   /* ====== Sahifalar ====== */
   function home(){
     var pin=news&&news.filter(function(n){return n.pinned})[0], rest=news?news.slice(0,3):[];
-    return '<section class="hero"><div class="wrap"><div><div class="eyebrow">TARBIYA · BILIM · KELAJAK</div><h1>28-maktabga<br>xush kelibsiz</h1><p>'+esc(SCHOOL.intro)+'</p><div class="btns"><a class="btn gold" href="#/yangiliklar">Yangiliklar</a><a class="btn line" href="#/aloqa">Aloqa</a><a class="btn kb" href="#/kabinet">👨‍👩‍👧 Ota-onalar kabineti</a><button type="button" class="btn line" data-install hidden data-install-btn>📲 Ilovani o\'rnatish</button></div></div><div class="emb-box"><svg viewBox="0 0 240 240" role="img" aria-label="28-maktab emblemasi"><use href="#emb"/></svg></div></div></section>'+
+    return '<section class="hero"><div class="wrap"><div><div class="eyebrow">TARBIYA · BILIM · KELAJAK</div><h1>28-maktabga<br>xush kelibsiz</h1><p>'+esc(SCHOOL.intro)+'</p><div class="btns"><a class="btn gold" href="#/yangiliklar">Yangiliklar</a><a class="btn line" href="#/aloqa">Aloqa</a><a class="btn kb" href="#/kabinet">👨‍👩‍👧 Ota-onalar kabineti</a><button type="button" class="btn line" data-install hidden data-install-btn>📲 Ilovani o\'rnatish</button></div></div><div class="emb-box"><svg viewBox="0 0 240 240" role="img" aria-label="28-maktab emblemasi"><use href="#emb"/></svg></div></div></section>'+homeIntro()+
       '<div class="wrap">'+(pin?'<a class="alert" href="/yangilik/'+esc(pin.id)+'"><div><span>Muhim e\'lon</span><br><b>'+esc(pin.title)+'</b></div></a>':'')+
       '<section class="blk"><div class="hd"><h2>So\'nggi yangiliklar</h2><a href="#/yangiliklar">Hammasi →</a></div>'+
       (news===null?SK:err?errBox():rest.length?'<div class="grid">'+rest.map(card).join('')+'</div>':empty("Hozircha yangilik yo'q","Tez orada maktab yangiliklari shu yerda paydo bo'ladi."))+'</section></div>';
@@ -426,11 +473,58 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
   function pageWrap(title,sub,inner){ return '<div class="wrap"><section class="blk"><div class="hd"><h2>'+title+'</h2></div>'+(sub?'<p class="pg-sub">'+sub+'</p>':'')+inner+'</section></div>' }
   function secState(names){ for(var i=0;i<names.length;i++){ if(SEC[names[i]]===undefined) return 'load'; if(SEC[names[i]]===false) return 'err' } return 'ok' }
   function todayISO(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2) }
+  var TMF='all', TMG=[['rahbar','Rahbariyat'],['oqituvchi','O‘qituvchilar'],['yordamchi','Yordamchi xodimlar']];
+  function tmList(){ return Array.isArray(SEC.team)?SEC.team.filter(function(x){return x&&x.name}):[] }
+  function tmGroup(x){ var g=String(x.group||''); if(g==='rahbar'||g==='oqituvchi'||g==='yordamchi') return g; var r=String(x.role||'').toLowerCase();
+    if(/direktor|o.rinbosar|maslahatchi|rahbar|mudir/.test(r)) return 'rahbar';
+    if(/psixolog|hamshira|kutubxon|xodim|farrosh|qorovul|oshpaz|xizmat|buxgalter|kotib|ishchi|tarbiyachi/.test(r)) return 'yordamchi';
+    return 'oqituvchi'; }
+  function tmPh(x){ var im=okImg(x.photo); return '<div class="tm-ph">'+(im?'<img src="'+im+'" alt="'+esc(x.name)+'" loading="lazy">':esc(String(x.name).trim().charAt(0).toUpperCase()))+'</div>' }
+  function tmCard(x,i){ return '<button type="button" class="tm-card" data-tm="'+i+'" aria-label="'+esc(x.name)+' haqida batafsil">'+tmPh(x)+'<b>'+esc(x.name)+'</b><span>'+esc(x.role||'')+'</span></button>' }
   function team(){
-    var st=secState(['team']); if(st==='load') return pageWrap('Jamoa','',SK); if(st==='err') return '<div class="wrap">'+errBox()+'</div>';
-    var it=SEC.team.filter(function(x){return x&&x.name});
-    return pageWrap('Jamoa',"Maktab ma'muriyati va o'qituvchilar",it.length?'<div class="people">'+it.map(function(x){ var im=okImg(x.photo); return '<div class="pc"><div class="av">'+(im?'<img src="'+im+'" alt="'+esc(x.name)+'" loading="lazy">':esc(String(x.name).trim().charAt(0).toUpperCase()))+'</div><b>'+esc(x.name)+'</b><span>'+esc(x.role||'')+'</span></div>' }).join('')+'</div>':empty("Ma'lumot tez orada qo'shiladi",'Jamoa haqida ma\'lumot hozircha kiritilmagan.'));
+    var T='Rahbariyat va xodimlar', SUB='Maktabimiz rahbariyati, o‘qituvchilari va xodimlari bilan tanishing. Batafsil ma’lumot uchun kartani bosing.';
+    var st=secState(['team']); if(st==='load') return pageWrap(T,'',SK); if(st==='err') return '<div class="wrap">'+errBox()+'</div>';
+    var it=tmList(); if(!it.length) return pageWrap(T,SUB,empty("Ma'lumot tez orada qo'shiladi",'Jamoa haqida ma\'lumot hozircha kiritilmagan.'));
+    var cnt={rahbar:0,oqituvchi:0,yordamchi:0}; it.forEach(function(x){ cnt[tmGroup(x)]++ }); if(TMF!=='all'&&!cnt[TMF]) TMF='all';
+    var chips='<div class="tm-chips" role="group" aria-label="Bo‘lim">'+[['all','Barchasi',it.length]].concat(TMG.map(function(g){return [g[0],g[1],cnt[g[0]]]})).filter(function(c){return c[0]==='all'||c[2]>0}).map(function(c){ return '<button type="button" class="tm-chip" data-tmf="'+c[0]+'" aria-pressed="'+(TMF===c[0])+'">'+c[1]+'</button>' }).join('')+'</div>';
+    var secs=TMG.filter(function(g){ return (TMF==='all'||TMF===g[0])&&cnt[g[0]]>0 }).map(function(g){ return '<div class="tm-sec"><h3>'+g[1]+'</h3><div class="tm-grid">'+it.map(function(x,i){ return tmGroup(x)===g[0]?tmCard(x,i):'' }).join('')+'</div></div>' }).join('');
+    return pageWrap(T,SUB,chips+secs);
   }
+  function tmOpen(i){ var it=tmList()[i]; if(!it) return; tmClose(); var d=document.createElement('div'); d.className='tm-bg'; d.id='tmBg'; d.setAttribute('role','dialog'); d.setAttribute('aria-modal','true'); d.setAttribute('aria-label',it.name);
+    d.innerHTML='<div class="tm-md"><button type="button" class="tm-x" data-tmx aria-label="Yopish">✕</button>'+tmPh(it)+'<div class="tx"><h3>'+esc(it.name)+'</h3><div class="rl">'+esc(it.role||'')+'</div><p>'+esc(it.bio||'Batafsil ma’lumot tez orada qo‘shiladi.')+'</p></div></div>'; document.body.appendChild(d); document.body.style.overflow='hidden'; var x=d.querySelector('.tm-x'); if(x) x.focus(); }
+  function tmClose(){ var d=document.getElementById('tmBg'); if(d){ d.remove(); document.body.style.overflow='' } }
+  document.addEventListener('click',function(e){ var f=e.target.closest&&e.target.closest('[data-tmf]'); if(f){ TMF=f.getAttribute('data-tmf'); route(); return }
+    var c=e.target.closest&&e.target.closest('[data-tm]'); if(c){ tmOpen(+c.getAttribute('data-tm')); return }
+    if((e.target.closest&&e.target.closest('[data-tmx]'))||e.target.id==='tmBg') tmClose(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') tmClose() });
+  window.addEventListener('hashchange',tmClose);
+  /* ---- Ma'lumot sahifalari (Maktab haqida, Direktor murojaati, Qabul...) ---- */
+  function nkey(t){ return String(t||'').toLowerCase().replace(/[ʻʼ’‘`´]/g,"'").trim() }
+  var PGD={
+    about:{t:'Maktab haqida',sub:'Maktabimiz, uning vazifasi va qadriyatlari bilan tanishing',side:1,def:'28-maktab — o‘quvchilarga sifatli bilim va yaxshi tarbiya berishga intiladigan umumiy o‘rta ta’lim maktabi.\n\n## Bizning vazifamiz\nHar bir o‘quvchining qobiliyatini ochish, unga mustaqil fikrlash, hurmat va mas’uliyatni o‘rgatish hamda kelajakka tayyorlash.\n\n## Biz nimaga e’tibor beramiz\n- Sifatli va zamonaviy ta’lim\n- Xavfsiz va do‘stona muhit\n- Ota-onalar bilan ochiq hamkorlik\n- Darsdan tashqari faoliyat va o‘quvchilar yutuqlari'},
+    director:{t:'Direktor murojaati',sub:'Maktab direktorining o‘quvchilar va ota-onalarga murojaati',side:1,def:'Murojaat matni tez orada qo‘shiladi.'},
+    values:{t:'Jamoa qadriyatlari',sub:'Maktab jamoasi amal qiladigan asosiy tamoyillar',side:1,def:'## Hurmat\nO‘quvchi, ustoz va ota-onaning bir-biriga hurmati — maktab hayotining asosi.\n\n## Mas’uliyat\nHar bir inson o‘z so‘zi va ishi uchun mas’ul.\n\n## Halollik va adolat\nBaholash, muloqot va qarorlarda ochiqlik va adolat.\n\n## Hamkorlik\nMaktab, oila va jamiyat birgalikda farzandlarimiz kelajagi uchun ishlaydi.'},
+    jobs:{t:'Bo‘sh ish o‘rinlari',sub:'Maktab jamoasiga qo‘shilish imkoniyatlari',side:1,cta:1,def:'Hozircha e’lon qilingan bo‘sh ish o‘rinlari yo‘q. Jamoamizga qo‘shilishni istasangiz, «Aloqa» sahifasi orqali yozing yoki maktabga qo‘ng‘iroq qiling.'},
+    adm:{t:'Qabul',sub:'Maktabga qabul tartibi va kerakli hujjatlar',cta:1,def:'Qabul tartibi, kerakli hujjatlar va muddatlar haqida batafsil ma’lumot olish uchun maktabga qo‘ng‘iroq qiling yoki «Aloqa» sahifasi orqali yozing.'},
+    edu:{t:'Ta’lim',sub:'O‘quv jarayoni va darsdan tashqari faoliyat',def:'Maktabimizda ta’lim davlat ta’lim standartlari asosida olib boriladi.\n\n## O‘quv jarayonini kuzating\n- Dars va qo‘ng‘iroq jadvallari «Jadval» sahifasida\n- Davomat va xatlar — ota-onalar kabinetida\n- Yutuqlar va tadbirlar — «Yutuqlar» va «Tadbirlar» sahifalarida'}
+  };
+  var PGS=['about','director','values','jobs'], PGL={about:'#/maktab',director:'#/direktor',values:'#/qadriyatlar',jobs:'#/vakansiya',adm:'#/qabul',edu:'#/talim'};
+  function pgItem(title){ var a=Array.isArray(SEC.pages)?SEC.pages:[]; for(var i=0;i<a.length;i++){ if(a[i]&&nkey(a[i].title)===nkey(title)) return a[i] } return null }
+  function rich(t){ var out='', ul=false; String(t||'').split(/\r?\n/).forEach(function(l){ l=l.trim(); if(/^[-•]\s+/.test(l)){ if(!ul){ out+='<ul>'; ul=true } out+='<li>'+esc(l.replace(/^[-•]\s+/,''))+'</li>'; return } if(ul){ out+='</ul>'; ul=false } if(!l) return; out+=/^##\s+/.test(l)?'<h3>'+esc(l.replace(/^##\s+/,''))+'</h3>':'<p>'+esc(l)+'</p>' }); if(ul) out+='</ul>'; return out }
+  function stats(){ var it=pgItem('Raqamlar'); if(!it||!it.text) return ''; var r=String(it.text).split(/\r?\n/).map(function(l){ var p=l.split('|'); return p.length>1&&p[0].trim()?'<div><b>'+esc(p[0].trim())+'</b><span>'+esc(p.slice(1).join('|').trim())+'</span></div>':'' }).join(''); return r?'<div class="stt">'+r+'</div>':'' }
+  function findDirector(){ var a=tmList().filter(function(x){ var r=String(x.role||'').toLowerCase(); return /direktor/.test(r)&&!/o.rinbosar/.test(r) }); return a[0]||null }
+  function hubCards(){ return '<div class="hub">'+[['📖','Direktor murojaati','Direktorning o‘quvchi va ota-onalarga murojaati','#/direktor'],['🌱','Jamoa qadriyatlari','Biz amal qiladigan tamoyillar','#/qadriyatlar'],['👥','Rahbariyat va xodimlar','Rahbariyat, o‘qituvchilar va xodimlar','#/jamoa'],['💼','Bo‘sh ish o‘rinlari','Jamoamizga qo‘shiling','#/vakansiya']].map(function(c){ return '<a href="'+c[3]+'"><i>'+c[0]+'</i><b>'+c[1]+'</b><span>'+c[2]+'</span></a>' }).join('')+'</div>' }
+  function infoPage(key){ var d=PGD[key], it=pgItem(d.t), body=rich((it&&it.text)||d.def), pic='';
+    if(key==='director'){ var dr=findDirector(), im=okImg(it&&it.photo)||okImg(dr&&dr.photo), nm=dr?dr.name:'', rl=dr?dr.role:'Maktab direktori'; if(im||nm) pic='<div class="dir">'+(im?'<div class="tm-ph"><img src="'+im+'" alt="'+esc(nm)+'"></div>':'')+'<div>'+(nm?'<b>'+esc(nm)+'</b>':'')+'<span>'+esc(rl)+'</span></div></div>' }
+    var extra=(key==='about'?stats():'')+'';
+    var main='<article class="ip-main">'+pic+body+(d.cta?'<p><a class="btn gold" href="#/aloqa">Biz bilan bog‘laning →</a></p>':'')+'</article>';
+    var side=d.side?'<aside class="ip-side" aria-label="Maktab haqida bo‘limlari"><small>Maktab haqida</small>'+PGS.slice(0,3).map(function(k){ return '<a href="'+PGL[k]+'"'+(k===key?' aria-current="page"':'')+'>'+PGD[k].t+'</a>' }).join('')+'<a href="#/jamoa">Rahbariyat va xodimlar</a><a href="#/vakansiya"'+(key==='jobs'?' aria-current="page"':'')+'>Bo‘sh ish o‘rinlari</a></aside>':'';
+    return '<div class="wrap"><section class="blk"><div class="hd"><h2>'+d.t+'</h2></div><p class="pg-sub">'+d.sub+'</p>'+extra+(d.side?'<div class="ip">'+main+side+'</div>':main)+(key==='about'?'<div class="sub" style="margin-top:30px">Batafsil</div>'+hubCards():'')+'</section></div>'; }
+  function homeIntro(){ var cards=[['🎓','Sifatli ta’lim','O‘quv jarayoni, jadval va ota-onalar kabineti.','#/talim'],['🏫','Maktab haqida','Vazifamiz, qadriyatlarimiz va jamoamiz.','#/maktab'],['📝','Qabul','Qabul tartibi va kerakli hujjatlar.','#/qabul'],['👥','Rahbariyat va xodimlar','Tajribali pedagoglar jamoasi bilan tanishing.','#/jamoa'],['🏆','Yutuqlar','Olimpiada va tanlov g‘oliblari.','#/yutuqlar'],['🤝','Ota-onalar kabineti','Davomat va xatlar bir joyda.','#/kabinet']];
+    var dr=findDirector(), di=pgItem('Direktor murojaati'), q='';
+    if(di&&di.text){ var first=String(di.text).split(/\n\s*\n/)[0].replace(/\s+/g,' ').trim(); if(first.length>260) first=first.slice(0,257).replace(/\s+\S*$/,'')+'…';
+      q='<div class="hq">'+(dr&&okImg(dr.photo)?tmPh(dr):'')+'<div><span>Xush kelibsiz</span><p>'+esc(first)+'</p>'+(dr?'<b>'+esc(dr.name)+'</b>':'')+'<a href="#/direktor">Murojaatni to‘liq o‘qish →</a></div></div>' }
+    return '<div class="wrap"><section class="blk"><div class="hd"><h2>Maktab bilan tanishing</h2><a href="#/maktab">Maktab haqida →</a></div>'+stats()+'<div class="hub">'+cards.map(function(c){ return '<a href="'+c[3]+'"><i>'+c[0]+'</i><b>'+c[1]+'</b><span>'+c[2]+'</span></a>' }).join('')+'</div></section>'+(q?'<section class="blk">'+q+'</section>':'')+'</div>'; }
   function achievements(){
     var st=secState(['achievements']); if(st==='load') return pageWrap('Yutuqlar','',SK); if(st==='err') return '<div class="wrap">'+errBox()+'</div>';
     var it=SEC.achievements.filter(function(x){return x&&x.title}).sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))});
@@ -537,7 +631,7 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
     var soc=[['telegram','Telegram',Lk(SCHOOL.telegram)],['instagram','Instagram',Lk(SCHOOL.instagram)],['youtube','YouTube',Lk(SCHOOL.youtube)]].filter(function(x){return x[2]}).map(function(x){return '<a class="soc-a" href="'+esc(x[2])+'" target="_blank" rel="noopener noreferrer" aria-label="'+x[1]+'" title="'+x[1]+'">'+ICONS[x[0]]+'</a>'}).join('');
     var rows=[]; if(SCHOOL.address) rows.push('<li>📍 '+esc(SCHOOL.address)+'</li>'); if(tel) rows.push('<li>📞 <a href="tel:'+esc(tel)+'">'+esc(SCHOOL.phone)+'</a></li>'); if(mail) rows.push('<li>✉️ <a href="mailto:'+esc(mail)+'">'+esc(mail)+'</a></li>'); if(SCHOOL.hours) rows.push('<li>🕘 '+esc(SCHOOL.hours)+'</li>');
     ft.innerHTML='<div class="wrap ft-grid"><div><div class="ft-b"><img src="logo-28.svg" width="46" height="46" alt="28-maktab"><div><b>28-MAKTAB</b><small>TARBIYA · BILIM · KELAJAK</small></div></div>'+(soc?'<div class="soc">'+soc+'</div>':'')+'</div>'+
-      '<div><h4>Sahifalar</h4><ul class="ft-l"><li><a href="#/">Bosh sahifa</a></li><li><a href="#/yangiliklar">Yangiliklar</a></li><li><a href="#/tadbirlar">Tadbirlar</a></li><li><a href="#/jamoa">Jamoa</a></li><li><a href="#/jadval">Jadval</a></li><li><a href="#/aloqa">Aloqa</a></li><li><a href="#/kabinet">Ota-onalar kabineti</a></li></ul></div>'+
+      '<div><h4>Sahifalar</h4><ul class="ft-l"><li><a href="#/">Bosh sahifa</a></li><li><a href="#/yangiliklar">Yangiliklar</a></li><li><a href="#/tadbirlar">Tadbirlar</a></li><li><a href="#/maktab">Maktab haqida</a></li><li><a href="#/qabul">Qabul</a></li><li><a href="#/talim">Ta’lim</a></li><li><a href="#/jamoa">Rahbariyat va xodimlar</a></li><li><a href="#/jadval">Jadval</a></li><li><a href="#/aloqa">Aloqa</a></li><li><a href="#/kabinet">Ota-onalar kabineti</a></li></ul></div>'+
       '<div><h4>Aloqa</h4>'+(rows.length?'<ul class="ft-l">'+rows.join('')+'</ul>':'<ul class="ft-l"><li><a href="#/aloqa">Aloqa ma\'lumotlari</a></li></ul>')+'</div></div>'+
       '<div class="ft-bot"><div class="wrap"><span>© '+new Date().getFullYear()+' 28-maktab. Barcha huquqlar himoyalangan.</span><span class="ft-legal"><a href="#/shartlar">Foydalanish shartlari</a><a href="#/maxfiylik">Maxfiylik siyosati</a><span data-install hidden><button type="button" class="linkbtn" data-install-btn>📲 Ilovani o\'rnatish</button></span><span data-staff hidden><a href="/platforma">Platformaga o\'tish →</a></span></span></div></div>';
   }
@@ -643,15 +737,15 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
     if(r==='yangilik'&&p[1]){ location.replace('/yangilik/'+encodeURIComponent(decodeURIComponent(p[1]))); return }
     document.title='28-maktab · Tarbiya, bilim, kelajak';
     if(r!=='kabinet'&&KB.step!=='phone') kbReset(false);
-    var key={yangiliklar:'news',tadbirlar:'events',jamoa:'team',yutuqlar:'ach',jadval:'schedule',galereya:'gallery',aloqa:'contact'}[r]||(r==='xodim'?'':'home');
+    var key={yangiliklar:'news',tadbirlar:'events',jamoa:'about',maktab:'about',direktor:'about',qadriyatlar:'about',vakansiya:'about',qabul:'adm',talim:'edu',yutuqlar:'ach',jadval:'schedule',galereya:'gallery',aloqa:'contact'}[r]||(r==='xodim'?'':'home');
     Array.prototype.forEach.call(document.querySelectorAll('nav.m a[data-r]'),function(a){ if(a.dataset.r===key) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current') });
-    var SD={jamoa:['team'],yutuqlar:['achievements'],tadbirlar:['events'],jadval:['bellsets','lessons','bells','timetables']};
+    var SD={jamoa:['team'],maktab:['pages'],direktor:['pages','team'],qadriyatlar:['pages'],vakansiya:['pages'],qabul:['pages'],talim:['pages'],yutuqlar:['achievements'],tadbirlar:['events'],jadval:['bellsets','lessons','bells','timetables']};
     function draw(){
-      var html= r==='kabinet'?kabinet(): r==='shartlar'?legal('Foydalanish shartlari',SCHOOL.terms||DEF_TERMS): r==='maxfiylik'?legal('Maxfiylik siyosati',SCHOOL.privacy||DEF_PRIV): r==='xodim'?staffPage(): r==='yangiliklar'?list(): r==='tadbirlar'?events(): r==='jamoa'?team(): r==='yutuqlar'?achievements(): r==='jadval'?schedule(): r==='galereya'?gallery(): r==='aloqa'?contact(): home();
+      var html= r==='kabinet'?kabinet(): r==='shartlar'?legal('Foydalanish shartlari',SCHOOL.terms||DEF_TERMS): r==='maxfiylik'?legal('Maxfiylik siyosati',SCHOOL.privacy||DEF_PRIV): r==='xodim'?staffPage(): r==='yangiliklar'?list(): r==='tadbirlar'?events(): r==='maktab'?infoPage('about'): r==='direktor'?infoPage('director'): r==='qadriyatlar'?infoPage('values'): r==='vakansiya'?infoPage('jobs'): r==='qabul'?infoPage('adm'): r==='talim'?infoPage('edu'): r==='jamoa'?team(): r==='yutuqlar'?achievements(): r==='jadval'?schedule(): r==='galereya'?gallery(): r==='aloqa'?contact(): home();
       app.innerHTML='<div class="view">'+html+'</div>'; renderFooter(); applyStaff(); applyInstall(); if(r==='kabinet'){ var fi=document.getElementById(KB.step==='code'?'kbCode':'kbPhone'); if(fi&&!KB.busy) fi.focus(); kbTick() }
     }
     draw();
-    var tasks=[]; if(SD[r]) SD[r].forEach(function(n){tasks.push(secLoad(n))}); else if(r!=='aloqa'&&r!=='xodim'&&r!=='shartlar'&&r!=='maxfiylik'&&r!=='kabinet'&&news===null) tasks.push(load());
+    var tasks=[]; if(r==='home'){ tasks.push(secLoad('team')); tasks.push(secLoad('pages')); } if(SD[r]) SD[r].forEach(function(n){tasks.push(secLoad(n))}); else if(r!=='aloqa'&&r!=='xodim'&&r!=='shartlar'&&r!=='maxfiylik'&&r!=='kabinet'&&news===null) tasks.push(load());
     if(r==='tadbirlar'&&news===null) tasks.push(load());
     if(tasks.length) Promise.all(tasks).then(function(){ var again=location.hash.replace(/^#\/?/,'').split('/')[0]||'home'; if(again===r) draw(); });
   }
