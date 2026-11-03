@@ -78,6 +78,8 @@ function monthsOfYear() {
 async function buildData(p, base) {
   const kids = childrenOf(p, base), months = monthsOfYear(), now = new Date(), today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
   const result = [];
+  let awardDocs = [];
+  try { awardDocs = (await A.queryEq('news', 'cat', 'yutuq', 200)).filter(function (n) { return n && n.status === 'published' && n.eng && Array.isArray(n.eng.w); }); } catch (e) { awardDocs = []; }
   for (const kid of kids) {
     const st = base.attst.filter(function (s) { return nk(s.name) === nk(kid.name) && normCls(s.cls) === normCls(kid.cls); })[0];
     const att = { months: [], tot: { days: 0, abs: 0, sz: 0, kas: 0, sb: 0, tad: 0, kch: 0, pct: null } };
@@ -99,7 +101,10 @@ async function buildData(p, base) {
     const letters = base.letters.filter(function (e) { return (nk(e.name) === nk(kid.name) && normCls(e.cls) === normCls(kid.cls)) || (normPhone(e.phone) === p && nk(e.name) === nk(kid.name)); })
       .map(function (e) { return { k: e.kind || '', label: KIND[e.kind || ''] || 'Xat', date: e.date || '', reason: String(e.reason || '').slice(0, 600) }; })
       .sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); }).slice(0, 60);
-    result.push({ name: kid.name, cls: kid.cls, linked: !!st, att: att, letters: letters, warn: letters.filter(function (l) { return !l.k; }).length });
+    const awards = awardDocs.filter(function (n) { return n.eng.w.some(function (w) { return w && w.r !== 't' && nk(w.n) === nk(kid.name) && (!w.c || !kid.cls || normCls(w.c) === normCls(kid.cls)); }); })
+      .map(function (n) { return { t: String(n.title || ''), per: String(n.eng.per || ''), yr: String(n.eng.yr || ''), date: n.date || '' }; })
+      .sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); }).slice(0, 10);
+    result.push({ name: kid.name, cls: kid.cls, linked: !!st, att: att, letters: letters, awards: awards, warn: letters.filter(function (l) { return !l.k; }).length });
   }
   return result;
 }

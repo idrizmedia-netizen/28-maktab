@@ -82,6 +82,7 @@ async function getSettings(ctx) {
     rem: { on: !!(a.rem && a.rem.on), days: clamp(a.rem && a.rem.days, 1, 14, 3), max: clamp(a.rem && a.rem.max, 1, 3, 1) },
     bk: { on: !(a.bk && a.bk.on === false) },
     abs: { on: !!(a.abs && a.abs.on), late: !!(a.abs && a.abs.late) },
+    eng: { on: !(a.eng && a.eng.on === false) },
   };
 }
 async function linkFor(ctx, phone) {
@@ -282,10 +283,34 @@ async function taskNews(ctx, opts) {
 }
 
 /* ---------- kunlik ishga tushirish ---------- */
+/* ---------- 8) chorak oxiri eslatmasi: «eng yaxshilarni e'lon qilish vaqti keldi» ---------- */
+/* Taxminiy sanalar (oy-kun, Toshkent): chorak tugashiga ~1 hafta qolganda. Maktab kalendariga qarab o'zgartiring. */
+const QUARTER_DAYS = { '10-24': '1-chorak', '12-19': '2-chorak', '03-09': '3-chorak', '05-18': '4-chorak' };
+async function taskQuarter(ctx, opts) {
+  opts = opts || {};
+  const S = await getSettings(ctx), T = tz(ctx.now);
+  const res = { task: 'quarter', sent: false };
+  const label = QUARTER_DAYS[T.ymd.slice(5)] || (opts.force ? 'chorak' : '');
+  if (!opts.force) { if (!S.eng.on) { res.skipped = 'off'; return res; } if (!label) { res.skipped = 'sana emas'; return res; } }
+  const roster = await readRoster(ctx);
+  const phone = phoneOf(roster.reportPhone);
+  if (!phone) { res.error = 'Hisobot raqami kiritilmagan'; return res; }
+  const link = await linkFor(ctx, phone);
+  if (!link) { res.error = 'Hisobot raqami botga ulanmagan'; return res; }
+  const key = 'eng_' + T.ymd.slice(0, 4) + '_' + label;
+  const ref = ctx.db().collection('cron_status').doc(key);
+  if (!opts.force && (await ref.get()).exists) { res.skipped = 'allaqachon yuborilgan'; return res; }
+  const text = '🏅 <b>' + h(label) + ' tugashiga oz qoldi</b>\n\nEng yaxshi o\'qituvchi va o\'quvchilarni e\'lon qilish vaqti keldi.\n\nPlatforma → Xatlar → <b>Eng yaxshilar</b>: g\'oliblar tavsiyasi, sertifikat va e\'lon shu yerda.';
+  if (opts.dry) { res.wouldSend = true; return res; }
+  res.sent = await sendMsg(ctx, link.chatId, text);
+  if (res.sent) { try { await ref.set({ at: ctx.now }); } catch (e) { /* belgi majburiy emas */ } }
+  return res;
+}
+
 async function runDaily(ctx, opts) {
   opts = opts || {};
   const results = [];
-  const list = [['news', taskNews], ['absence', taskAbsence], ['reminders', taskReminders], ['backup', taskBackup]];
+  const list = [['news', taskNews], ['absence', taskAbsence], ['reminders', taskReminders], ['backup', taskBackup], ['quarter', taskQuarter]];
   for (const [name, fn] of list) {
     try { results.push(await fn(ctx, opts)); } catch (e) { console.error('vazifa xato (' + name + '):', e); results.push({ task: name, error: String((e && e.message) || e).slice(0, 200) }); }
   }
@@ -293,4 +318,4 @@ async function runDaily(ctx, opts) {
   return results;
 }
 
-module.exports = { makeCtx, runDaily, taskNews, taskAbsence, taskReminders, taskBackup, tz, dmy, hash36, normClass, b64u, getSettings };
+module.exports = { makeCtx, runDaily, taskNews, taskAbsence, taskReminders, taskBackup, taskQuarter, tz, dmy, hash36, normClass, b64u, getSettings };
