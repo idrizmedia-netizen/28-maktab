@@ -351,6 +351,20 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
 .ap-msg{min-height:22px;margin:0 0 10px;font-weight:700;color:#a1301f}.ap-note{color:var(--muted);font-size:13.5px;margin:12px 0 0}
 .ap-ok{background:var(--soft);border-radius:16px;padding:22px;text-align:center}.ap-ok p{margin:6px 0 0}
 @media(max-width:560px){.ap-g{grid-template-columns:1fr}}
+
+.acc-w{display:grid;gap:12px;margin:8px 0 4px}
+.acc{border:1.5px solid var(--line);border-radius:16px;background:var(--card);overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.acc:hover{border-color:var(--gold)}.acc[open]{border-color:var(--gold);box-shadow:0 8px 22px rgba(15,61,122,.08)}
+.acc summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 18px;font:700 17px/1.35 var(--head);color:var(--navy)}
+.acc summary::-webkit-details-marker{display:none}.acc summary:focus-visible{outline:3px solid var(--gold);outline-offset:-3px;border-radius:16px}
+.acc-t{display:flex;align-items:center;gap:12px}
+.acc-n{flex:none;width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--soft),#FBE7A8);color:var(--navy);display:grid;place-items:center;font:800 15px var(--head)}
+.acc-c{flex:none;width:30px;height:30px;border-radius:50%;background:var(--soft);position:relative;transition:transform .25s,background .2s}
+.acc-c::before{content:"";position:absolute;left:50%;top:50%;width:8px;height:8px;border-right:2.5px solid var(--navy);border-bottom:2.5px solid var(--navy);transform:translate(-50%,-70%) rotate(45deg)}
+.acc[open] .acc-c{transform:rotate(180deg);background:var(--gold)}
+.acc-b{padding:0 20px 16px}.acc.nn .acc-b{padding-left:64px}.acc-b p{margin:0 0 10px;font-size:16px;line-height:1.7}.acc-b ul{margin:0 0 10px}
+.acc-all{border:1.5px solid var(--line);background:var(--card);color:var(--navy);font:800 13.5px var(--body);padding:8px 16px;border-radius:99px;cursor:pointer;margin:2px 0 12px}.acc-all:hover{border-color:var(--gold)}
+@media(max-width:560px){.acc.nn .acc-b{padding-left:20px}.acc summary{font-size:15.5px;padding:13px 14px}}
 </style>
 </head>
 <body>
@@ -530,7 +544,14 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
   };
   var PGS=['about','director','values','jobs'], PGL={about:'#/maktab',director:'#/direktor',values:'#/qadriyatlar',jobs:'#/vakansiya',adm:'#/qabul',edu:'#/talim'};
   function pgItem(title){ var a=Array.isArray(SEC.pages)?SEC.pages:[]; for(var i=0;i<a.length;i++){ if(a[i]&&nkey(a[i].title)===nkey(title)) return a[i] } return null }
-  function rich(t){ var out='', ul=false; String(t||'').split(/\r?\n/).forEach(function(l){ l=l.trim(); if(/^[-•]\s+/.test(l)){ if(!ul){ out+='<ul>'; ul=true } out+='<li>'+esc(l.replace(/^[-•]\s+/,''))+'</li>'; return } if(ul){ out+='</ul>'; ul=false } if(!l) return; out+=/^##\s+/.test(l)?'<h3>'+esc(l.replace(/^##\s+/,''))+'</h3>':'<p>'+esc(l)+'</p>' }); if(ul) out+='</ul>'; return out }
+  function inl(t){ return esc(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>') }
+  function richBlock(lines){ var out='', ul=false; lines.forEach(function(l){ l=l.trim(); if(/^[-•]\s+/.test(l)){ if(!ul){ out+='<ul>'; ul=true } out+='<li>'+inl(l.replace(/^[-•]\s+/,''))+'</li>'; return } if(ul){ out+='</ul>'; ul=false } if(l) out+='<p>'+inl(l)+'</p>' }); if(ul) out+='</ul>'; return out }
+  function isHead(l){ l=l.trim(); var m=l.match(/^#{1,3}\s+(\S.*)$/); if(m) return {n:'',t:m[1]}; m=l.match(/^(\d{1,2})[.)]\s+(\S.*)$/); if(m&&m[2].length<=100&&!/[.!?:;,]$/.test(m[2])) return {n:m[1],t:m[2]}; return null }
+  function rich(t){ var lines=String(t||'').split(/\r?\n/), intro=[], secs=[], cur=null;
+    lines.forEach(function(l){ var h=isHead(l); if(h){ cur={n:h.n,t:h.t,b:[]}; secs.push(cur) } else if(cur) cur.b.push(l); else intro.push(l) });
+    if(!secs.length) return richBlock(lines);
+    return richBlock(intro)+(secs.length>2?'<button type="button" class="acc-all" data-acc>Hammasini ochish</button>':'')+'<div class="acc-w">'+secs.map(function(x){ return '<details class="acc'+(x.n?' nn':'')+'"><summary><span class="acc-t">'+(x.n?'<span class="acc-n">'+esc(x.n)+'</span>':'')+inl(x.t)+'</span><span class="acc-c" aria-hidden="true"></span></summary><div class="acc-b">'+(richBlock(x.b)||'<p>—</p>')+'</div></details>' }).join('')+'</div>'; }
+  document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[data-acc]'); if(!b) return; var w=b.closest('.ip-main')||document, d=[].slice.call(w.querySelectorAll('details.acc')), open=d.some(function(x){ return !x.open }); d.forEach(function(x){ x.open=open }); b.textContent=open?'Hammasini yopish':'Hammasini ochish' });
   function stats(){ var it=pgItem('Raqamlar'); if(!it||!it.text) return ''; var r=String(it.text).split(/\r?\n/).map(function(l){ var p=l.split('|'); return p.length>1&&p[0].trim()?'<div><b>'+esc(p[0].trim())+'</b><span>'+esc(p.slice(1).join('|').trim())+'</span></div>':'' }).join(''); return r?'<div class="stt">'+r+'</div>':'' }
   var APT0=Date.now();
   function apForm(){ APT0=Date.now(); return '<div class="ap" id="apBox"><div class="ap-g"><div><label for="apN">Ism-familiyangiz</label><input id="apN" maxlength="80" autocomplete="name"></div><div><label for="apP">Telefon (javob uchun)</label><input id="apP" maxlength="20" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67"></div><div><label for="apC">O‘quvchi sinfi (ixtiyoriy)</label><input id="apC" maxlength="10" placeholder="Masalan: 7-A"></div><div><label for="apT">Mavzu</label><select id="apT"><option>Taklif</option><option>Savol</option><option>Shikoyat</option><option>Minnatdorchilik</option><option>Boshqa</option></select></div><div class="full"><label for="apM">Murojaat matni</label><textarea id="apM" maxlength="1500"></textarea></div><input class="hp" id="apH" tabindex="-1" autocomplete="off" aria-hidden="true"></div><div class="ap-msg" id="apMsg" role="status"></div><button type="button" class="btn gold" data-ap-send>Murojaatni yuborish</button><p class="ap-note">Murojaatingiz maktab direktoriga yuboriladi. Telefon raqamingiz faqat javob berish uchun ishlatiladi.</p></div>' }
