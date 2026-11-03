@@ -81,11 +81,8 @@ Rollar: `owner` (asosiy admin), `full`, `viewer`, `homeroom` (sinf rahbari), `at
 
 - **Chorak ta'tillari** (Sozlamalar → Ta'tillar): nomi, boshlanish va tugash sanasi (`publicinfo/breaks`). Ochiq «Jadval» sahifasida ta'tillar ro'yxati (hozir davom etayotgani, necha kundan keyin boshlanishi) chiqadi, ta'til paytida tepada «Hozir ta'til» xabari ko'rinadi.
 - **Amal qiladigan qo'ng'iroq jadvali:** har bir jadvalda «Hozir shu jadval amal qilsin» belgisi bor. Belgilangan jadval sana davridan ustun turadi (har smena uchun bittadan). Belgilanmasa, jadval sana davriga qarab avtomatik tanlanadi.
-- **Dars jadvalida o'qituvchi:** bir sinfda fan ikkinchi marta yozilsa, bo'sh o'qituvchi katagi shu fanning oldingi o'qituvchisi bilan o'zi to'ldiriladi (yozilgan ism o'zgarmaydi). «Saytda o'qituvchi ismini ko'rsatish» belgisi ochiq sahifada ismlarni ko'rsatadi/yashiradi, sahifada tashrif buyuruvchi uchun ham «O'qituvchi ismi» tugmasi bor. Bu faqat ko'rinishni boshqaradi, ma'lumot `publicinfo/lessons` da saqlanadi.
-
-- **Chorak ta'tillari** (Sozlamalar → Ta'tillar): nomi, boshlanish va tugash sanasi (`publicinfo/breaks`). Ochiq «Jadval» sahifasida ta'tillar ro'yxati (hozir davom etayotgani, necha kundan keyin boshlanishi) chiqadi, ta'til paytida tepada «Hozir ta'til» xabari ko'rinadi.
-- **Amal qiladigan qo'ng'iroq jadvali:** har bir jadvalda «Hozir shu jadval amal qilsin» belgisi bor. Belgilangan jadval sana davridan ustun turadi (har smena uchun bittadan). Belgilanmasa, jadval sana davriga qarab avtomatik tanlanadi.
-- **Dars jadvalida o'qituvchi:** bir sinfda fan ikkinchi marta yozilsa, bo'sh o'qituvchi katagi shu fanning oldingi o'qituvchisi bilan o'zi to'ldiriladi (yozilgan ism o'zgarmaydi). «Saytda o'qituvchi ismini ko'rsatish» belgisi ochiq sahifada ismlarni ko'rsatadi/yashiradi, sahifada tashrif buyuruvchi uchun ham «O'qituvchi ismi» tugmasi bor. Bu faqat ko'rinishni boshqaradi, ma'lumot `publicinfo/lessons` da saqlanadi.
+- **Dars jadvalida o'qituvchi:** bir sinfda fan ikkinchi marta yozilsa, bo'sh o'qituvchi katagi shu fanning oldingi o'qituvchisi bilan o'zi to'ldiriladi (yozilgan ism o'zgarmaydi). Platformadagi «Saytda o'qituvchi ismini ko'rsatish» belgisi ochiq «Jadval» sahifasida ismlarni ko'rsatadi yoki yashiradi (tashrif buyuruvchida bunday tugma yo'q). Bu faqat ko'rinishni boshqaradi, ma'lumot `publicinfo/lessons` da saqlanadi.
+- **Ta'til paytida jadval yashirinadi:** bugungi sana e'lon qilingan ta'til davriga tushsa, ochiq «Jadval» sahifasida dars va qo'ng'iroq jadvali ko'rinmaydi, o'rniga «Hozir ta'til, darslar ... kuni qayta boshlanadi» xabari turadi. Ta'til tugagach jadval o'zi qaytadi (qo'lda hech narsa qilish shart emas).
 
 ## Avtomatik vazifalar (har kuni soat 10:00, Toshkent vaqti)
 
