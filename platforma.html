@@ -5874,7 +5874,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   /* ---- Maktab sahifasi bo'limlari: Jamoa, Yutuqlar, Tadbirlar, Qo'ng'iroq, Dars jadvallari ---- */
   var SECDEF=[
     {k:'team',t:'Jamoa',doc:'team',h:"Rahbariyat, o'qituvchilar va xodimlar. Ro'yxat shu tartibda ko'rinadi (↑ ↓ bilan almashtiring). Rasm tik (4:5) bo'lsa chiroyli chiqadi, yuz o'rtada bo'lsin. «Bo'lim» bo'sh qolsa, lavozimga qarab o'zi aniqlanadi.",add:"＋ A'zo qo'shish",main:'name',f:[['name','Ism-familiya','text',120],['role','Lavozimi','text',140],['group','Bo‘lim','select',[['','Avtomatik'],['rahbar','Rahbariyat'],['oqituvchi','O‘qituvchilar'],['yordamchi','Yordamchi xodimlar']]],['bio','Qisqacha ma’lumot (kartani bosganda ko‘rinadi)','area',500],['photo','Rasm','photo']]},
-    {k:'pages',t:'Sahifa matnlari',doc:'pages',h:"«Maktab haqida», «Direktorga murojaat», «Qabul» va boshqa sahifalar matni. Har bir sahifani bir marta qo'shing. Matnda «## Sarlavha» va «- ro'yxat» ishlatish mumkin. «Raqamlar» uchun har qatorga: 865 | o'quvchi",add:"＋ Sahifa qo'shish",main:'title',f:[['title','Sahifa','select',[['','Tanlang…'],['Maktab haqida','Maktab haqida'],['Direktorga murojaat','Direktorga murojaat (forma ustidagi matn)'],['Jamoa qadriyatlari','Jamoa qadriyatlari'],['Qabul','Qabul'],['Ta’lim','Ta’lim'],['Bo‘sh ish o‘rinlari','Bo‘sh ish o‘rinlari'],['Raqamlar','Raqamlar (statistika)']]],['text','Matn','area',3000],['photo','Rasm (ixtiyoriy)','photo']]},
+    {k:'pages',t:'Sahifa matnlari',doc:'pages',h:"«Maktab haqida», «Direktorga murojaat», «Qabul» va boshqa sahifalar matni. Har bir sahifani bir marta qo'shing. Matnni joylashtirsangiz, sahifa o'zi aniqlanadi (kerak bo'lsa, o'zgartiring). Qisqa qator (oxirida «:» bilan ham bo'ladi) sarlavha bo'lib, bosilganda ochiladi. «Raqamlar» uchun har qatorga: 865 | o'quvchi",add:"＋ Sahifa qo'shish",main:'title',f:[['title','Sahifa','select',[['','Tanlang…'],['Maktab haqida','Maktab haqida'],['Direktorga murojaat','Direktorga murojaat (forma ustidagi matn)'],['Jamoa qadriyatlari','Jamoa qadriyatlari'],['Qabul','Qabul'],['Ta’lim','Ta’lim'],['Bo‘sh ish o‘rinlari','Bo‘sh ish o‘rinlari'],['Raqamlar','Raqamlar (statistika)']]],['text','Matn','area',3000],['photo','Rasm (ixtiyoriy)','photo']]},
     {k:'ach',t:'Yutuqlar',doc:'achievements',h:"Olimpiada va tanlov g'oliblari.",add:"＋ Yutuq qo'shish",main:'title',f:[['title','Sarlavha','text',160],['date','Sana','date'],['text','Qisqacha','area',400],['photo','Rasm','photo']]},
     {k:'events',t:'Tadbirlar',doc:'events',h:"Yaqin tadbirlar. Sanasi o'tganlar «O'tgan tadbirlar»ga o'zi tushadi.",add:"＋ Tadbir qo'shish",main:'title',f:[['title','Tadbir nomi','text',160],['date','Sana','date'],['time','Vaqti (masalan 15:00)','text',30],['place','Joyi','text',100],['note','Izoh','area',300]]},
     {k:'tt',t:'Jadval havolalari',doc:'timetables',h:"Qo'shimcha jadvallar (masalan, imtihon jadvali yoki to'garaklar) uchun havola: Google Drive, PDF yoki Google Sheets. Havola «Hamma ko'ra oladi» rejimida bo'lsin.",add:"＋ Havola qo'shish",main:'title',f:[['title','Nomi (masalan: 5-sinf)','text',80],['url','Havola (https://...)','url',400]]}
@@ -5900,8 +5900,26 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     });
     return h+'</div><div class="sl-ctl"><button type="button" class="mini" data-smv="-1" '+(i?'':'disabled')+'>↑</button><button type="button" class="mini" data-smv="1" '+(i<n-1?'':'disabled')+'>↓</button><button type="button" class="mini danger" data-sdel>O\'chirish</button></div></div>';
   }
+  var pgAuto=new WeakSet();
+  var PG_TITLES=['Maktab haqida','Direktorga murojaat','Jamoa qadriyatlari','Qabul','Ta’lim','Bo‘sh ish o‘rinlari','Raqamlar'];
+  function pgGuess(raw){ var n=String(raw||'').toLowerCase().replace(/[ʻʼ’‘`´]/g,"'"); if(n.trim().length<12) return '';
+    var nums=n.split(/\r?\n/).filter(function(l){ return /^\s*\d[\d\s.,]*\s*\|/.test(l) }).length; if(nums>=2) return 'Raqamlar';
+    var first=(n.split(/\r?\n/).filter(function(x){return x.trim()})[0]||'');
+    var K={'Maktab haqida':['maktab haqida','maqsadimiz','vazifamiz','imkoniyat','tarix','viloyat','tuman','tashkil','faoliyat','missiya','jamoa'],
+      'Direktorga murojaat':['direktor','murojaat','shikoyat','taklif'],
+      'Jamoa qadriyatlari':['qadriyat','halollik','hurmat','hamjihat',"mas'uliyat",'tamoyil'],
+      'Qabul':['qabul','hujjat','ariza','1-sinf',"ko'chirish",'guvohnoma','bosqich',"ro'yxat"],
+      'Ta’lim':["ta'lim jarayon",'dars',"o'quv reja","to'garak",'baholash',"o'quv yili",'dastur','fanlar','sinflar'],
+      'Bo‘sh ish o‘rinlari':['vakansiya',"bo'sh ish","ish o'rni",'lavozim','rezyume','ish haqi','ishga']};
+    var NM={'Maktab haqida':'maktab haqida','Direktorga murojaat':'direktorga murojaat','Jamoa qadriyatlari':'jamoa qadriyatlari','Qabul':'qabul','Ta’lim':"ta'lim",'Bo‘sh ish o‘rinlari':"bo'sh ish"};
+    var best='', bs=0, second=0;
+    Object.keys(K).forEach(function(k){ var sc=0; K[k].forEach(function(w){ sc+=Math.min(n.split(w).length-1,3) }); if(first.replace(/[^a-z' ]/g,'').replace(/\s+/g,' ').trim()===NM[k]) sc+=6; if(sc>bs){ second=bs; bs=sc; best=k } else if(sc>second) second=sc });
+    return bs>=3&&bs>second?best:''; }
   function secDraw(d){
     var card=$('[data-sec="'+d.k+'"]'), items=secData[d.k]; $('.sl-list',card).innerHTML=items.length?items.map(function(it,i){return secRow(d,it,i,items.length)}).join(''):'<p class="hint">Hali hech narsa qo\'shilmagan.</p>';
+    if(d.k==='pages'){ var lst=$('.sl-list',card), ch=$('.sl-chips',card); if(!ch){ ch=document.createElement('div'); ch.className='sl-chips'; ch.style.cssText='display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:8px 0'; lst.parentNode.insertBefore(ch,lst) }
+      var have={}; items.forEach(function(it){ have[it.title]=1 }); var miss=PG_TITLES.filter(function(x){ return !have[x] });
+      ch.innerHTML=miss.length?'<span class="hint" style="margin:0">Tez qo\'shish:</span>'+miss.map(function(x){ return '<button type="button" class="btn line sm" data-pgadd="'+esc(x)+'">＋ '+esc(x)+'</button>' }).join(''):''; }
   }
   function secMsg(d,t,err){ var m=$('.sl-msg',$('[data-sec="'+d.k+'"]')); m.textContent=t; m.style.color=err?'var(--danger)':'' }
   function secLoadAll(){
@@ -5910,6 +5928,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     SECDEF.forEach(function(d){ db.collection('publicinfo').doc(d.doc).get().then(function(x){ var o=x.exists?x.data():{}; secData[d.k]=Array.isArray(o.items)?o.items.map(function(r){return Object.assign({},r)}):[]; secDraw(d) }).catch(function(e){ secLoaded=false; secMsg(d,'Yuklab bo\'lmadi: '+(e.message||'xato'),true) }) });
   }
   function secSave(d){
+    if(d.k==='pages'){ var lost=(secData[d.k]||[]).filter(function(it){ return String(it.text||'').trim()&&!String(it.title||'').trim() }).length; if(lost) return secMsg(d,lost+' ta matn uchun sahifa tanlanmagan. «Sahifa» ro‘yxatidan tanlang.',true) }
     var items=(secData[d.k]||[]).filter(function(it){return String(it[d.main]||'').trim()}).map(function(it){ var o={}; d.f.forEach(function(fd){ var v=String(it[fd[0]]||'').trim(); if(v) o[fd[0]]=v }); return o });
     for(var i=0;i<items.length;i++){ var bad=d.f.some(function(fd){ return fd[2]==='url'&&items[i][fd[0]]&&!/^https:\/\//i.test(items[i][fd[0]]) }); if(bad) return secMsg(d,(i+1)+"-qatorda havola «https://» bilan boshlanishi kerak",true) }
     var size=JSON.stringify(items).length; if(size>950000) return secMsg(d,"Ma'lumot juda katta, ba'zi rasmlarni olib tashlang",true);
@@ -5929,6 +5948,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       tab.appendChild(c);
       c.addEventListener('click',function(e){
         var row=e.target.closest('.sl-row'), i=row?+row.getAttribute('data-i'):-1, arr=secData[d.k];
+        var pa=e.target.closest('[data-pgadd]'); if(pa){ arr.push({title:pa.getAttribute('data-pgadd')}); secDraw(d); var ta=c.querySelector('.sl-row:last-child textarea'); if(ta) ta.focus(); return }
         if(e.target.closest('.sl-add')){ var it={}; arr.push(it); secDraw(d); var last=c.querySelector('.sl-row:last-child input'); if(last) last.focus(); return }
         if(e.target.closest('.sl-save')){ secSave(d); return }
         if(i<0) return;
@@ -5937,7 +5957,8 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
         if(e.target.closest('[data-sphx]')){ delete arr[i].photo; secDraw(d); return }
         if(e.target.closest('[data-sph]')){ var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange=function(){ var file=inp.files&&inp.files[0]; if(!file) return; secPhoto(file,d.k==='team').then(function(x){ arr[i].photo=x; secDraw(d) }).catch(function(er){ secMsg(d,er.message,true) }) }; inp.click() }
       });
-      c.addEventListener('input',function(e){ var fld=e.target.getAttribute&&e.target.getAttribute('data-sf'); if(!fld) return; var row=e.target.closest('.sl-row'); if(row) secData[d.k][+row.getAttribute('data-i')][fld]=e.target.value });
+      c.addEventListener('input',function(e){ var fld=e.target.getAttribute&&e.target.getAttribute('data-sf'); if(!fld) return; var row=e.target.closest('.sl-row'); if(row){ var it2=secData[d.k][+row.getAttribute('data-i')]; it2[fld]=e.target.value;
+        if(d.k==='pages'){ if(fld==='title') pgAuto.delete(it2); else if(fld==='text'&&(!it2.title||pgAuto.has(it2))){ var g=pgGuess(e.target.value); if(g&&g!==it2.title){ it2.title=g; pgAuto.add(it2); var sel=row.querySelector('[data-sf="title"]'); if(sel) sel.value=g; secMsg(d,'Sahifa avtomatik aniqlandi: «'+g+'». Noto‘g‘ri bo‘lsa, ro‘yxatdan o‘zgartiring.',false) } } } } });
       secDraw(d);
     });
     var bar=document.createElement('div'); bar.className='set-tabs'; var order=[['news','Yangiliklar'],['site','Aloqa'],['team','Jamoa'],['pages','Sahifa matnlari'],['ach','Yutuqlar'],['events','Tadbirlar'],['bellsets',"Qo'ng'iroq"],['lessons','Dars jadvali'],['tt','Havolalar']];
