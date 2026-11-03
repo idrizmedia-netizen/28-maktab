@@ -947,7 +947,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
 
 .egp{width:794px;height:1123px;background:#143A7B;padding:24px;color:#143A7B;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;overflow:hidden}
 .egp,.egp *{box-sizing:border-box}
-.egp .in{height:100%;background:#fff;border:6px solid #F2B632;display:flex;flex-direction:column;align-items:center;padding:56px 70px 40px;text-align:center}
+.egp .in{position:relative;height:100%;background:#fff;border:6px solid #F2B632;display:flex;flex-direction:column;align-items:center;padding:56px 70px 40px;text-align:center}
 .egp .hd{width:440px}.egp .gl{width:150px;height:4px;background:#F2B632;margin:26px 0 30px;flex:none}
 .egp .pl{color:#8A6414;font-weight:700;font-size:21px;letter-spacing:.5px}
 .egp .t1{font-weight:800;font-size:56px;line-height:1.1;margin-top:18px}.egp .t2{font-weight:800;font-size:62px;line-height:1.1}
@@ -961,7 +961,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
 .egp .lt{text-align:left;width:100%;font-size:19px;line-height:1.7}.egp .lh{text-align:left;width:100%;font-weight:700;font-size:23px;margin:6px 0 14px}
 .egp .sec{width:100%;text-align:left;margin-top:14px}.egp .sec h3{margin:0 0 8px;font-size:22px;color:#8A6414;border-bottom:3px solid #F2B632;padding-bottom:4px}
 .egp .cols{display:flex;gap:30px}.egp .cols>div{flex:1}.egp .li{padding:3px 0}
-.egp .hm{font-size:24px;line-height:1.55;margin:6px 0}
+.egp .qr{position:absolute;right:26px;bottom:22px;width:84px;text-align:center;font-size:10px;color:#8A6414;line-height:1.2}.egp .qr svg{width:84px;height:84px;display:block;margin-bottom:2px}.egp .hm{font-size:24px;line-height:1.55;margin:6px 0}
 .egp .dt{display:inline-block;background:#F2B632;color:#143A7B;font-weight:800;font-size:26px;padding:8px 26px;border-radius:30px;margin:16px 0}
 
 .eg-modes{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px}.eg-g{margin-top:12px}.eg-row{display:grid;grid-template-columns:110px 1.6fr 1fr auto auto;gap:6px;margin-bottom:6px}
@@ -1369,6 +1369,22 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
           <datalist id="eg_nl"></datalist>
           <button type="button" class="btn line sm" id="eg_add" style="margin-top:8px">＋ G'olib qo'shish</button>
         </div>
+        <div class="eg-g" data-for="win cert">
+          <label class="fl">💡 G'olib tavsiyasi (maqtov, ogohlantirish va davomat asosida)</label>
+          <div class="eg-form"><div><label class="fl" for="eg_sf">Dan</label><input class="inp" type="date" id="eg_sf"></div><div><label class="fl" for="eg_st">Gacha</label><input class="inp" type="date" id="eg_st"></div></div>
+          <button type="button" class="btn line sm" id="eg_sugb" style="margin-top:8px">Tavsiya qilish</button>
+          <div id="eg_sug"></div>
+        </div>
+        <div class="eg-g" data-for="cert">
+          <div class="eg-form">
+            <div><label class="fl" for="eg_ct">Hujjat nomi</label><input class="inp" id="eg_ct" value="FAXRIY YORLIQ" maxlength="30"></div>
+            <div><label class="fl" for="eg_cr">Sabab (bo'sh bo'lsa: eng yaxshi deb topilgani)</label><input class="inp" id="eg_cr" maxlength="90" placeholder="Masalan: tuman olimpiadasida 2-o'rinni egallagani uchun"></div>
+          </div>
+          <label class="fl" for="eg_bulk" style="margin-top:8px">Ro'yxatdan ko'plab qo'shish (har qatorda: Ism familiya, sinf)</label>
+          <textarea class="inp" id="eg_bulk" rows="3"></textarea>
+          <div class="eg-btns" style="margin-top:8px"><button type="button" class="btn line sm" id="eg_bulkb">＋ Ro'yxatni qo'shish</button><select class="inp" id="eg_bcls" style="width:auto"></select><button type="button" class="btn line sm" id="eg_bclsb">＋ Butun sinfni qo'shish</button></div>
+        </div>
+        <div class="eg-g" data-for="win res hol"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="eg_qr" checked> QR kod qo'shish (skanerlansa maktab saytidagi yangiliklarga o'tadi)</label></div>
         <div class="eg-g" data-for="letter">
           <div class="eg-form">
             <div><label class="fl" for="eg_lk">Kimga</label><select class="inp" id="eg_lk"><option value="p">Ota-onaga</option><option value="t">O'qituvchiga</option></select></div>
@@ -1396,13 +1412,14 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
           <div class="eg-form">
             <div><select class="inp" id="eg_cat"><option value="yutuq">Yutuqlar bo'limida</option><option value="elon">E'lonlar bo'limida</option><option value="yangilik">Yangiliklar bo'limida</option></select></div>
             <div><label style="display:flex;gap:8px;align-items:center;min-height:42px"><input type="checkbox" id="eg_tg"> Telegram kanalga ham yuborish</label></div>
+            <div><label style="display:flex;gap:8px;align-items:center;min-height:42px"><input type="checkbox" id="eg_par"> G'olib o'quvchilarning ota-onasiga Telegramda tabrik yuborish</label></div>
           </div>
           <button class="btn" id="eg_site" type="button" style="background:var(--ok);margin-top:8px">🌐 Saytda e'lon qilish</button>
         </div>
         <div class="msg" id="eg_msg"></div>
       </div>
       <div class="eg-stage" id="eg_stage"></div>
-      <div class="card eg-g" data-for="win" id="eg_histc"><h2 style="font-size:17px">G'oliblar tarixi</h2><p class="hint">Saytda e'lon qilingan g'oliblar.</p><div id="eg_hist"></div></div>
+      <div class="card eg-g" data-for="win" id="eg_histc"><h2 style="font-size:17px">G'oliblar tarixi</h2><p class="hint">Saytda e'lon qilingan g'oliblar.</p><div id="eg_hist"></div><button type="button" class="btn line sm" id="eg_album" style="margin-top:10px">📖 Yil albomi (PDF)</button></div>
     </section>
     <section id="tab-stats" class="hidden">
       <div class="card">
@@ -3583,7 +3600,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   /* ---------- E'lonlar studiyasi ---------- */
   var EG_CSS=`.egp{width:794px;height:1123px;background:#143A7B;padding:24px;color:#143A7B;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;overflow:hidden}
 .egp,.egp *{box-sizing:border-box}
-.egp .in{height:100%;background:#fff;border:6px solid #F2B632;display:flex;flex-direction:column;align-items:center;padding:56px 70px 40px;text-align:center}
+.egp .in{position:relative;height:100%;background:#fff;border:6px solid #F2B632;display:flex;flex-direction:column;align-items:center;padding:56px 70px 40px;text-align:center}
 .egp .hd{width:440px}.egp .gl{width:150px;height:4px;background:#F2B632;margin:26px 0 30px;flex:none}
 .egp .pl{color:#8A6414;font-weight:700;font-size:21px;letter-spacing:.5px}
 .egp .t1{font-weight:800;font-size:56px;line-height:1.1;margin-top:18px}.egp .t2{font-weight:800;font-size:62px;line-height:1.1}
@@ -3597,7 +3614,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
 .egp .lt{text-align:left;width:100%;font-size:19px;line-height:1.7}.egp .lh{text-align:left;width:100%;font-weight:700;font-size:23px;margin:6px 0 14px}
 .egp .sec{width:100%;text-align:left;margin-top:14px}.egp .sec h3{margin:0 0 8px;font-size:22px;color:#8A6414;border-bottom:3px solid #F2B632;padding-bottom:4px}
 .egp .cols{display:flex;gap:30px}.egp .cols>div{flex:1}.egp .li{padding:3px 0}
-.egp .hm{font-size:24px;line-height:1.55;margin:6px 0}
+.egp .qr{position:absolute;right:26px;bottom:22px;width:84px;text-align:center;font-size:10px;color:#8A6414;line-height:1.2}.egp .qr svg{width:84px;height:84px;display:block;margin-bottom:2px}.egp .hm{font-size:24px;line-height:1.55;margin:6px 0}
 .egp .dt{display:inline-block;background:#F2B632;color:#143A7B;font-weight:800;font-size:26px;padding:8px 26px;border-radius:30px;margin:16px 0}
 `;
   var EG={m:'win',w:[{r:'s',n:'',c:'',ph:''}],lTouched:false};
@@ -3615,7 +3632,8 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   function egBr(t){ return esc(t||'').replace(/\n/g,'<br>'); }
   function egPer(){ var per=$('#eg_per').value, yr=$('#eg_yr').value.trim(), full=per.indexOf('Butun')===0;
     return {per:per,yr:yr,full:full,label:full?yr+' O‘QUV YILI YAKUNI':per.toUpperCase()+'  •  '+yr+' O‘QUV YILI',tit:full?yr+' o‘quv yili':per}; }
-  function egShell(inner,land){ return '<div class="egp'+(land?' egl':'')+'"><div class="in">'+inner+'</div></div>'; }
+  function egQr(){ if(EG.noqr||EG.m==='cert'||EG.m==='letter'||!$('#eg_qr').checked) return ''; var u=location.origin+'/#/yangiliklar'; try{ return '<div class="qr">'+qrSvg(u)+'<div>'+esc(location.hostname)+'</div></div>'; }catch(e){ return ''; } }
+  function egShell(inner,land){ return '<div class="egp'+(land?' egl':'')+'"><div class="in">'+inner+(land?'':egQr())+'</div></div>'; }
   function egHead(w){ return '<img class="hd" style="width:'+(w||440)+'px" src="icons/eng/header.jpg" alt="28-maktab">'; }
   function egAd(){ return '<div class="ad">28-MAKTAB MA’MURIYATI</div>'; }
   function egCap(w){ var t=w.r==='t'; return (t?'O‘qituvchi':'O‘quvchi')+(w.c?(t?' · '+esc(w.c):', '+esc(w.c)+' sinf'):''); }
@@ -3624,7 +3642,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     var pr=t?'Fidokorona mehnati, bilim va tarbiya yo‘lidagi<br>xizmatlari uchun chin dildan minnatdorchilik bildiramiz!':'A’lo o‘qishi va intizomi uchun tabriklaymiz.<br>Yangi muvaffaqiyatlar tilaymiz!';
     return egShell(egHead()+'<div class="gl"></div><div class="pl">'+esc(P.label)+'</div><div class="t1">ENG YAXSHI</div><div class="t2">'+(t?'O‘QITUVCHI':'O‘QUVCHI')+'</div>'+pic+'<div class="nm" style="font-size:'+fs+'px">'+esc(w.n)+'</div><div class="cap">'+egCap(w)+'</div><div class="pr">'+pr+egAd()+'</div>'); }
   function egCert(w){ var P=egPer(), t=w.r==='t', fs=w.n.length>26?34:w.n.length>20?40:46;
-    return egShell(egHead(300)+'<div class="gl" style="margin:12px 0 14px"></div><div class="t1" style="font-size:54px;margin:0">FAXRIY YORLIQ</div><div class="pl" style="margin-top:8px">'+esc(P.label)+'</div><div class="cap" style="font-size:19px;margin:16px 0 8px">'+(t?'Eng yaxshi o‘qituvchi':'Eng yaxshi o‘quvchi')+' deb topilgani uchun taqdirlanadi</div><div class="nm" style="font-size:'+fs+'px;width:72%">'+esc(w.n)+'</div><div class="cap">'+egCap(w)+'</div>'+(w.ph?'<img class="ph" style="width:130px;height:130px;margin:auto 0" src="'+w.ph+'" alt="">':'<img class="sh" style="width:130px;margin:auto 0" src="icons/eng/shield.jpg" alt="">')+'<div class="sg" style="margin-top:0"><div>Maktab direktori</div><div style="text-align:right">Sana: '+esc(egDate())+'</div></div>',true); }
+    return egShell(egHead(300)+'<div class="gl" style="margin:12px 0 14px"></div><div class="t1" style="font-size:54px;margin:0">'+esc($('#eg_ct').value.trim()||'FAXRIY YORLIQ')+'</div><div class="pl" style="margin-top:8px">'+esc(P.label)+'</div><div class="cap" style="font-size:19px;margin:16px 0 8px">'+($('#eg_cr').value.trim()?esc($('#eg_cr').value.trim()):(t?'Eng yaxshi o‘qituvchi':'Eng yaxshi o‘quvchi')+' deb topilgani uchun taqdirlanadi')+'</div><div class="nm" style="font-size:'+fs+'px;width:72%">'+esc(w.n)+'</div><div class="cap">'+egCap(w)+'</div>'+(w.ph?'<img class="ph" style="width:130px;height:130px;margin:auto 0" src="'+w.ph+'" alt="">':'<img class="sh" style="width:130px;margin:auto 0" src="icons/eng/shield.jpg" alt="">')+'<div class="sg" style="margin-top:0"><div>Maktab direktori</div><div style="text-align:right">Sana: '+esc(egDate())+'</div></div>',true); }
   function egDate(){ var v=$('#eg_ld').value||dateISO(new Date()), a=v.split('-'); return a.length===3?a[2]+'.'+a[1]+'.'+a[0]:v; }
   function egLetter(){ var n=$('#eg_ln').value.trim(), s=$('#eg_ls').value.trim();
     return egShell(egHead(400)+'<div class="gl" style="margin:16px 0 18px"></div><div class="t1" style="font-size:38px;margin:0 0 6px">MINNATDORCHILIK XATI</div><div class="cap" style="width:100%;text-align:right;font-size:17px">'+esc(egDate())+'</div><div class="lh" style="margin-top:22px">Hurmatli '+(n?esc(n):'__________________')+'!</div><div class="lt">'+egBr($('#eg_lt').value)+'</div><div class="sg"><div>Maktab direktori'+(s?'<br><b>'+esc(s)+'</b>':'')+'</div><div style="border:0"></div></div>'); }
@@ -3665,11 +3683,50 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     if(!$('#eg_ht').value) egHolFill();
     $('#eg_nl').innerHTML=roster.students.map(function(x){return '<option value="'+esc(x.name)+'">'+esc(x.cls||'')+'</option>'}).join('')+roster.teachers.map(function(x){return '<option value="'+esc(x.name)+'">'+esc(x.subject||'')+'</option>'}).join('');
     var ok=newsPostAllowed(); $$('#tab-eng .eg-site').forEach(function(g){ g.setAttribute('data-ok',ok?'1':'0') });
+    var cs={}; roster.students.forEach(function(x){ if(x.cls) cs[x.cls]=1; }); $('#eg_bcls').innerHTML='<option value="">Sinf…</option>'+Object.keys(cs).sort(function(a,b){ return a.localeCompare(b,'uz',{numeric:true}); }).map(function(c){ return '<option>'+esc(c)+'</option>'; }).join('');
+    if(!$('#eg_sf').value) egRangeSet();
     egRows(); egSetMode(EG.m); if(!ok) $$('#tab-eng .eg-site').forEach(function(g){ g.classList.add('hidden') });
   }
   function egHist(){ var el=$('#eg_hist'); if(!el) return;
     var a=(typeof newsDocs!=='undefined'?newsDocs:[]).filter(function(x){return x.eng}).sort(function(x,y){return String(y.date||'').localeCompare(String(x.date||''))}).slice(0,30);
     el.innerHTML=a.length?a.map(function(x){ var e=x.eng||{}; return '<div class="li" style="padding:6px 0;border-bottom:1px solid var(--line)"><b>'+esc((e.per||'')+' · '+(e.yr||''))+'</b> — '+(e.w||[]).map(function(w){return esc(w.n)+(w.c?' ('+esc(w.c)+')':'')}).join(', ')+' <small style="color:var(--muted)">'+esc(x.date||'')+'</small></div>'}).join(''):'<div class="hint">Hali saytda e’lon qilingan g‘oliblar yo‘q.</div>'; }
+
+  function egRangeDef(){ var per=$('#eg_per').value, y1=parseInt($('#eg_yr').value,10)||new Date().getFullYear(), y2=y1+1;
+    var m={'1-chorak':[y1+'-09-01',y1+'-10-31'],'2-chorak':[y1+'-11-01',y1+'-12-31'],'3-chorak':[y2+'-01-01',y2+'-03-15'],'4-chorak':[y2+'-03-16',y2+'-05-31'],'1-yarim yillik':[y1+'-09-01',y1+'-12-31'],'2-yarim yillik':[y2+'-01-01',y2+'-05-31']};
+    return m[per]||[y1+'-09-01',y2+'-08-31']; }
+  function egRangeSet(){ var r=egRangeDef(); $('#eg_sf').value=r[0]; $('#eg_st').value=r[1]; }
+  function egSuggest(){
+    var lo=$('#eg_sf').value, hi=$('#eg_st').value, td=todayISO(); if(!lo||!hi) return egMsg('Sanalarni kiriting'); if(hi>td) hi=td; egMsg('');
+    var st=[]; try{ st=attStu().filter(function(s){ return attMine(s.cls) }); }catch(e){}
+    if(!st.length) st=roster.students.map(function(s,i){ return {id:'r'+i,name:s.name,cls:s.cls}; });
+    var R=null; try{ R=attCalc(st,[lo,hi]); }catch(e){}
+    var pr={}, wr={}; loadLog().forEach(function(e){ if(!chIn(e,[lo,hi])) return; var k=personKey(e); if(e.kind==='praise') pr[k]=(pr[k]||0)+1; else if(isWarn(e)) wr[k]=(wr[k]||0)+1; });
+    var rows=(R?R.ps:st.map(function(s){ return {s:s,abs:0,sz:0,kch:0}; })).map(function(q){ var k=personKey({name:q.s.name,cls:q.s.cls}), p=pr[k]||0, w=wr[k]||0;
+      return {n:q.s.name,c:q.s.cls||'',p:p,w:w,sz:q.sz||0,kch:q.kch||0,abs:q.abs||0,sc:5*p-5*w-2*(q.sz||0)-(q.kch||0)}; });
+    rows.sort(function(a,b){ return b.sc-a.sc||a.abs-b.abs||a.n.localeCompare(b.n); });
+    var good=rows.filter(function(x){ return x.sc>0; }), byC={}; good.forEach(function(x){ if(!byC[x.c]) byC[x.c]=x; });
+    EG.sug=good.slice(0,10); EG.sugC=Object.keys(byC).sort(function(a,b){ return a.localeCompare(b,'uz',{numeric:true}); }).map(function(c){ return byC[c]; });
+    var el=$('#eg_sug');
+    if(!EG.sug.length){ el.innerHTML='<p class="hint">Bu davr uchun maqtov xati olgan o‘quvchi topilmadi. G‘olibni qo‘lda tanlang.</p>'; return; }
+    el.innerHTML='<div class="tbl-wrap"><table class="log" style="min-width:0"><thead><tr><th>№</th><th>F.I.Sh</th><th>Sinf</th><th title="Maqtov xatlari">🌟</th><th title="Ogohlantirish xatlari">⚠️</th><th>Sababsiz</th><th>Kechikdi</th><th>Ball</th><th></th></tr></thead><tbody>'+
+      EG.sug.map(function(x,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(x.n)+'</td><td>'+esc(x.c||'—')+'</td><td>'+x.p+'</td><td>'+x.w+'</td><td>'+x.sz+'</td><td>'+x.kch+'</td><td><b>'+x.sc+'</b></td><td><button type="button" class="btn line sm" data-sug="'+i+'">＋</button></td></tr>'; }).join('')+
+      '</tbody></table></div><button type="button" class="btn line sm" data-sugc="1" style="margin-top:8px">＋ Har sinfning eng yaxshisini qo‘shish ('+EG.sugC.length+' ta)</button>'+
+      '<p class="hint">Ball = 5×maqtov − 5×ogohlantirish − 2×sababsiz kelmagan − kechikkan. Bu faqat tavsiya, yakuniy tanlov sizniki.'+(Object.keys(ATT).length?'':' Davomat ma’lumoti yuklanmagan, faqat xatlar hisobga olindi.')+'</p>'; }
+  function egAddRows(list){ if(EG.w.length===1&&!EG.w[0].n.trim()) EG.w=[]; list.forEach(function(x){ if(!EG.w.some(function(y){ return y.n===x.n&&y.c===x.c; })) EG.w.push({r:'s',n:x.n,c:x.c||'',ph:''}); }); if(!EG.w.length) EG.w=[{r:'s',n:'',c:'',ph:''}]; egRows(); egDraw(); }
+  function egBulk(){ var a=egLines('#eg_bulk').map(function(l){ var p=l.split(/[,;\t]/), n=p[0].trim(), c=(p[1]||'').trim(); if(!c) roster.students.some(function(x){ if(x.name===n){ c=x.cls||''; return true; } }); return {n:n,c:c}; }).filter(function(x){ return x.n; });
+    if(!a.length) return egMsg('Ro‘yxat bo‘sh'); egAddRows(a); $('#eg_bulk').value=''; egMsg(a.length+' ta qo‘shildi'); }
+  function egClassAdd(){ var c=$('#eg_bcls').value; if(!c) return egMsg('Sinfni tanlang'); var a=roster.students.filter(function(x){ return (x.cls||'')===c; }).map(function(x){ return {n:x.name,c:x.cls||''}; }); egAddRows(a); egMsg(a.length+' ta o‘quvchi qo‘shildi'); }
+  function egAlbum(){ var yr=$('#eg_yr').value.trim(), docs=(typeof newsDocs!=='undefined'?newsDocs:[]).filter(function(x){ return x.eng&&x.eng.yr===yr; });
+    if(!docs.length) return egMsg('«'+yr+'» o‘quv yili uchun saytda e’lon qilingan g‘oliblar yo‘q');
+    var ord=['1-chorak','2-chorak','1-yarim yillik','3-chorak','4-chorak','2-yarim yillik','Butun'], by={};
+    docs.forEach(function(d){ var k=d.eng.per||''; (by[k]=by[k]||[]).push.apply(by[k],d.eng.w||[]); });
+    var keys=Object.keys(by).sort(function(a,b){ function ix(x){ for(var i=0;i<ord.length;i++) if(x.indexOf(ord[i])===0) return i; return 99; } return ix(a)-ix(b); });
+    EG.noqr=true; var pages=[egShell(egHead()+'<div class="gl"></div><div class="pl">28-MAKTAB</div><div class="t1" style="font-size:54px">ENG YAXSHILAR<br>ALBOMI</div><div class="t2" style="font-size:46px;margin-top:10px">'+esc(yr)+' o‘quv yili</div><img class="sh" style="width:260px;margin:40px 0" src="icons/eng/shield.jpg" alt=""><div class="pr">'+egAd()+'</div>')];
+    keys.forEach(function(k){ var all=by[k], T=all.filter(function(w){ return w.r==='t'; }), S=all.filter(function(w){ return w.r!=='t'; }), ln=function(a){ return a.map(function(w){ return '<div class="li" style="font-size:19px">★ '+esc(w.n)+(w.c?' — '+esc(w.c):'')+'</div>'; }).join('')||'<div class="li" style="font-size:16px;color:#8A6414">—</div>'; };
+      pages.push(egShell(egHead(380)+'<div class="gl" style="margin:14px 0"></div><div class="t1" style="font-size:42px;margin:0">'+esc(k.indexOf('Butun')===0?'O‘quv yili yakunlari':k)+'</div><div class="sec"><h3>Eng yaxshi o‘qituvchilar</h3>'+ln(T)+'</div><div class="sec"><h3>Eng yaxshi o‘quvchilar</h3>'+ln(S)+'</div><div class="pr" style="font-size:15px">'+egAd()+'</div>')); });
+    EG.noqr=false; egMsg('Albom tayyorlanmoqda…');
+    egShots(pages,false,2).then(function(cvs){ var pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true}); cvs.forEach(function(cv,i){ if(i) pdf.addPage(); pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',0,0,210,297); }); pdf.save('28-maktab_albom_'+yr.replace(/[^0-9-]+/g,'-')+'.pdf'); egMsg(''); }).catch(function(){ EG.noqr=false; egMsg('Albomni tayyorlab bo‘lmadi'); }); }
+  function egNotify(id){ return curUser.getIdToken().then(function(tok){ return fetch('/api/eng-notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,idToken:tok})}); }).then(function(r){ return r.json().catch(function(){ return {ok:false,error:'Server javobi noto‘g‘ri'}; }); }); }
   function egPrint(){ var P=egPages(false); if(!P.h.length) return;
     var f=document.createElement('iframe'); f.style.cssText='position:fixed;left:-9999px;width:'+(P.land?1123:794)+'px;height:'+(P.land?794:1123)+'px;border:0'; document.body.appendChild(f);
     var d=f.contentWindow.document; d.open();
@@ -3694,7 +3751,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     else if(m==='res'){ title=P.tit+' natijalari'; } else { title=$('#eg_ht').value.trim(); if(!title) return egMsg('Sarlavhani yozing'); title=title.charAt(0)+title.slice(1).toLowerCase(); }
     if(!confirm('«'+title+'» maktab sahifasida hamma uchun e’lon qilinsinmi?')) return;
     var chunks=[], size=m==='win'?4:1; if(m==='win'){ for(var i=0;i<pg.h.length;i+=size) chunks.push({h:pg.h.slice(i,i+size),w:W.slice(i,i+size)}); } else chunks.push({h:pg.h,w:[]});
-    $('#eg_site').disabled=true; egMsg('E’lon tayyorlanmoqda…'); var tg=$('#eg_tg').checked, cat=$('#eg_cat').value, links=[];
+    $('#eg_site').disabled=true; egMsg('E’lon tayyorlanmoqda…'); var tg=$('#eg_tg').checked, par=$('#eg_par').checked&&m==='win', cat=$('#eg_cat').value, links=[], info=[];
     function one(k){ var ch=chunks[k], t=chunks.length>1?title+' ('+(k+1)+'/'+chunks.length+')':title, lines;
       if(m==='win'){ lines=[P.tit+' yakunlariga ko‘ra:'].concat(ch.w.map(function(w){ return '🏅 Eng yaxshi '+(w.r==='t'?'o‘qituvchi':'o‘quvchi')+' — '+w.n+(w.c?(w.r==='t'?' ('+w.c+')':', '+w.c+' sinf'):''); })); lines.push('Tabriklaymiz! Yangi muvaffaqiyatlar tilaymiz.'); }
       else if(m==='res'){ lines=[P.label.replace(/\s+/g,' ')+' natijalari e’lon qilindi.',egLines('#eg_ra').length+' nafar a’lochi o‘quvchi. Barchani tabriklaymiz!']; }
@@ -3704,9 +3761,12 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
         var withEng=m==='win'?Object.assign({eng:{per:P.per,yr:P.yr,w:ch.w.map(function(w){return {r:w.r,n:w.n,c:w.c}})}},doc):doc;
         return db.collection('news').add(withEng).catch(function(e){ if(withEng!==doc) return db.collection('news').add(doc); throw e; }); })
       .then(function(ref){ links.push(newsLink(ref.id)); try{ logAudit('news_publish',t) }catch(e){}
-        if(tg) return newsTelegram(ref.id,'post').catch(function(e){ egMsg('E’lon qilindi, lekin Telegram’ga yuborilmadi: '+(e.message||'xato')); }); })
+        var q=Promise.resolve();
+        if(tg) q=newsTelegram(ref.id,'post').catch(function(e){ info.push('Telegram kanalga yuborilmadi: '+(e.message||'xato')); });
+        if(par) q=q.then(function(){ return egNotify(ref.id); }).then(function(j){ info.push(j&&j.ok?'Ota-onalarga: '+j.sent+' ta tabrik yuborildi'+(j.noLink?', '+j.noLink+' tasi Telegramga ulanmagan':'')+(j.noPhone?', '+j.noPhone+' tasida raqam yo‘q':''):'Ota-onalarga yuborilmadi: '+((j&&j.error)||'xato')); }).catch(function(){ info.push('Ota-onalarga yuborilmadi'); });
+        return q; })
       .then(function(){ if(k+1<chunks.length) return one(k+1); }); }
-    one(0).then(function(){ egMsg('✅ Saytda e’lon qilindi. Havola: '+links[0]+(links.length>1?' (+'+(links.length-1)+' ta)':'')+(tg?' · Telegram so‘rovi yuborildi':'')); toast('E’lon qilindi'); try{ copyText(links[0],'Havola nusxalandi') }catch(e){} setTimeout(egHist,1500); })
+    one(0).then(function(){ egMsg('✅ Saytda e’lon qilindi. Havola: '+links[0]+(links.length>1?' (+'+(links.length-1)+' ta)':'')+(tg?' · Telegram kanal so‘rovi yuborildi':'')+(info.length?' · '+info.join(' · '):'')); toast('E’lon qilindi'); try{ copyText(links[0],'Havola nusxalandi') }catch(e){} setTimeout(egHist,1500); })
     .catch(function(e){ egMsg('E’lon qilib bo‘lmadi: '+(e&&e.message||'xato')); }).then(function(){ $('#eg_site').disabled=false; }); }
   $('#eg_modes').addEventListener('click',function(e){ var b=e.target.closest('[data-m]'); if(b) egSetMode(b.getAttribute('data-m')); });
   $('#eg_add').addEventListener('click',function(){ EG.w.push({r:'s',n:'',c:'',ph:''}); egRows(); egDraw(); });
@@ -3722,6 +3782,10 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   $('#eg_lt').addEventListener('input',function(){ EG.lTouched=true; egDraw(); });
   $('#eg_lk').addEventListener('change',function(){ if(!EG.lTouched||confirm('Matn almashtirilsinmi?')){ $('#eg_lt').value=EG_LT[$('#eg_lk').value]; EG.lTouched=false; } egDraw(); });
   $('#eg_hs').addEventListener('change',egHolFill);
+  ['eg_per','eg_yr'].forEach(function(id){ $('#'+id).addEventListener('input',egRangeSet); });
+  ['eg_ct','eg_cr','eg_qr'].forEach(function(id){ $('#'+id).addEventListener('input',egDraw); $('#eg_qr').addEventListener('change',egDraw); });
+  $('#eg_sugb').addEventListener('click',egSuggest); $('#eg_bulkb').addEventListener('click',egBulk); $('#eg_bclsb').addEventListener('click',egClassAdd); $('#eg_album').addEventListener('click',egAlbum);
+  $('#eg_sug').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; if(b.hasAttribute('data-sugc')){ egAddRows(EG.sugC); egMsg(EG.sugC.length+' ta qo‘shildi'); } else if(b.hasAttribute('data-sug')){ egAddRows([EG.sug[+b.getAttribute('data-sug')]]); } });
   $('#eg_print').addEventListener('click',egPrint); $('#eg_pdf').addEventListener('click',egPdf); $('#eg_site').addEventListener('click',egSite);
 
   /* ---------- tabs ---------- */
