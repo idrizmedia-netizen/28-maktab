@@ -289,7 +289,7 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
 /* jamoa: katta ramkali kartalar */
 .tm-chips{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 8px}
 .tm-chip{border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:800 14px var(--body);padding:11px 20px;border-radius:99px;cursor:pointer;transition:background-color .15s,color .15s,border-color .15s}
-.tm-chip:hover{border-color:var(--navy)}.tm-chip[aria-pressed=true]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.tm-chips a.tm-chip{text-decoration:none;display:inline-block}.tm-chip:hover{border-color:var(--navy)}.tm-chip[aria-pressed=true]{background:var(--navy);color:#fff;border-color:var(--navy)}
 .tm-sec{margin:34px 0 0}.tm-sec>h3{font:700 clamp(20px,3vw,26px)/1.2 var(--head);color:var(--ink);margin:0 0 18px}
 .tm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
 .tm-card{align-self:start;display:block;width:100%;text-align:left;background:none;border:0;padding:0;cursor:pointer;font:inherit;color:inherit}
@@ -343,7 +343,7 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
 
 <header class="top"><div class="wrap bar">
   <a class="brand" href="#/" aria-label="28-maktab, bosh sahifa"><svg class="emb" width="42" height="42" role="img" aria-label="28-maktab emblemasi"><use href="#emb"/></svg><span><b>28-MAKTAB</b><small>TARBIYA · BILIM · KELAJAK</small></span></a>
-  <nav class="m" aria-label="Asosiy menyu"><a href="#/" data-r="home">Bosh</a><div class="dd"><a href="#/maktab" data-r="about">Maktab haqida</a><div class="ddm"><a href="#/maktab">Maktab haqida</a><a href="#/direktor">Direktor murojaati</a><a href="#/qadriyatlar">Jamoa qadriyatlari</a><a href="#/jamoa">Rahbariyat va xodimlar</a><a href="#/vakansiya">Bo‘sh ish o‘rinlari</a></div></div><a href="#/qabul" data-r="adm">Qabul</a><a href="#/talim" data-r="edu">Ta’lim</a><a href="#/yangiliklar" data-r="news">Yangiliklar</a><a href="#/tadbirlar" data-r="events">Tadbirlar</a><a href="#/yutuqlar" data-r="ach">Yutuqlar</a><a href="#/jadval" data-r="schedule">Jadval</a><a href="#/galereya" data-r="gallery">Galereya</a><a href="#/aloqa" data-r="contact">Aloqa</a><a class="staff" data-staff hidden href="/platforma">Platforma →</a></nav>
+  <nav class="m" aria-label="Asosiy menyu"><a href="#/" data-r="home">Bosh</a><div class="dd"><a href="#/maktab" data-r="about">Maktab haqida</a><div class="ddm"><a href="#/maktab">Maktab haqida</a><a href="#/direktor">Direktor murojaati</a><a href="#/qadriyatlar">Jamoa qadriyatlari</a><a href="#/jamoa">Rahbariyat va xodimlar</a><a href="#/vakansiya">Bo‘sh ish o‘rinlari</a></div></div><a href="#/qabul" data-r="adm">Qabul</a><a href="#/talim" data-r="edu">Ta’lim</a><div class="dd"><a href="#/yangiliklar" data-r="news">Yangiliklar</a><div class="ddm"><a href="#/yangiliklar">Yangiliklar</a><a href="#/tadbirlar">Tadbirlar</a><a href="#/yutuqlar">Yutuqlar</a></div></div><a href="#/jadval" data-r="schedule">Jadval</a><a href="#/galereya" data-r="gallery">Galereya</a><a href="#/aloqa" data-r="contact">Aloqa</a><a class="staff" data-staff hidden href="/platforma">Platforma →</a></nav>
 </div></header>
 
 <main id="app" tabindex="-1"></main>
@@ -499,6 +499,7 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
   document.addEventListener('keydown',function(e){ if(e.key==='Escape') tmClose() });
   window.addEventListener('hashchange',tmClose);
   /* ---- Ma'lumot sahifalari (Maktab haqida, Direktor murojaati, Qabul...) ---- */
+  function newsTabs(r){ if(r!=='yangiliklar'&&r!=='tadbirlar'&&r!=='yutuqlar') return ''; return '<div class="wrap" style="padding-top:26px"><div class="tm-chips" role="navigation" aria-label="Yangiliklar bo‘limlari">'+[['yangiliklar','Yangiliklar'],['tadbirlar','Tadbirlar'],['yutuqlar','Yutuqlar']].map(function(t){ return '<a class="tm-chip" href="#/'+t[0]+'" aria-pressed="'+(r===t[0])+'">'+t[1]+'</a>' }).join('')+'</div></div>' }
   function nkey(t){ return String(t||'').toLowerCase().replace(/[ʻʼ’‘`´]/g,"'").trim() }
   var PGD={
     about:{t:'Maktab haqida',sub:'Maktabimiz, uning vazifasi va qadriyatlari bilan tanishing',side:1,def:'28-maktab — o‘quvchilarga sifatli bilim va yaxshi tarbiya berishga intiladigan umumiy o‘rta ta’lim maktabi.\n\n## Bizning vazifamiz\nHar bir o‘quvchining qobiliyatini ochish, unga mustaqil fikrlash, hurmat va mas’uliyatni o‘rgatish hamda kelajakka tayyorlash.\n\n## Biz nimaga e’tibor beramiz\n- Sifatli va zamonaviy ta’lim\n- Xavfsiz va do‘stona muhit\n- Ota-onalar bilan ochiq hamkorlik\n- Darsdan tashqari faoliyat va o‘quvchilar yutuqlari'},
@@ -737,12 +738,12 @@ table.tt th.td::after{content:' · bugun';font-weight:600;text-transform:none;le
     if(r==='yangilik'&&p[1]){ location.replace('/yangilik/'+encodeURIComponent(decodeURIComponent(p[1]))); return }
     document.title='28-maktab · Tarbiya, bilim, kelajak';
     if(r!=='kabinet'&&KB.step!=='phone') kbReset(false);
-    var key={yangiliklar:'news',tadbirlar:'events',jamoa:'about',maktab:'about',direktor:'about',qadriyatlar:'about',vakansiya:'about',qabul:'adm',talim:'edu',yutuqlar:'ach',jadval:'schedule',galereya:'gallery',aloqa:'contact'}[r]||(r==='xodim'?'':'home');
+    var key={yangiliklar:'news',tadbirlar:'news',yutuqlar:'news',jamoa:'about',maktab:'about',direktor:'about',qadriyatlar:'about',vakansiya:'about',qabul:'adm',talim:'edu',jadval:'schedule',galereya:'gallery',aloqa:'contact'}[r]||(r==='xodim'?'':'home');
     Array.prototype.forEach.call(document.querySelectorAll('nav.m a[data-r]'),function(a){ if(a.dataset.r===key) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current') });
     var SD={jamoa:['team'],maktab:['pages'],direktor:['pages','team'],qadriyatlar:['pages'],vakansiya:['pages'],qabul:['pages'],talim:['pages'],yutuqlar:['achievements'],tadbirlar:['events'],jadval:['bellsets','lessons','bells','timetables']};
     function draw(){
       var html= r==='kabinet'?kabinet(): r==='shartlar'?legal('Foydalanish shartlari',SCHOOL.terms||DEF_TERMS): r==='maxfiylik'?legal('Maxfiylik siyosati',SCHOOL.privacy||DEF_PRIV): r==='xodim'?staffPage(): r==='yangiliklar'?list(): r==='tadbirlar'?events(): r==='maktab'?infoPage('about'): r==='direktor'?infoPage('director'): r==='qadriyatlar'?infoPage('values'): r==='vakansiya'?infoPage('jobs'): r==='qabul'?infoPage('adm'): r==='talim'?infoPage('edu'): r==='jamoa'?team(): r==='yutuqlar'?achievements(): r==='jadval'?schedule(): r==='galereya'?gallery(): r==='aloqa'?contact(): home();
-      app.innerHTML='<div class="view">'+html+'</div>'; renderFooter(); applyStaff(); applyInstall(); if(r==='kabinet'){ var fi=document.getElementById(KB.step==='code'?'kbCode':'kbPhone'); if(fi&&!KB.busy) fi.focus(); kbTick() }
+      app.innerHTML='<div class="view">'+newsTabs(r)+html+'</div>'; renderFooter(); applyStaff(); applyInstall(); if(r==='kabinet'){ var fi=document.getElementById(KB.step==='code'?'kbCode':'kbPhone'); if(fi&&!KB.busy) fi.focus(); kbTick() }
     }
     draw();
     var tasks=[]; if(r==='home'){ tasks.push(secLoad('team')); tasks.push(secLoad('pages')); } if(SD[r]) SD[r].forEach(function(n){tasks.push(secLoad(n))}); else if(r!=='aloqa'&&r!=='xodim'&&r!=='shartlar'&&r!=='maxfiylik'&&r!=='kabinet'&&news===null) tasks.push(load());
