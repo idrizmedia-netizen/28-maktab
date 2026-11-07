@@ -165,23 +165,9 @@ async function taskReminders(ctx, opts) {
 }
 
 /* ---------- 3) davomat -> ota-onaga xabar ---------- */
-/* ta'til / bayram kunlari (publicinfo/breaks) davomatda dam olish kuni sanaladi; qo'lda yoqilgan kun (off[d] === false) ustun */
-async function loadBreaks(ctx) {
-  if (ctx._brk) return ctx._brk;
-  let out = [];
-  try {
-    const s = await ctx.db().collection('publicinfo').doc('breaks').get();
-    const it = s.exists && s.data() && Array.isArray(s.data().items) ? s.data().items : [];
-    out = it.filter((b) => b && /^\d{4}-\d{2}-\d{2}$/.test(b.from || '') && /^\d{4}-\d{2}-\d{2}$/.test(b.to || '') && b.from <= b.to);
-  } catch (e) { out = []; }
-  ctx._brk = out;
-  return out;
-}
-function inBreak(list, ymd) { return (list || []).some((b) => b.from <= ymd && ymd <= b.to); }
-function isOffDay(rec, dayNum, dow, brk) {
+function isOffDay(rec, dayNum, dow) {
   const v = rec && rec.off ? rec.off[dayNum] : undefined;
   if (v !== undefined) return !!v;
-  if (brk) return true;
   return dow === 0;
 }
 async function taskAbsence(ctx, opts) {
@@ -194,13 +180,12 @@ async function taskAbsence(ctx, opts) {
   const byId = {}; students.forEach((s) => { if (s && s.id) byId[s.id] = s; });
   const roster = await readRoster(ctx);
   const codes = ['Sz', 'Kas', 'Sb'].concat(S.abs.late ? ['Kch'] : []);
-  const brks = await loadBreaks(ctx);
   for (const T of [T1, T0]) {
     const docs = await ctx.listAtt(ctx, 'm28_att_' + T.month + '_');
     for (const dd of docs) {
       const rec = dd.data || {};
       if (rec.kind !== 'att' || !rec.a) continue;
-      if (isOffDay(rec, T.day, new Date(T.ymd + 'T00:00:00Z').getUTCDay(), inBreak(brks, T.ymd))) continue;
+      if (isOffDay(rec, T.day, new Date(T.ymd + 'T00:00:00Z').getUTCDay())) continue;
       for (const sid of Object.keys(rec.a)) {
         const code = rec.a[sid] && rec.a[sid][T.day];
         if (!code || codes.indexOf(code) < 0) continue;
@@ -333,4 +318,4 @@ async function runDaily(ctx, opts) {
   return results;
 }
 
-module.exports = { loadBreaks, inBreak, isOffDay, makeCtx, runDaily, taskNews, taskAbsence, taskReminders, taskBackup, taskQuarter, tz, dmy, hash36, normClass, b64u, getSettings };
+module.exports = { makeCtx, runDaily, taskNews, taskAbsence, taskReminders, taskBackup, taskQuarter, tz, dmy, hash36, normClass, b64u, getSettings };
