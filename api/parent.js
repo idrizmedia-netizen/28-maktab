@@ -63,6 +63,10 @@ async function loadBase() {
     attst: ((attst && attst.items) || []).filter(Boolean)
   };
 }
+function inBrk(list, y, mo, d) {
+  const iso = y + '-' + String(mo).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+  return list.some(function (b) { return b && b.from <= iso && iso <= b.to; });
+}
 function childrenOf(p, base) {
   const map = {}; const add = function (name, cls) { const k = nk(name) + '|' + normCls(cls); if (name && !map[k]) map[k] = { name: String(name).trim(), cls: String(cls || '').trim() }; };
   base.students.forEach(function (s) { if (normPhone(s.phone) === p) add(s.name, s.cls); });
@@ -80,6 +84,8 @@ async function buildData(p, base) {
   const result = [];
   let awardDocs = [];
   try { awardDocs = (await A.queryEq('news', 'cat', 'yutuq', 200)).filter(function (n) { return n && n.status === 'published' && n.eng && Array.isArray(n.eng.w); }); } catch (e) { awardDocs = []; }
+  let brks = [];
+  try { const bd = await A.getDoc('publicinfo/breaks'); brks = bd && Array.isArray(bd.items) ? bd.items.filter(function (b) { return b && /^\d{4}-\d{2}-\d{2}$/.test(b.from || '') && /^\d{4}-\d{2}-\d{2}$/.test(b.to || ''); }) : []; } catch (e) { brks = []; }
   for (const kid of kids) {
     const st = base.attst.filter(function (s) { return nk(s.name) === nk(kid.name) && normCls(s.cls) === normCls(kid.cls); })[0];
     const att = { months: [], tot: { days: 0, abs: 0, sz: 0, kas: 0, sb: 0, tad: 0, kch: 0, pct: null } };
@@ -90,7 +96,7 @@ async function buildData(p, base) {
         const m = months[i], y = +m.slice(0, 4), mo = +m.slice(5), dim = new Date(y, mo, 0).getDate(), last = m === today ? now.getDate() : dim;
         const a = (doc.a && doc.a[st.id]) || {}, off = doc.off || {}; let days = 0; const absent = [];
         for (let d = 1; d <= last; d++) {
-          const isOff = off[d] !== undefined ? !!off[d] : new Date(y, mo - 1, d).getDay() === 0;
+          const isOff = off[d] !== undefined ? !!off[d] : (new Date(y, mo - 1, d).getDay() === 0 || inBrk(brks, y, mo, d));
           if (isOff) continue; days++;
           const c = a[d]; if (c) { absent.push({ d: d, c: c }); if (c !== 'Kch') { att.tot.abs++; if (c === 'Sz') att.tot.sz++; else if (c === 'Kas') att.tot.kas++; else if (c === 'Sb') att.tot.sb++; else if (c === 'Tad') att.tot.tad++; } else att.tot.kch++; }
         }
