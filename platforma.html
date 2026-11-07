@@ -969,6 +969,10 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
 .eg-wl{width:calc(1123px*.3)!important;height:calc(794px*.3)!important}.eg-wl .egp{zoom:.3!important}
 @media(min-width:720px){.eg-wl{width:calc(1123px*.62)!important;height:calc(794px*.62)!important}.eg-wl .egp{zoom:.62!important}}
 .eg-site{border-top:1px solid var(--line);padding-top:10px}
+
+.les-cf{background:#fff4e5;border:1.5px solid #f0b252;border-radius:12px;padding:10px 14px;margin:0 0 12px;font-size:13.5px;color:#6a3b00}
+.les-cf ul{margin:6px 0;padding-left:18px}.les-cf li{margin:3px 0}
+table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
 </style>
 </head>
 <body>
@@ -5158,7 +5162,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
   var ATT_ABS=['Sz','Kas','Sb','Tad'];
   var ATT_MONTHS=['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentyabr','Oktyabr','Noyabr','Dekabr'];
   var ATT_WD=['Ya','Du','Se','Ch','Pa','Ju','Sh'];
-  var ATT={}, attCur='*', attSubTab='grid', attPending=[];
+  var BRKS=[], ATT={}, attCur='*', attSubTab='grid', attPending=[];
   try{ AUDIT_LABELS.att_changed="Davomat o'zgartirildi"; AUDIT_LABELS.att_students_added="Davomat: o'quvchilar qo'shildi"; AUDIT_LABELS.att_students_removed="Davomat: o'quvchi/sinf o'chirildi"; }catch(e){}
 
   function attStu(){return loadKeyed('attst')}
@@ -5189,6 +5193,11 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       if(attVisibleTab()) attRender();
     },function(e){ console.warn("Davomatni bulutdan olib bo'lmadi:",e); setMsg('#attMsg',"Davomat bulutga ulanmadi (ruxsat yo'q yoki internet). Hozircha shu qurilmadagi nusxa ko'rsatiladi.",'err'); });
     unsubs.push(un);
+    unsubs.push(db.collection('publicinfo').doc('breaks').onSnapshot(function(s){
+      var it=(s.exists&&s.data()&&Array.isArray(s.data().items))?s.data().items:[];
+      BRKS=it.filter(function(b){ return b&&/^\d{4}-\d{2}-\d{2}$/.test(b.from||'')&&/^\d{4}-\d{2}-\d{2}$/.test(b.to||'')&&b.from<=b.to });
+      if(attVisibleTab()) attRender();
+    },function(e){ console.warn("Ta'tillar ro'yxatini olib bo'lmadi:",e&&e.code) }));
   }
   function attDocRef(m,cls){ return db.collection('m28letters').doc('m28_att_'+m+'_'+String(cls).replace(/[\/\s]/g,'_')); }
   function attCloud(m,cls,patch){
@@ -5197,8 +5206,11 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     attDocRef(m,cls).set(patch,{merge:true}).catch(function(e){ console.warn(e); toast("Davomatni bulutga saqlab bo'lmadi") });
   }
   function attRec(m,cls){var k=m+'|'+cls; return ATT[k]||(ATT[k]={a:{},off:{}})}
+  /* e'lon qilingan ta'til / bayram kunlari davomatda avtomatik dam olish kuni (qo'lda yoqilgan kun bundan ustun) */
+  function attBrk(m,d){ var iso=m+'-'+pad(d); return BRKS.some(function(b){ return b.from<=iso&&iso<=b.to }) }
   function attOff(m,cls,d){
     var r=ATT[m+'|'+cls], v=r&&r.off?r.off[d]:undefined; if(v!==undefined) return !!v;
+    if(attBrk(m,d)) return true;
     var p=m.split('-'); return new Date(+p[0],+p[1]-1,d).getDay()===0;
   }
   function attCode(m,cls,sid,d){var r=ATT[m+'|'+cls]; return (r&&r.a&&r.a[sid]&&r.a[sid][d])||''}
@@ -5877,7 +5889,8 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     {k:'pages',t:'Sahifa matnlari',doc:'pages',h:"«Maktab haqida», «Direktorga murojaat», «Qabul» va boshqa sahifalar matni. Har bir sahifani bir marta qo'shing. Matnni joylashtirsangiz, sahifa o'zi aniqlanadi (kerak bo'lsa, o'zgartiring). Qisqa qator (oxirida «:» bilan ham bo'ladi) sarlavha bo'lib, bosilganda ochiladi. «Raqamlar» uchun har qatorga: 865 | o'quvchi",add:"＋ Sahifa qo'shish",main:'title',f:[['title','Sahifa','select',[['','Tanlang…'],['Maktab haqida','Maktab haqida'],['Direktorga murojaat','Direktorga murojaat (forma ustidagi matn)'],['Jamoa qadriyatlari','Jamoa qadriyatlari'],['Qabul','Qabul'],['Ta’lim','Ta’lim'],['Bo‘sh ish o‘rinlari','Bo‘sh ish o‘rinlari'],['Raqamlar','Raqamlar (statistika)']]],['text','Matn','area',3000],['photo','Rasm (ixtiyoriy)','photo']]},
     {k:'ach',t:'Yutuqlar',doc:'achievements',h:"Olimpiada va tanlov g'oliblari.",add:"＋ Yutuq qo'shish",main:'title',f:[['title','Sarlavha','text',160],['date','Sana','date'],['text','Qisqacha','area',400],['photo','Rasm','photo']]},
     {k:'events',t:'Tadbirlar',doc:'events',h:"Yaqin tadbirlar. Sanasi o'tganlar «O'tgan tadbirlar»ga o'zi tushadi.",add:"＋ Tadbir qo'shish",main:'title',f:[['title','Tadbir nomi','text',160],['date','Sana','date'],['time','Vaqti (masalan 15:00)','text',30],['place','Joyi','text',100],['note','Izoh','area',300]]},
-    {k:'breaks',t:"Chorak ta'tillari",doc:'breaks',h:"Chorak (kuzgi, qishki, bahorgi) va boshqa ta'til kunlari. Boshlanish va tugash sanasini kiriting (tugash kuni ham ta'tilga kiradi). Ochiq saytdagi «Jadval» sahifasida ta'til davrlari ko'rinadi, ta'til paytida esa tepada «Hozir ta'til» xabari chiqadi.",add:"＋ Ta'til qo'shish",main:'name',f:[['name',"Nomi (masalan: Kuzgi ta'til)",'text',60],['from','Boshlanishi','date'],['to','Tugashi','date']]},
+    {k:'breaks',t:"Ta'til va dam olish kunlari",doc:'breaks',h:"Chorak ta'tillari, bayram va boshqa dam olish kunlari. Boshlanish va tugash sanasini kiriting (tugash kuni ham kiradi; bir kunlik bo'lsa ikkalasiga bir xil sana). Bu kunlarda ochiq saytda dars jadvali yashirinadi va o'rnida e'lon turadi, davomatda esa kun avtomatik dam olish kuni bo'ladi (kerak bo'lsa davomat jadvalida kunni qo'lda yoqish mumkin). Pastdagi tugmalar bayram kunlarini tez qo'shadi: sanalarni rasmiy qarorlar (ko'chirilgan dam olish kunlari) bilan tekshiring.",add:"＋ Ta'til qo'shish",main:'name',f:[['name',"Nomi (masalan: Kuzgi ta'til)",'text',60],['kind','Turi','select',[['',"Ta'til"],['bayram','Bayram kuni'],['boshqa','Boshqa dam olish kuni']]],['from','Boshlanishi','date'],['to','Tugashi','date']]},
+    {k:'subs',t:"Zamena (almashtirilgan darslar)",doc:'subs',h:"Ma'lum kunda ma'lum sinf darsini almashtirish yoki bekor qilish. Ochiq «Jadval» sahifasida o'sha kun katagi «Zamena» deb ko'rinadi (almashtiruvchi o'qituvchi ismi faqat o'qituvchi ismlarini ko'rsatish yoqilgan bo'lsa chiqadi). 30 kundan eski qatorlar saqlashda avtomatik o'chiriladi. Sababni (kasallik va hokazo) yozmang: bu sahifa hamma uchun ochiq.",add:"＋ Zamena qo'shish",main:'cls',f:[['date','Sana','date'],['cls','Sinf (masalan: 5-A)','text',10],['lesson','Dars raqami (3 yoki 2,3 yoki 2-4)','text',12],['kind','Turi','select',[['',"Zamena (boshqa o'qituvchi)"],['cancel','Dars bekor qilindi']]],['teacher',"Almashtiruvchi o'qituvchi",'text',80],['subject',"Fan (bo'sh bo'lsa o'zgarmaydi)",'text',60]]},
     {k:'tt',t:'Jadval havolalari',doc:'timetables',h:"Qo'shimcha jadvallar (masalan, imtihon jadvali yoki to'garaklar) uchun havola: Google Drive, PDF yoki Google Sheets. Havola «Hamma ko'ra oladi» rejimida bo'lsin.",add:"＋ Havola qo'shish",main:'title',f:[['title','Nomi (masalan: 5-sinf)','text',80],['url','Havola (https://...)','url',400]]}
   ], secData={}, secLoaded=false;
   function secPhoto(file,portrait){
@@ -5901,6 +5914,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     });
     return h+'</div><div class="sl-ctl"><button type="button" class="mini" data-smv="-1" '+(i?'':'disabled')+'>↑</button><button type="button" class="mini" data-smv="1" '+(i<n-1?'':'disabled')+'>↓</button><button type="button" class="mini danger" data-sdel>O\'chirish</button></div></div>';
   }
+  var HOLS=[["Yangi yil",'01-01'],["Xalqaro xotin-qizlar kuni",'03-08'],["Navro'z bayrami",'03-21'],["Xotira va qadrlash kuni",'05-09'],["Ro'za hayit",''],["Qurbon hayit",''],["Mustaqillik kuni",'09-01'],["O'qituvchi va murabbiylar kuni",'10-01'],["Konstitutsiya kuni",'12-08']];
   var pgAuto=new WeakSet();
   var PG_TITLES=['Maktab haqida','Direktorga murojaat','Jamoa qadriyatlari','Qabul','Ta’lim','Bo‘sh ish o‘rinlari','Raqamlar'];
   function pgGuess(raw){ var n=String(raw||'').toLowerCase().replace(/[ʻʼ’‘`´]/g,"'"); if(n.trim().length<12) return '';
@@ -5918,6 +5932,9 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     return bs>=3&&bs>second?best:''; }
   function secDraw(d){
     var card=$('[data-sec="'+d.k+'"]'), items=secData[d.k]; $('.sl-list',card).innerHTML=items.length?items.map(function(it,i){return secRow(d,it,i,items.length)}).join(''):'<p class="hint">Hali hech narsa qo\'shilmagan.</p>';
+    if(d.k==='breaks'){ var lst2=$('.sl-list',card), ch2=$('.sl-chips',card); if(!ch2){ ch2=document.createElement('div'); ch2.className='sl-chips'; ch2.style.cssText='display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:8px 0'; lst2.parentNode.insertBefore(ch2,lst2) }
+      var have2={}; items.forEach(function(it){ have2[it.name]=1 }); var miss2=[]; HOLS.forEach(function(h,i){ if(!have2[h[0]]) miss2.push([h,i]) });
+      ch2.innerHTML=miss2.length?'<span class="hint" style="margin:0">Bayramlarni tez qo\'shish:</span>'+miss2.map(function(x){ return '<button type="button" class="btn line sm" data-hladd="'+x[1]+'">＋ '+esc(x[0][0])+'</button>' }).join(''):''; }
     if(d.k==='pages'){ var lst=$('.sl-list',card), ch=$('.sl-chips',card); if(!ch){ ch=document.createElement('div'); ch.className='sl-chips'; ch.style.cssText='display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:8px 0'; lst.parentNode.insertBefore(ch,lst) }
       var have={}; items.forEach(function(it){ have[it.title]=1 }); var miss=PG_TITLES.filter(function(x){ return !have[x] });
       ch.innerHTML=miss.length?'<span class="hint" style="margin:0">Tez qo\'shish:</span>'+miss.map(function(x){ return '<button type="button" class="btn line sm" data-pgadd="'+esc(x)+'">＋ '+esc(x)+'</button>' }).join(''):''; }
@@ -5929,6 +5946,12 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     SECDEF.forEach(function(d){ db.collection('publicinfo').doc(d.doc).get().then(function(x){ var o=x.exists?x.data():{}; secData[d.k]=Array.isArray(o.items)?o.items.map(function(r){return Object.assign({},r)}):[]; secDraw(d) }).catch(function(e){ secLoaded=false; secMsg(d,'Yuklab bo\'lmadi: '+(e.message||'xato'),true) }) });
   }
   function secSave(d){
+    if(d.k==='subs'){ var cut=new Date(); cut.setDate(cut.getDate()-30); var cutI=dateISO(cut); secData[d.k]=(secData[d.k]||[]).filter(function(it){ return !(it.date&&it.date<cutI) });
+      var sb=secData[d.k].filter(function(it){return String(it.cls||'').trim()});
+      for(var q2=0;q2<sb.length;q2++){ var z=sb[q2];
+        if(!z.date) return secMsg(d,"«"+z.cls+"»: sanani tanlang",true);
+        if(!/^\d{1,2}([,\-–]\d{1,2})*$/.test(String(z.lesson||'').replace(/\s+/g,''))) return secMsg(d,"«"+z.cls+"»: dars raqamini yozing (masalan 3 yoki 2,3 yoki 2-4)",true);
+        if(z.kind!=='cancel'&&!String(z.teacher||'').trim()&&!String(z.subject||'').trim()) return secMsg(d,"«"+z.cls+"»: almashtiruvchi o'qituvchi yoki fanni yozing (yoki «Dars bekor» ni tanlang)",true) } }
     if(d.k==='breaks'){ var bb=(secData[d.k]||[]).filter(function(it){return String(it.name||'').trim()}); for(var q=0;q<bb.length;q++){ if(!bb[q].from||!bb[q].to) return secMsg(d,"«"+bb[q].name+"»: boshlanish va tugash sanasini kiriting",true); if(bb[q].to<bb[q].from) return secMsg(d,"«"+bb[q].name+"»: tugash sanasi boshlanishdan oldin bo'lmasin",true) } }
     if(d.k==='pages'){ var lost=(secData[d.k]||[]).filter(function(it){ return String(it.text||'').trim()&&!String(it.title||'').trim() }).length; if(lost) return secMsg(d,lost+' ta matn uchun sahifa tanlanmagan. «Sahifa» ro‘yxatidan tanlang.',true) }
     var items=(secData[d.k]||[]).filter(function(it){return String(it[d.main]||'').trim()}).map(function(it){ var o={}; d.f.forEach(function(fd){ var v=String(it[fd[0]]||'').trim(); if(v) o[fd[0]]=v }); return o });
@@ -5950,6 +5973,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       tab.appendChild(c);
       c.addEventListener('click',function(e){
         var row=e.target.closest('.sl-row'), i=row?+row.getAttribute('data-i'):-1, arr=secData[d.k];
+        var ha=e.target.closest('[data-hladd]'); if(ha){ var H=HOLS[+ha.getAttribute('data-hladd')]; if(H){ var hi=''; if(H[1]){ var hy=new Date().getFullYear(); hi=hy+'-'+H[1]; if(hi<dateISO(new Date())) hi=(hy+1)+'-'+H[1] } arr.push({name:H[0],kind:'bayram',from:hi,to:hi}); secDraw(d) } return }
         var pa=e.target.closest('[data-pgadd]'); if(pa){ arr.push({title:pa.getAttribute('data-pgadd')}); secDraw(d); var ta=c.querySelector('.sl-row:last-child textarea'); if(ta) ta.focus(); return }
         if(e.target.closest('.sl-add')){ var it={}; arr.push(it); secDraw(d); var last=c.querySelector('.sl-row:last-child input'); if(last) last.focus(); return }
         if(e.target.closest('.sl-save')){ secSave(d); return }
@@ -5963,7 +5987,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
         if(d.k==='pages'){ if(fld==='title') pgAuto.delete(it2); else if(fld==='text'&&(!it2.title||pgAuto.has(it2))){ var g=pgGuess(e.target.value); if(g&&g!==it2.title){ it2.title=g; pgAuto.add(it2); var sel=row.querySelector('[data-sf="title"]'); if(sel) sel.value=g; secMsg(d,'Sahifa avtomatik aniqlandi: «'+g+'». Noto‘g‘ri bo‘lsa, ro‘yxatdan o‘zgartiring.',false) } } } } });
       secDraw(d);
     });
-    var bar=document.createElement('div'); bar.className='set-tabs'; var order=[['news','Yangiliklar'],['site','Aloqa'],['team','Jamoa'],['pages','Sahifa matnlari'],['ach','Yutuqlar'],['events','Tadbirlar'],['bellsets',"Qo'ng'iroq"],['breaks',"Ta'tillar"],['lessons','Dars jadvali'],['tt','Havolalar']];
+    var bar=document.createElement('div'); bar.className='set-tabs'; var order=[['news','Yangiliklar'],['site','Aloqa'],['team','Jamoa'],['pages','Sahifa matnlari'],['ach','Yutuqlar'],['events','Tadbirlar'],['bellsets',"Qo'ng'iroq"],['breaks',"Ta'tillar"],['lessons','Dars jadvali'],['subs','Zamena'],['tt','Havolalar']];
     bar.innerHTML=order.map(function(o,i){return '<button type="button" data-ns="'+o[0]+'"'+(i===0?' class="on"':'')+'>'+esc(o[1])+'</button>'}).join('');
     tab.insertBefore(bar,cards[0]);
     function show(k){ $$('#tab-news > .card').forEach(function(c){ c.classList.toggle('st-off',c.getAttribute('data-sec')!==k) }); $$('button',bar).forEach(function(b){ b.classList.toggle('on',b.getAttribute('data-ns')===k) }) }
@@ -6024,7 +6048,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     var c=lesCur?(lesData[lesCur]=lesData[lesCur]||{smena:'1',cells:{}}):null;
     var h='<div class="les-top"><div><label class="fl">Sinf</label><select class="inp" id="lesCls">'+(cls.length?cls.map(function(x){return '<option'+(x===lesCur?' selected':'')+'>'+esc(x)+'</option>'}).join(''):'<option value="">— sinf yo\'q —</option>')+'</select></div>'+
       '<div><label class="fl">Smena</label><select class="inp" id="lesSm"><option value="1"'+(c&&String(c.smena)!=='2'?' selected':'')+'>1-smena</option><option value="2"'+(c&&String(c.smena)==='2'?' selected':'')+'>2-smena</option></select></div>'+
-      '<div class="les-btns"><button type="button" class="mini" id="lesAdd">＋ Sinf qo\'shish</button><button type="button" class="mini" id="lesCopy">📋 Boshqa sinfdan nusxa</button><button type="button" class="mini danger" id="lesClr">Tozalash</button></div></div><label class="les-st" style="display:flex;gap:8px;align-items:center;margin:10px 0 2px;font-weight:700"><input type="checkbox" id="lesShowT"'+(lesShowT?' checked':'')+'> Saytda o\'qituvchi ismini ko\'rsatish</label><p class="hint" style="margin:0 0 10px">O\'chirilsa, ochiq «Jadval» sahifasida o\'qituvchi ismlari ko\'rinmaydi (fan va xona ko\'rinadi). Faqat ko\'rinishni boshqaradi: ism bazada saqlanadi.</p>';
+      '<div class="les-btns"><button type="button" class="mini" id="lesAdd">＋ Sinf qo\'shish</button><button type="button" class="mini" id="lesCopy">📋 Boshqa sinfdan nusxa</button><button type="button" class="mini danger" id="lesClr">Tozalash</button></div></div><label class="les-st" style="display:flex;gap:8px;align-items:center;margin:10px 0 2px;font-weight:700"><input type="checkbox" id="lesShowT"'+(lesShowT?' checked':'')+'> Saytda o\'qituvchi ismini ko\'rsatish</label><p class="hint" style="margin:0 0 10px">O\'chirilsa, ochiq «Jadval» sahifasida o\'qituvchi ismlari ko\'rinmaydi (fan va xona ko\'rinadi). Faqat ko\'rinishni boshqaradi: ism bazada saqlanadi.</p><div id="lesCf" class="les-cf" style="display:none"></div>';
     if(c){
       var used={}; Object.keys(lesData).forEach(function(cn){ Object.keys(lesData[cn].cells||{}).forEach(function(dk){ Object.keys(lesData[cn].cells[dk]).forEach(function(lk){ var x=lesData[cn].cells[dk][lk]; if(x&&x[0]&&SUBJ.indexOf(x[0])<0) used[x[0]]=1 }) }) });
       var tch=(typeof roster!=='undefined'&&roster&&roster.teachers)?roster.teachers.filter(function(t){return t&&t.name}):[];
@@ -6032,9 +6056,40 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       for(var l=1;l<=LMAX;l++){ h+='<tr><td class="ln">'+l+'</td>'; for(var d=0;d<6;d++){ var x=((c.cells['d'+d]||{})[l])||['','','']; h+='<td><input class="inp s" list="subjList" data-ld="'+d+'" data-ll="'+l+'" data-lk="0" placeholder="Fan" value="'+esc(x[0]||'')+'"><div class="tr"><input class="inp" data-ld="'+d+'" data-ll="'+l+'" data-lk="1" list="teachList" placeholder="O\'qituvchi" value="'+esc(x[1]||'')+'"><input class="inp r" data-ld="'+d+'" data-ll="'+l+'" data-lk="2" placeholder="Xona" value="'+esc(x[2]||'')+'"></div></td>' } h+='</tr>' }
       h+='</tbody></table></div>';
     } else h+='<p class="hint">Avval sinf qo\'shing yoki davomat bo\'limiga o\'quvchilar ro\'yxatini yuklang.</p>';
-    box.innerHTML=h;
+    box.innerHTML=h; lesCfRefresh();
+  }
+  /* to'qnashuvlar: bir o'qituvchi yoki bir xona bir vaqtda (kun + dars raqami + smena) ikki sinfda */
+  var LES_DN=['Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba'], lesCfBad={};
+  function lesConflicts(){
+    var M={t:{},r:{}}, list=[], bad={};
+    Object.keys(lesData).forEach(function(cn){
+      var c=lesData[cn]||{}, sm=String(c.smena)==='2'?'2':'1', cells=c.cells||{};
+      Object.keys(cells).forEach(function(dk){ Object.keys(cells[dk]||{}).forEach(function(l){
+        var x=cells[dk][l]; if(!x||!String(x[0]||'').trim()) return;
+        [['t',String(x[1]||'').trim()],['r',String(x[2]||'').trim()]].forEach(function(p){ if(!p[1]) return;
+          var key=sm+'|'+dk+'|'+l+'|'+p[1].toLowerCase(), o=M[p[0]][key]=M[p[0]][key]||{name:p[1],dk:dk,l:l,cls:[]};
+          if(o.cls.indexOf(cn)<0) o.cls.push(cn) });
+      }) });
+    });
+    ['t','r'].forEach(function(kind){ Object.keys(M[kind]).forEach(function(k){ var o=M[kind][k]; if(o.cls.length<2) return;
+      list.push({kind:kind,name:o.name,dk:o.dk,l:o.l,cls:o.cls}); o.cls.forEach(function(cn){ bad[cn+'|'+o.dk+'|'+o.l+'|'+kind]=1 }) }) });
+    list.sort(function(a,b){ return a.dk.localeCompare(b.dk)||(+a.l)-(+b.l) });
+    return {list:list,bad:bad};
+  }
+  function lesCfRefresh(){
+    var r=lesConflicts(), box=$('#lesCf'); lesCfBad=r.bad;
+    if(box){
+      box.style.display=r.list.length?'':'none';
+      box.innerHTML=r.list.length?'<b>⚠ '+r.list.length+' ta to\'qnashuv topildi</b><ul>'+r.list.slice(0,40).map(function(x){
+        return '<li><button type="button" class="mini" data-cfgo="'+esc(x.cls[0])+'">'+esc(x.cls[0])+' ↗</button> '+LES_DN[+x.dk.slice(1)]+', '+x.l+'-dars: '+(x.kind==='t'?'o\'qituvchi':'xona')+' «'+esc(x.name)+'» bir vaqtda '+x.cls.map(esc).join(', ')+' sinflarda</li>' }).join('')+'</ul><span class="hint">Bir nechta sinf birlashtirib o\'tadigan dars bo\'lsa, bunga e\'tibor bermang.</span>':'';
+    }
+    $$('[data-sec="lessons"] .les-t .inp').forEach(function(el){ el.classList.remove('cf') });
+    if(lesCur) $$('[data-sec="lessons"] .les-t .inp[data-lk="1"],[data-sec="lessons"] .les-t .inp[data-lk="2"]').forEach(function(el){
+      var k=lesCur+'|d'+el.getAttribute('data-ld')+'|'+el.getAttribute('data-ll')+'|'+(el.getAttribute('data-lk')==='1'?'t':'r');
+      if(r.bad[k]) el.classList.add('cf') });
   }
   function lesSave(){
+    var cfs=lesConflicts().list; if(cfs.length&&!confirm(cfs.length+" ta to'qnashuv bor (bir o'qituvchi yoki xona bir vaqtda ikki sinfda). Baribir saqlansinmi?")) return;
     var out={}, n=0;
     Object.keys(lesData).forEach(function(cn){ var c=lesData[cn], cells={}, any=false;
       Object.keys(c.cells||{}).forEach(function(dk){ Object.keys(c.cells[dk]).forEach(function(lk){ var x=c.cells[dk][lk]; if(x&&String(x[0]||'').trim()){ (cells[dk]=cells[dk]||{})[lk]=[String(x[0]).trim(),String(x[1]||'').trim(),String(x[2]||'').trim()]; any=true } }) });
@@ -6097,6 +6152,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
     });
     lc.addEventListener('click',function(e){
       if(e.target.closest('.sl-save')){ lesSave(); return }
+      var gc=e.target.closest('[data-cfgo]'); if(gc){ lesCur=gc.getAttribute('data-cfgo'); lesDraw(); return }
       if(e.target.id==='lesAdd'){ var n=prompt("Sinf nomi (masalan: 5-A):",''); if(!n) return; n=normClass(n.trim()); if(!n) return; lesData[n]=lesData[n]||{smena:'1',cells:{}}; lesCur=n; lesDraw(); return }
       if(e.target.id==='lesClr'){ if(lesCur&&confirm(lesCur+" sinf jadvali tozalansinmi?")){ lesData[lesCur]={smena:lesData[lesCur].smena||'1',cells:{}}; lesDraw() } return }
       if(e.target.id==='lesCopy'){ var others=Object.keys(lesData).filter(function(k){return k!==lesCur&&lesData[k]&&Object.keys(lesData[k].cells||{}).length}); if(!lesCur||!others.length) return lesMsg("Nusxa olish uchun boshqa sinfning jadvali kiritilgan bo'lishi kerak",true);
@@ -6108,6 +6164,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
       var col=c.cells['d'+d]=c.cells['d'+d]||{}, x=col[l]=col[l]||['','','']; x[k]=e.target.value;
       if(k===1&&!x[0]&&typeof roster!=='undefined'&&roster&&roster.teachers){ var th=roster.teachers.filter(function(t){return t&&t.name===e.target.value})[0]; if(th&&th.subject){ x[0]=th.subject; var si=lc.querySelector('[data-ld="'+d+'"][data-ll="'+l+'"][data-lk="0"]'); if(si) si.value=th.subject } }
     });
+    (function(){ var lcx=$('[data-sec="lessons"]'); if(lcx){ lcx.addEventListener('input',function(){ lesCfRefresh() }); lcx.addEventListener('change',function(){ lesCfRefresh() }) } })();
     belDraw(); lesDraw();
   })();
   function attAbsBuild(){
