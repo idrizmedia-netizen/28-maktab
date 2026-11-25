@@ -15,7 +15,8 @@
  *  - yozishni faqat shu server bajaradi (Firestore qoidalarida letter_acks ga yozish yopiq).
  */
 const crypto = require('crypto');
-const { db, adminAuth, isAdminEmail } = require('./_lib');
+const { db, adminAuth, isAdminEmail, normPhone, tgApi, ORIGIN } = require('./_lib');
+const { t: tr, normLang } = require('./_i18n');
 
 const WINDOW_MS = 10 * 60 * 1000, MAX_REQ = 40;
 
@@ -61,6 +62,18 @@ async function ivRate(req) {
   await limRef.set({ win: w.win, cnt: (w.cnt || 0) + 1 });
   return true;
 }
+function nameKey(x) { return String(x || '').toLowerCase().replace(/[ʻʼ’‘`´]/g, "'").replace(/\s+/g, ' ').trim(); }
+function ivText(lang, x) {
+  const m = x.meet || {};
+  const c = String(x.name || '') + (x.cls ? ', ' + tr(lang, 'cls_sfx', { c: x.cls }) : '');
+  let s = tr(lang, 'ivt_head') + '\n\n' + tr(lang, 'ivt_line', { c }) + '\n';
+  const when = [m.date, m.time].filter(Boolean).join(' · ');
+  if (when) s += '\n' + tr(lang, 'ivt_when') + when;
+  (m.times || []).forEach((v) => { s += '\n• ' + v; });
+  if (m.place) s += '\n' + tr(lang, 'ivt_place') + m.place;
+  if (m.note) s += '\n\n' + m.note;
+  return s + '\n\n' + tr(lang, 'ivt_ask');
+}
 async function ivAdmin(req, res, b, act) {
   const m = /^Bearer (.+)$/.exec(String((req.headers && req.headers.authorization) || ''));
   if (!m) { out(res, 401, { error: 'unauthenticated' }); return; }
@@ -72,30 +85,107 @@ async function ivAdmin(req, res, b, act) {
   const as = await db().collection('admins').doc(email).get();
   if (as.exists) { role = as.data().role || 'full'; classes = Array.isArray(as.data().classes) ? as.data().classes.map(normClass) : []; }
   if (['owner', 'full', 'homeroom'].indexOf(role) < 0) { out(res, 403, { error: 'role-denied' }); return; }
+  const clsOk = (c) => role !== 'homeroom' || classes.indexOf(normClass(c)) >= 0;
+  const tokQuery = (mid) => db().collection('invite_tok').where('mid', '==', mid).limit(400).get();
+
+  if (act === 'iv_list') {
+    const snap = await db().collection('invite_meets').get();
+    const meets = [];
+    snap.forEach((d) => { const x = d.data(); if (clsOk(x.cls || '')) meets.push(x); });
+    meets.sort((p, q) => String(q.date || '').localeCompare(String(p.date || '')) || ((q.createdAt || 0) - (p.createdAt || 0)));
+    const list = [];
+    for (const x of meets.slice(0, 40)) {
+      let total = 0, seen = 0, sent = 0;
+      (await tokQuery(x.mid)).forEach((d) => { const y = d.data(); total++; if (y.seenAt) seen++; if (y.sentAt) sent++; });
+      list.push({ mid: x.mid, cls: x.cls || '', date: x.date || '', dateTxt: (x.meet && x.meet.date) || '', time: (x.meet && x.meet.time) || '', title: (x.meet && x.meet.title) || '', total, seen, sent, createdAt: x.createdAt || 0 });
+    }
+    out(res, 200, { ok: true, meets: list });
+    return;
+  }
+
   const mid = ivClip(b.mid, 60).replace(/[^A-Za-z0-9_\-]/g, '');
   if (!mid) { out(res, 400, { error: 'mid' }); return; }
 
   if (act === 'iv_status') {
-    const snap = await db().collection('invite_tok').where('mid', '==', mid).limit(400).get();
+    const ms = await db().collection('invite_meets').doc(mid).get();
+    if (ms.exists && !clsOk(ms.data().cls || '')) { out(res, 403, { error: 'class-denied' }); return; }
     const items = [];
-    snap.forEach((d) => { const x = d.data(); items.push({ t: d.id, seenAt: x.seenAt || 0, count: x.count || 0 }); });
-    out(res, 200, { ok: true, items });
+    (await tokQuery(mid)).forEach((d) => {
+      const x = d.data();
+      if (!clsOk(x.cls || '')) return;
+      items.push({ t: d.id, n: x.name || '', c: x.cls || '', seenAt: x.seenAt || 0, count: x.count || 0, via: x.via || '', sentAt: x.sentAt || 0, sendStatus: x.sendStatus || '' });
+    });
+    out(res, 200, { ok: true, items, meet: ms.exists ? (ms.data().meet || null) : null });
     return;
   }
+
+  if (act === 'iv_delete') {
+    if (role === 'homeroom') { out(res, 403, { error: 'role-denied' }); return; }
+    const batch = db().batch();
+    (await tokQuery(mid)).forEach((d) => batch.delete(d.ref));
+    batch.delete(db().collection('invite_meets').doc(mid));
+    await batch.commit();
+    try { await db().collection('audit_log').add({ action: 'invite_deleted', details: { mid }, by: email, at: Date.now() }); } catch (e) { /* muhim emas */ }
+    out(res, 200, { ok: true });
+    return;
+  }
+
+  if (act === 'iv_send') {
+    // Taklifnomani ota-onalarga Telegram bot orqali yuborish. only: 'unsent' (hali yuborilmaganlar) | 'unseen' (ko'rmaganlarga qayta)
+    const only = b.only === 'unseen' ? 'unseen' : 'unsent';
+    const rs = await db().collection('adminonly').doc('roster').get();
+    const students = (rs.exists && rs.data() && rs.data().data && Array.isArray(rs.data().data.students)) ? rs.data().data.students : [];
+    const docs = [];
+    (await tokQuery(mid)).forEach((d) => { if (clsOk(d.data().cls || '')) docs.push(d); });
+    const result = { ok: true, sent: 0, nolink: 0, nophone: 0, failed: 0, skipped: 0, items: [] };
+    const work = async (d) => {
+      const x = d.data(), now = Date.now();
+      if (x.seenAt || (only === 'unsent' && x.sentAt)) { result.skipped++; return; }
+      const nk = nameKey(x.name), ck = normClass(x.cls);
+      const hit = students.filter((s) => nameKey(s.name) === nk && (!ck || !s.cls || normClass(s.cls) === ck))[0];
+      const phone = hit ? normPhone(hit.phone) : '';
+      let status = '', extra = {};
+      if (phone.length !== 12) { status = 'nophone'; result.nophone++; }
+      else {
+        const link = await db().collection('telegram_links').doc(phone).get();
+        const chatId = link.exists ? link.data().chatId : '';
+        if (!chatId) { status = 'nolink'; result.nolink++; }
+        else {
+          const lang = normLang(link.data().lang);
+          const r = await tgApi('sendMessage', { chat_id: chatId, text: ivText(lang, x),
+            reply_markup: { inline_keyboard: [[{ text: tr(lang, 'btn_iv_seen'), callback_data: 'iv|' + d.id }], [{ text: tr(lang, 'btn_iv_open'), url: ORIGIN + '/platforma#iv=' + d.id }]] } });
+          if (r && r.ok) { status = 'sent'; result.sent++; extra = { sentAt: now, sentPhone: phone, sentCount: (x.sentCount || 0) + 1 }; }
+          else { status = 'failed'; result.failed++; extra = { sendErr: ivClip(r && r.description, 100) }; }
+        }
+      }
+      try { await d.ref.update(Object.assign({ sendStatus: status, sendTryAt: now }, extra)); } catch (e) { console.warn('iv_send yozilmadi:', e); }
+      result.items.push({ t: d.id, n: x.name || '', status });
+    };
+    for (let i = 0; i < docs.length; i += 8) await Promise.all(docs.slice(i, i + 8).map(work));
+    try { await db().collection('audit_log').add({ action: 'invite_sent', details: { mid, only, sent: result.sent, nolink: result.nolink, nophone: result.nophone, failed: result.failed }, by: email, at: Date.now() }); } catch (e) { /* muhim emas */ }
+    out(res, 200, result);
+    return;
+  }
+
   // iv_issue
   if (!ivSecret()) { out(res, 500, { error: 'secret' }); return; }
   const meet = ivMeet(b.meet);
+  const iso = /^\d{4}-\d{2}-\d{2}$/.test(String(b.iso || '')) ? String(b.iso) : '';
   const src = (Array.isArray(b.items) ? b.items : []).slice(0, 80);
-  const res2 = [], batch = db().batch();
+  const res2 = [], batch = db().batch(), now = Date.now();
   for (const it of src) {
     const n = ivClip(it && it.n, 80), c = ivClip(it && it.c, 20);
     if (!n) continue;
-    if (role === 'homeroom' && classes.indexOf(normClass(c)) < 0) { out(res, 403, { error: 'class-denied' }); return; }
+    if (!clsOk(c)) { out(res, 403, { error: 'class-denied' }); return; }
     const t = ivToken(mid, n, c);
-    batch.set(db().collection('invite_tok').doc(t), { mid, name: n, cls: c, clsKey: normClass(c), meet, updatedAt: Date.now() }, { merge: true });
+    batch.set(db().collection('invite_tok').doc(t), { mid, name: n, cls: c, clsKey: normClass(c), meet, updatedAt: now }, { merge: true });
     res2.push({ n, c, t });
   }
   if (!res2.length) { out(res, 400, { error: 'items' }); return; }
+  const mref = db().collection('invite_meets').doc(mid), mold = await mref.get();
+  const mdoc = { mid, cls: res2[0].c, clsKey: normClass(res2[0].c), date: iso, meet, total: res2.length, updatedAt: now };
+  if (!mold.exists) { mdoc.createdAt = now; mdoc.createdBy = email; }
+  batch.set(mref, mdoc, { merge: true });
   await batch.commit();
   out(res, 200, { ok: true, items: res2 });
 }
@@ -109,7 +199,7 @@ async function ivPublic(req, res, b, act) {
   let d = snap.data(), now = Date.now();
   if (act === 'iv_ack') {
     if (!d.seenAt) {
-      await ref.update({ seenAt: now, count: 1 });
+      await ref.update({ seenAt: now, count: 1, via: 'qr' });
       d = Object.assign({}, d, { seenAt: now });
       try { await db().collection('audit_log').add({ action: 'parent_seen_invite', details: { name: d.name || '', cls: d.cls || '', date: (d.meet && d.meet.date) || '' }, by: 'qr', at: now }); } catch (e) { /* muhim emas */ }
     } else { try { await ref.update({ count: (d.count || 1) + 1, lastAt: now }); } catch (e) { /* muhim emas */ } }
@@ -123,7 +213,7 @@ module.exports = async (req, res) => {
     let b = req.body;
     if (typeof b === 'string') { try { b = JSON.parse(b); } catch (e) { b = {}; } }
     b = b || {};
-    if (b.act === 'iv_issue' || b.act === 'iv_status') { await ivAdmin(req, res, b, b.act); return; }
+    if (['iv_issue', 'iv_status', 'iv_list', 'iv_delete', 'iv_send'].indexOf(b.act) >= 0) { await ivAdmin(req, res, b, b.act); return; }
     if (b.act === 'iv_check' || b.act === 'iv_ack') { await ivPublic(req, res, b, b.act); return; }
     const t = String(b.t || '').toLowerCase();
     const act = b.act === 'ack' ? 'ack' : (b.act === 'rsvp' ? 'rsvp' : 'check');
