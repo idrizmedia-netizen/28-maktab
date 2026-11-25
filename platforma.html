@@ -3529,12 +3529,13 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
       if(seq !== authSeq) return;
       if(!info){ pendingDenied = user.email || 'Bu hisob'; auth.signOut(); return; }
       curUser = user; isOwner = (user.email||'').toLowerCase() === OWNER_EMAIL; if(window.__ui) __ui.setUser(user);
+      try{ localStorage.setItem('m28_staff','1') }catch(e){}
       myRole = info.role; myClasses = info.classes||[];
       startCloud();
       if(!infoActive) showApp();
     });
   }
-  $('#logoutBtn').addEventListener('click',function(){ if(auth) auth.signOut(); else showAuth(); });
+  $('#logoutBtn').addEventListener('click',function(){ try{ localStorage.removeItem('m28_staff') }catch(e){} if(auth) auth.signOut(); else showAuth(); });
   $('#infoStaff').addEventListener('click',function(){
     try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
     infoActive = false;
