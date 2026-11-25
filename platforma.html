@@ -972,7 +972,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
 .egs .it{font-weight:800;font-size:13.5px;line-height:1.15;border-top:2px solid #F2B632;padding-top:6px}
 .egs .id{display:inline-block;align-self:flex-start;background:#F2B632;color:#143A7B;font-weight:800;font-size:13px;padding:3px 11px;border-radius:20px;margin:6px 0 5px}
 .egs .ln{font-size:10.5px;line-height:1.35;margin-top:2px}.egs .ln b{color:#8A6414}
-.egs .nt{font-size:10px;line-height:1.3;margin-top:5px;font-style:italic}
+.egs .ivn{font-size:10px;line-height:1.3;margin-top:5px;font-style:italic}
 .egs .sg2{margin-top:auto;font-size:9.5px;color:#8A6414;font-weight:700;padding-top:4px}
 .egs .qc{width:112px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:8.5px;line-height:1.2;color:#8A6414}
 .egs .qc svg{width:108px;height:108px;display:block;margin-bottom:3px;border:3px solid #fff}
@@ -3663,7 +3663,7 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
 .egs .it{font-weight:800;font-size:13.5px;line-height:1.15;border-top:2px solid #F2B632;padding-top:6px}
 .egs .id{display:inline-block;align-self:flex-start;background:#F2B632;color:#143A7B;font-weight:800;font-size:13px;padding:3px 11px;border-radius:20px;margin:6px 0 5px}
 .egs .ln{font-size:10.5px;line-height:1.35;margin-top:2px}.egs .ln b{color:#8A6414}
-.egs .nt{font-size:10px;line-height:1.3;margin-top:5px;font-style:italic}
+.egs .ivn{font-size:10px;line-height:1.3;margin-top:5px;font-style:italic}
 .egs .sg2{margin-top:auto;font-size:9.5px;color:#8A6414;font-weight:700;padding-top:4px}
 .egs .qc{width:112px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:8.5px;line-height:1.2;color:#8A6414}
 .egs .qc svg{width:108px;height:108px;display:block;margin-bottom:3px;border:3px solid #fff}
@@ -3774,7 +3774,7 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
       '<div class="it">'+esc(v.ttl)+'</div><div class="id">'+dt+'</div>'+
       v.times.slice(0,4).map(function(x){ return '<div class="ln">• '+esc(x)+'</div>'; }).join('')+
       (v.pl?'<div class="ln"><b>Joy:</b> '+esc(v.pl)+'</div>':'')+
-      (v.note?'<div class="nt">'+esc(v.note)+'</div>':'')+
+      (v.note?'<div class="ivn">'+esc(v.note)+'</div>':'')+
       '<div class="sg2">'+(v.sg?esc(v.sg)+' · ':'')+'Maktab ma’muriyati</div></div>'+
       '<div class="qc">'+(qr?qr+'<div>Skanerlang: sana, vaqt,<br>manzil va xarita</div>':'')+'</div></div></div>'; }
   function egInvPages(){ var v=egInvVals(), qr=egQrSvgL(egInvPayloadOf(v)), n=Math.max(1,Math.min(12,parseInt($('#eg_ipg').value,10)||1)), one='', pages=[];
