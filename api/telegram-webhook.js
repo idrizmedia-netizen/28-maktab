@@ -95,6 +95,27 @@ async function handleCallback(cq) {
     else await tgApi('sendMessage', { chat_id: chatId, text: t(chatLang, 'ready'), reply_markup: { remove_keyboard: true } });
     return;
   }
+  /* Sinf bo'yicha taklifnoma (studiya): «✅ Ko'rdim» tugmasi, 'iv|<belgi>' (api/seen.js: iv_send) */
+  if (parts[0] === 'iv' && chatId) {
+    const ref = db().collection('invite_tok').doc(String(parts[1] || '').toLowerCase());
+    const snap = await ref.get();
+    if (!snap.exists) { await answer(t(chatLang, 'ack_notfound')); return; }
+    const rec = snap.data();
+    const link = await db().collection('telegram_links').doc(String(rec.sentPhone || '')).get();
+    if (!link.exists || String(link.data().chatId) !== String(chatId)) { await answer(t(chatLang, 'ack_denied')); return; }
+    const lang = normLang(link.data().lang || chatLang);
+    if (rec.seenAt) { await answer(t(lang, 'ack_already')); }
+    else {
+      await ref.update({ seenAt: Date.now(), count: 1, via: 'bot' });
+      try { await db().collection('audit_log').add({ action: 'parent_seen_invite', details: { name: rec.name || '', cls: rec.cls || '', date: (rec.meet && rec.meet.date) || '' }, by: 'telegram-bot', at: Date.now() }); } catch (e) { console.warn('audit yozilmadi:', e); }
+      await answer(t(lang, 'ack_thanks'));
+    }
+    if (cq.message && cq.message.message_id) {
+      await tgApi('editMessageReplyMarkup', { chat_id: chatId, message_id: cq.message.message_id,
+        reply_markup: { inline_keyboard: [[{ text: t(lang, 'btn_iv_done'), callback_data: 'noop' }], [{ text: t(lang, 'btn_iv_open'), url: L.ORIGIN + '/platforma#iv=' + parts[1] }]] } });
+    }
+    return;
+  }
   if (parts[0] !== 'ack' || !chatId) { await answer(); return; }
 
   let ref = null, snap = null;
