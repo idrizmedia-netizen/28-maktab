@@ -980,6 +980,7 @@ table.les-t .tr{display:flex;gap:4px}table.les-t .tr .inp{min-width:0;flex:1}tab
 .egs .qc{width:112px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:8.5px;line-height:1.2;color:#8A6414}
 .egs .qc svg{width:108px;height:108px;display:block;margin-bottom:3px;border:3px solid #fff}
 
+.eg-ivp{margin-top:10px}.ivm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--line);border-radius:10px;margin:6px 0}.ivm .grow{flex:1;min-width:200px;font-size:14px}.ivd{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--brand-soft)}.ivr{padding:3px 0;font-size:14px}.ivr small{color:var(--muted,#667)}
 .eg-modes{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px}.eg-g{margin-top:12px}.eg-row{display:grid;grid-template-columns:110px 1.6fr 1fr auto auto;gap:6px;margin-bottom:6px}
 @media(max-width:640px){.eg-row{grid-template-columns:1fr 1fr}.eg-row input[data-k="n"]{grid-column:1/-1}}
 .eg-wl{width:calc(1123px*.3)!important;height:calc(794px*.3)!important}.eg-wl .egp{zoom:.3!important}
@@ -1106,7 +1107,6 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
           <select class="inp" id="f_kind">
             <option value="">⚠️ Ogohlantirish xati</option>
             <option value="praise">🌟 Minnatdorchilik (maqtov) xati</option>
-            <option value="invite">📅 Ota-onalar yig'ilishi taklifnomasi</option>
             <option value="summon">📞 Ota-onani maktabga chaqirish</option>
           </select>
           <label class="fl" for="f_name">O'quvchi (F.I.Sh)</label>
@@ -1425,8 +1425,8 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
             <div><label class="fl" for="eg_icl">Sinf bo'yicha (har bir o'quvchiga alohida taklifnoma, ismi avto yoziladi)</label><select class="inp" id="eg_icl"></select></div>
             <div style="display:flex;align-items:flex-end"><label style="display:flex;gap:8px;align-items:center;padding-bottom:10px"><input type="checkbox" id="eg_isg" checked> Ota-ona imzosi joyi</label></div>
           </div>
-          <div class="eg-btns" style="margin-top:8px"><button type="button" class="btn line sm" id="eg_iact">🔗 QR «Ko'rdim» tasdig'ini faollashtirish</button><button type="button" class="btn line sm" id="eg_ist">📊 Kim ko'rdi</button></div>
-          <div id="eg_ilist" class="hint"></div>
+          <div class="eg-btns" style="margin-top:8px"><button type="button" class="btn line sm" id="eg_iact">🔗 QR «Ko'rdim» tasdig'ini faollashtirish</button><button type="button" class="btn line sm" id="eg_isend">📨 Botga yuborish</button><button type="button" class="btn line sm" id="eg_ist">📬 Berilgan taklifnomalar</button></div>
+          <div id="eg_ilist" class="eg-ivp"></div>
           <p class="hint" id="eg_ihint">QR kodni skanerlasa: maktab nomi, sana va vaqt, yig'ilish vaqtlari, manzil, telefon va xarita havolasi chiqadi.</p>
         </div>
         <div class="eg-g" data-for="win res hol"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="eg_qr" checked> QR kod qo'shish (skanerlansa maktab saytidagi yangiliklarga o'tadi)</label></div>
@@ -3778,7 +3778,7 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
   function egSetMode(m){ EG.m=m; $$('#eg_modes [data-m]').forEach(function(b){ b.classList.toggle('line',b.getAttribute('data-m')!==m) });
     $$('#tab-eng .eg-g').forEach(function(g){ g.classList.toggle('hidden',(' '+g.getAttribute('data-for')+' ').indexOf(' '+m+' ')<0) });
     var c=$('#eg_cat'); if(m==='win'||m==='res') c.value='yutuq'; else if(m==='hol') c.value='elon';
-    egMsg(''); egDraw(); if(m==='win') egHist(); }
+    egMsg(''); egDraw(); if(m==='win') egHist(); if(m==='inv'&&curUser&&!EG.ivl) egIvLoadList(); }
   function egHolFill(){ var h=EG_HOL[$('#eg_hs').value]; $('#eg_ht').value=h.t; $('#eg_hd').value=h.d; $('#eg_hm').value=h.m; egDraw(); }
   function egInit(){
     if(!EG.restored){ EG.restored=true; egLoadDraft(); }
@@ -3864,18 +3864,52 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
     if(L.length>80) return egMsg('Bir martada 80 tadan ko‘p o‘quvchi mumkin emas');
     if(!curUser) return egMsg('Internet yoki kirish yo‘q');
     var mid=egIvMid(v), meet=egIvMeet(v); egMsg('Faollashtirilmoqda…');
-    egIvCall({act:'iv_issue',mid:mid,meet:meet,items:L}).then(function(x){
-      if(x.s===200&&x.j.items){ var t={}; x.j.items.forEach(function(i){ t[i.n+'|'+i.c]=i.t; }); EG.iv={mid:mid,tok:t,sig:JSON.stringify(meet)}; egMsg(x.j.items.length+' ta taklifnoma uchun QR faollashtirildi'); egDraw(); }
+    egIvCall({act:'iv_issue',mid:mid,iso:$('#eg_id').value,meet:meet,items:L}).then(function(x){
+      if(x.s===200&&x.j.items){ var t={}; x.j.items.forEach(function(i){ t[i.n+'|'+i.c]=i.t; }); EG.iv={mid:mid,tok:t,sig:JSON.stringify(meet)}; egMsg(x.j.items.length+' ta taklifnoma uchun QR faollashtirildi'); egDraw(); egIvLoadList(); egIvOpen(mid); }
       else egMsg(x.j&&x.j.error==='secret'?'Serverda maxfiy kalit yo‘q (Vercel: PARENT_SECRET yoki TELEGRAM_BOT_TOKEN)':(x.s===403?'Bu amalga ruxsatingiz yo‘q':'Faollashtirib bo‘lmadi'));
     }).catch(function(){ egMsg('Internet yoki server xatosi'); }); }
-  function egIvStatus(){ var v=egInvVals(), L=egIvList(), box=$('#eg_ilist');
-    if(!EG.iv||EG.iv.mid!==egIvMid(v)||!L.length) return egMsg('Avval sinfni tanlab, QR tasdig‘ini faollashtiring');
-    if(!curUser) return egMsg('Internet yoki kirish yo‘q'); egMsg('Tekshirilmoqda…');
-    egIvCall({act:'iv_status',mid:EG.iv.mid}).then(function(x){
-      if(x.s!==200||!x.j.items) return egMsg('Holatni olib bo‘lmadi');
-      var by={}, seen=0; x.j.items.forEach(function(i){ by[i.t]=i; });
-      var rows=L.map(function(st){ var i=by[EG.iv.tok[st.n+'|'+st.c]]; if(i&&i.seenAt){ seen++; return '✅ '+esc(st.n)+' · '+esc(tsDate(i.seenAt)); } return '⏳ '+esc(st.n); });
-      box.innerHTML='<b>Ko‘rdi: '+seen+' / '+L.length+'</b><br>'+rows.join('<br>'); egMsg(''); }).catch(function(){ egMsg('Internet yoki server xatosi'); }); }
+  /* ---- Berilgan taklifnomalar: doimiy ro'yxat (server: invite_meets / invite_tok). Qo'lda o'chirilmaguncha saqlanadi ---- */
+  function egIvAll(){ var S=EG.ivl||{}; return (S.items||[]).slice().sort(function(a,b){ return String(a.n).localeCompare(String(b.n),'uz'); }); }
+  function egIvRows(){ var S=EG.ivl||{}, a=egIvAll(), f=S.filter||'all'; return f==='seen'?a.filter(function(i){ return i.seenAt; }):(f==='unseen'?a.filter(function(i){ return !i.seenAt; }):a); }
+  function egIvBadge(i){ var st=i.sendStatus; return st==='sent'?'📨 botga yuborilgan':st==='nolink'?'⚠️ botga ulanmagan':st==='nophone'?'⚠️ telefon raqami yo‘q':st==='failed'?'❌ yuborilmadi':'— botga yuborilmagan'; }
+  function egIvLoadList(){ if(!curUser) return egMsg('Internet yoki kirish yo‘q'); egMsg('Yuklanmoqda…');
+    return egIvCall({act:'iv_list'}).then(function(x){ if(x.s!==200||!x.j.meets){ egMsg(x.s===403?'Bu amalga ruxsatingiz yo‘q':'Ro‘yxatni olib bo‘lmadi'); return; }
+      EG.ivl=EG.ivl||{filter:'all'}; EG.ivl.meets=x.j.meets; egMsg(''); egIvRender(); }).catch(function(){ egMsg('Internet yoki server xatosi'); }); }
+  function egIvOpen(mid){ if(!curUser) return; egMsg('Yuklanmoqda…');
+    return egIvCall({act:'iv_status',mid:mid}).then(function(x){ if(x.s!==200||!x.j.items){ egMsg('Holatni olib bo‘lmadi'); return; }
+      EG.ivl=EG.ivl||{filter:'all',meets:[]}; EG.ivl.open=mid; EG.ivl.items=x.j.items; egMsg(''); egIvRender(); }).catch(function(){ egMsg('Internet yoki server xatosi'); }); }
+  function egIvRender(){ var S=EG.ivl||{}, box=$('#eg_ilist'), today=dateISO(new Date()), h='';
+    h+='<b>📬 Berilgan taklifnomalar</b> <span class="hint">(qo‘lda o‘chirmaguningizcha saqlanadi)</span>';
+    h+=(S.meets&&S.meets.length)?S.meets.map(function(m){ var past=m.date&&m.date<today;
+      return '<div class="ivm"><div class="grow"><b>'+esc(m.dateTxt||m.date||'—')+' · '+esc(m.cls)+'</b>'+(m.time?' · '+esc(m.time):'')+(past?' <i>(o‘tgan)</i>':'')+'<br>✅ '+m.seen+' / '+m.total+' ko‘rdi · 📨 '+m.sent+' ta botga yuborilgan</div>'+
+        '<button type="button" class="btn line sm" data-iva="open" data-mid="'+esc(m.mid)+'">'+(S.open===m.mid?'Yangilash':'Ochish')+'</button>'+
+        '<button type="button" class="btn line sm" data-iva="del" data-mid="'+esc(m.mid)+'" title="O‘chirish">🗑</button></div>'; }).join(''):'<div class="hint">Hali berilgan taklifnoma yo‘q.</div>';
+    if(S.open&&S.items){ var all=egIvAll(), seen=all.filter(function(i){ return i.seenAt; }).length, f=S.filter||'all', rows=egIvRows();
+      var chip=function(k,l,n){ return '<button type="button" class="btn sm'+(f===k?'':' line')+'" data-iva="flt" data-f="'+k+'">'+l+' ('+n+')</button>'; };
+      h+='<div class="ivd"><div class="eg-btns" style="margin:0 0 8px">'+chip('all','Hammasi',all.length)+chip('seen','✅ Ko‘rganlar',seen)+chip('unseen','⏳ Ko‘rmaganlar',all.length-seen)+'<button type="button" class="btn line sm" data-iva="close">✖ Yopish</button></div>'+
+        (rows.length?rows.map(function(i){ return '<div class="ivr">'+(i.seenAt?'✅':'⏳')+' '+esc(i.n)+(i.seenAt?' · '+esc(tsDate(i.seenAt))+(i.via==='bot'?' (bot orqali)':' (QR orqali)'):'')+' <small>'+egIvBadge(i)+'</small></div>'; }).join(''):'<div class="hint">Bu bo‘limda hech kim yo‘q.</div>')+
+        '<div class="eg-btns" style="margin:10px 0 0"><button type="button" class="btn line sm" data-iva="send">📨 Botga yuborish (yuborilmaganlarga)</button><button type="button" class="btn line sm" data-iva="resend">🔔 Ko‘rmaganlarga qayta yuborish</button>'+
+        '<button type="button" class="btn line sm" data-iva="csv">⬇️ CSV (Excel)</button><button type="button" class="btn line sm" data-iva="copy">📋 Ismlarni nusxalash</button></div></div>'; }
+    box.innerHTML=h; }
+  function egIvSend(mid,only){ if(!curUser) return egMsg('Internet yoki kirish yo‘q');
+    if(only==='unseen'){ var n=egIvAll().filter(function(i){ return !i.seenAt; }).length; if(!n) return egMsg('Ko‘rmagan ota-ona yo‘q'); if(!confirm('Ko‘rmagan '+n+' ta ota-onaga taklifnoma qayta yuborilsinmi?')) return; }
+    egMsg('Botga yuborilmoqda…');
+    egIvCall({act:'iv_send',mid:mid,only:only}).then(function(x){
+      if(x.s!==200){ egMsg(x.s===403?'Bu amalga ruxsatingiz yo‘q':'Yuborib bo‘lmadi'); return; }
+      var j=x.j; egMsg('Yuborildi: '+j.sent+' · botga ulanmagan: '+j.nolink+' · raqam yo‘q: '+j.nophone+' · xato: '+j.failed+(j.skipped?' · o‘tkazildi: '+j.skipped:''));
+      egIvLoadList(); egIvOpen(mid); }).catch(function(){ egMsg('Internet yoki server xatosi'); }); }
+  function egIvDelete(mid){ if(!curUser) return;
+    if(!confirm('Bu taklifnoma va ko‘rganlik holati butunlay o‘chirilsinmi? Chop etilgan QR kodlar ishlamay qoladi.')) return;
+    egIvCall({act:'iv_delete',mid:mid}).then(function(x){ if(x.s!==200){ egMsg(x.s===403?'O‘chirish uchun asosiy admin kerak':'O‘chirib bo‘lmadi'); return; }
+      if(EG.ivl&&EG.ivl.open===mid){ EG.ivl.open=''; EG.ivl.items=[]; } if(EG.iv&&EG.iv.mid===mid){ EG.iv=null; egDraw(); } egMsg('O‘chirildi'); egIvLoadList(); }).catch(function(){ egMsg('Internet yoki server xatosi'); }); }
+  function egIvCsv(){ var S=EG.ivl; if(!S||!S.open) return; var m=(S.meets||[]).filter(function(x){ return x.mid===S.open; })[0]||{}, f=S.filter||'all';
+    var q=function(v){ return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'; };
+    var lines=[['№','O‘quvchi','Sinf','Holat','Ko‘rgan vaqti','Qanday','Botga yuborilgan'].map(q).join(',')];
+    egIvRows().forEach(function(i,k){ lines.push([k+1,i.n,i.c,i.seenAt?'Ko‘rdi':'Ko‘rmadi',i.seenAt?new Date(i.seenAt).toLocaleString('ru-RU'):'',i.seenAt?(i.via==='bot'?'Bot':'QR'):'',
+      i.sendStatus==='sent'?'Ha':(i.sendStatus==='nolink'?'Botga ulanmagan':(i.sendStatus==='nophone'?'Raqam yo‘q':'Yo‘q'))].map(q).join(',')); });
+    attDl(('taklifnoma_'+(m.date||'')+'_'+(m.cls||'')+'_'+f+'.csv').replace(/[^A-Za-z0-9_.\-]/g,'_'),'\ufeff'+lines.join('\r\n'),'text/csv'); }
+  function egIvCopy(){ var t=egIvRows().map(function(i){ return i.n; }).join('\n'); if(!t) return egMsg('Ro‘yxat bo‘sh');
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function(){ egMsg('Nusxalandi: '+egIvRows().length+' ta ism'); },function(){ egMsg('Nusxalab bo‘lmadi'); }); else egMsg('Brauzer nusxalashga ruxsat bermadi'); }
   function egSchoolLoad(){ if(EG.school||EG.schoolBusy||!db) return; EG.schoolBusy=true;
     db.collection('publicinfo').doc('maktab').get().then(function(d){ EG.school=d.exists?d.data():{}; }).catch(function(){ EG.school={}; })
       .then(function(){ EG.schoolBusy=false; var ip=$('#eg_ip'); if(ip&&!ip.value&&EG.school.address&&EG.m==='inv') ip.value=EG.school.address; egDraw(); }); }
@@ -3993,8 +4027,13 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
   $('#eg_rows').addEventListener('change',function(e){ var t=e.target; if(t.type==='file'&&t.files&&t.files[0]) egPhoto(t.files[0],+t.getAttribute('data-i')); });
   ['eg_per','eg_yr','eg_ln','eg_ld','eg_ls','eg_ra','eg_rr','eg_ht','eg_hd','eg_hm'].forEach(function(id){ $('#'+id).addEventListener('input',egDraw); });
   ['eg_ih','eg_id','eg_it','eg_ip','eg_iv','eg_in','eg_is','eg_ipg'].forEach(function(id){ $('#'+id).addEventListener('input',egDraw); });
-  $('#eg_icl').addEventListener('change',function(){ $('#eg_ilist').innerHTML=''; egDraw(); }); $('#eg_isg').addEventListener('change',egDraw);
-  $('#eg_iact').addEventListener('click',egIvActivate); $('#eg_ist').addEventListener('click',egIvStatus);
+  $('#eg_icl').addEventListener('change',egDraw); $('#eg_isg').addEventListener('change',egDraw);
+  $('#eg_iact').addEventListener('click',egIvActivate); $('#eg_ist').addEventListener('click',egIvLoadList);
+  $('#eg_isend').addEventListener('click',function(){ var v=egInvVals(), mid=egIvMid(v); if(!EG.iv||EG.iv.mid!==mid||!egIvList().length) return egMsg('Avval sinfni tanlab, QR tasdig‘ini faollashtiring'); egIvSend(mid,'unsent'); });
+  $('#eg_ilist').addEventListener('click',function(e){ var b=e.target.closest('[data-iva]'); if(!b) return; var a=b.getAttribute('data-iva'), S=EG.ivl||{}, mid=b.getAttribute('data-mid')||S.open;
+    if(a==='open') egIvOpen(mid); else if(a==='del') egIvDelete(mid); else if(a==='flt'){ S.filter=b.getAttribute('data-f'); egIvRender(); }
+    else if(a==='send') egIvSend(mid,'unsent'); else if(a==='resend') egIvSend(mid,'unseen'); else if(a==='csv') egIvCsv(); else if(a==='copy') egIvCopy();
+    else if(a==='close'){ S.open=''; egIvRender(); } });
   $('#eg_clear').addEventListener('click',egClear); $('#eg_histr').addEventListener('click',function(){ egHistLoad(true) });
   $('#eg_hist').addEventListener('click',function(e){ var a=e.target.closest('[data-hl]'); if(!a) return; e.preventDefault();
     var d=egHistDocs().filter(function(x){ return x.id===a.getAttribute('data-hl'); })[0]; if(!d||!d.eng) return;
@@ -4434,7 +4473,8 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
     $$('#slots .slot').forEach(function(b){b.addEventListener('click',function(){selectSlot(+b.dataset.slot)})});
   }
   var FIELDS={f_name:'name',f_class:'cls',f_parent:'parent',f_reason:'reason',f_date:'date',f_phone:'phone',f_kind:'kind'};
-  function loadSlotToForm(){updEditNote(); Object.keys(FIELDS).forEach(function(id){document.getElementById(id).value=slots[cur][FIELDS[id]]||''}); document.getElementById('f_wm').checked=!!slotWmOf(slots[cur]); if(window.__syncChips) window.__syncChips(); applyKindUI(); checkRepeatWarn();}
+  function ensureInviteOpt(k){ var sel=document.getElementById('f_kind'); if(k==='invite'&&sel&&!sel.querySelector('option[value="invite"]')){ var o=document.createElement('option'); o.value='invite'; o.textContent='📅 Taklifnoma (eski xat)'; sel.insertBefore(o,sel.querySelector('option[value="summon"]')); } }
+  function loadSlotToForm(){ensureInviteOpt(slots[cur].kind); updEditNote(); Object.keys(FIELDS).forEach(function(id){document.getElementById(id).value=slots[cur][FIELDS[id]]||''}); document.getElementById('f_wm').checked=!!slotWmOf(slots[cur]); if(window.__syncChips) window.__syncChips(); applyKindUI(); checkRepeatWarn();}
   function selectSlot(i){cur=i;loadSlotToForm();renderSlots();renderSheet()}
   Object.keys(FIELDS).forEach(function(id){
     document.getElementById(id).addEventListener('input',function(){
