@@ -48,7 +48,7 @@ function ivMeet(m) {
   return {
     title: ivClip(m.title, 80), date: ivClip(m.date, 20), time: ivClip(m.time, 30), place: ivClip(m.place, 140),
     times: (Array.isArray(m.times) ? m.times : []).slice(0, 6).map((x) => ivClip(x, 80)).filter(Boolean),
-    note: ivClip(m.note, 220), sg: ivClip(m.sg, 60),
+    note: ivClip(m.note, 400), sg: ivClip(m.sg, 60),
   };
 }
 async function ivRate(req) {
