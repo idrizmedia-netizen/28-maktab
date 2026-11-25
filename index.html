@@ -30,6 +30,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
 [hidden]{display:none!important}
+a.staff-fab{position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--navy);color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 16px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+a.staff-fab:hover{background:var(--blue)}
+@media print{a.staff-fab{display:none!important}}
 :root{--soft:#EEF2FA;--h1:#0B2F63;--h2:#0F3D7A;--h3:#1A3E8C;--glow:#1c5aa8;--navy:#0F3D7A;--blue:#1A3E8C;--gold:#F2B632;--gold-d:#7A5B12;--ink:#0B2447;--muted:#5B6B85;--bg:#F7F5EE;--card:#fff;--line:#E6E2D3;--r:18px;
   --head:'Unbounded','Trebuchet MS',system-ui,sans-serif;--body:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}
 *{box-sizing:border-box}
@@ -410,6 +413,7 @@ table.gt td.brk-c b{font-size:16px}table.gt td.brk-c small{color:#8a6a1f;font-si
 </div></header>
 
 <main id="app" tabindex="-1"></main>
+<a class="staff-fab" data-staff hidden href="/platforma">Platforma →</a>
 
 <footer class="ft" id="ft"></footer>
 
@@ -1017,26 +1021,42 @@ table.gt td.brk-c b{font-size:16px}table.gt td.brk-c small{color:#8a6a1f;font-si
     var cp=e.target.closest('[data-copy]'); if(cp){ var t=cp.getAttribute('data-copy'); (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){cp.textContent='Nusxalandi ✓'}).catch(function(){window.prompt('Havola:',t)}); }
   });
   /* ====== Platforma tugmalari: faqat admin ro'yxatidagi hisoblarga ====== */
-  var isStaff=false;
+  var STAFF_KEY='m28_staff';
+  function cachedStaff(){ try{ return localStorage.getItem(STAFF_KEY)==='1' }catch(e){ return false } }
+  function cacheStaff(on){ try{ if(on) localStorage.setItem(STAFF_KEY,'1'); else localStorage.removeItem(STAFF_KEY) }catch(e){} }
+  var isStaff=cachedStaff();
   function inApp(){ try{return window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false} }
   function applyStaff(){ Array.prototype.forEach.call(document.querySelectorAll('[data-staff]'),function(el){el.hidden=!isStaff}) }
-  function setStaff(on){ isStaff=!!on; applyStaff(); }
+  function setStaff(on){ isStaff=!!on; cacheStaff(isStaff); applyStaff(); }
   function gmsg(t,bad){ var e=document.getElementById('gmsg'); if(e){ e.textContent=t; e.style.color=bad?'#b42318':'#067647' } }
+  /* Admin avto aniqlanadi: platformada (yoki shu saytda) kirgan bo'lsangiz, «Platforma →» tugmasi o'zi chiqadi.
+     Tugma tez chiqishi uchun oxirgi natija eslab qolinadi va har kirishda qayta tekshiriladi.
+     Tekshiruv xato bersa (internet, ruxsat), hisobdan CHIQARILMAYDI: faqat admin emasligi aniq bo'lsa chiqariladi. */
+  function checkStaff(u, tries){
+    var em=u.email.toLowerCase();
+    function done(ok){
+      if(ok){ setStaff(true); gmsg('✅ Xush kelibsiz! «Platforma →» tugmasi paydo bo\'ldi.'); }
+      else { setStaff(false); if(location.hash==='#/xodim'){ gmsg("Bu hisob admin ro'yxatida yo'q.",true); } firebase.auth().signOut(); }
+    }
+    if(em==='idrizmedia@gmail.com') return done(true);
+    firebase.firestore().collection('admins').doc(em).get().then(function(d){ done(d.exists) }).catch(function(e){
+      console.warn('Admin tekshiruvi xato:', e&&e.code||e);
+      if((tries||0)<2) return setTimeout(function(){ checkStaff(u,(tries||0)+1) }, 1500*((tries||0)+1));
+      if(location.hash==='#/xodim') gmsg("Admin ro'yxatini tekshirib bo'lmadi. Internetni tekshirib, sahifani yangilang.",true);
+    });
+  }
   try{
+    applyStaff();
     if(window.firebase&&firebase.auth){
       if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
       firebase.auth().onAuthStateChanged(function(u){
         if(!u||!u.email||!u.emailVerified) return setStaff(false);
-        var em=u.email.toLowerCase();
-        function done(ok){
-          if(ok){ setStaff(true); gmsg('✅ Xush kelibsiz! Tepada «Platforma →» tugmasi paydo bo\'ldi.'); }
-          else { setStaff(false); if(location.hash==='#/xodim'){ gmsg("Bu hisob admin ro'yxatida yo'q.",true); } firebase.auth().signOut(); }
-        }
-        if(em==='idrizmedia@gmail.com') return done(true);
-        firebase.firestore().collection('admins').doc(em).get().then(function(d){done(d.exists)}).catch(function(){done(false)});
+        checkStaff(u,0);
       });
     }
   }catch(e){}
+  /* boshqa oynada (masalan platformada) kirilsa yoki chiqilsa, bu oynada ham yangilansin */
+  window.addEventListener('storage',function(e){ if(e.key===STAFF_KEY){ isStaff=cachedStaff(); applyStaff() } });
   document.addEventListener('click',function(e){
     if(!e.target.closest('[data-glogin]')) return;
     try{
