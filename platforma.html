@@ -1361,6 +1361,7 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
           <button type="button" class="btn line sm" data-m="letter">✉️ Minnatdorchilik xati</button>
           <button type="button" class="btn line sm" data-m="res">📊 Chorak natijalari</button>
           <button type="button" class="btn line sm" data-m="hol">🎉 Bayram e'lonlari</button>
+          <button type="button" class="btn line sm" data-m="inv">📨 Ota-onalar yig'ilishi taklifnomasi</button>
         </div>
         <div class="eg-g" data-for="win cert res">
           <div class="eg-form">
@@ -1389,6 +1390,23 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
           <textarea class="inp" id="eg_bulk" rows="3"></textarea>
           <div class="eg-btns" style="margin-top:8px"><button type="button" class="btn line sm" id="eg_bulkb">＋ Ro'yxatni qo'shish</button><select class="inp" id="eg_bcls" style="width:auto"></select><button type="button" class="btn line sm" id="eg_bclsb">＋ Butun sinfni qo'shish</button></div>
         </div>
+        <div class="eg-g" data-for="inv">
+          <div class="eg-form">
+            <div><label class="fl" for="eg_ih">Sarlavha</label><input class="inp" id="eg_ih" maxlength="60" value="OTA-ONALAR YIG‘ILISHIGA TAKLIFNOMA"></div>
+            <div><label class="fl" for="eg_ipg">Sahifalar soni (har sahifada 8 ta)</label><input class="inp" id="eg_ipg" type="number" min="1" max="12" value="1"></div>
+            <div><label class="fl" for="eg_id">Yig'ilish sanasi</label><input class="inp" id="eg_id" type="date"></div>
+            <div><label class="fl" for="eg_it">Boshlanish vaqti</label><input class="inp" id="eg_it" maxlength="30" placeholder="Masalan: 17:00"></div>
+          </div>
+          <label class="fl" for="eg_ip" style="margin-top:8px">Yig'ilish o'tadigan joy</label>
+          <input class="inp" id="eg_ip" maxlength="120" placeholder="Bo'sh bo'lsa, maktab manzili olinadi">
+          <label class="fl" for="eg_iv" style="margin-top:8px">Yig'ilish vaqtlari (ixtiyoriy, har qatorda bittadan: sinf — vaqt)</label>
+          <textarea class="inp" id="eg_iv" rows="3" placeholder="1–4-sinflar — 16:00&#10;5–11-sinflar — 17:00"></textarea>
+          <label class="fl" for="eg_in" style="margin-top:8px">Qisqa matn</label>
+          <textarea class="inp" id="eg_in" rows="3" maxlength="200"></textarea>
+          <label class="fl" for="eg_is" style="margin-top:8px">Imzo (ixtiyoriy)</label>
+          <input class="inp" id="eg_is" maxlength="60" placeholder="Direktor ismi">
+          <p class="hint" id="eg_ihint">QR kodni skanerlasa: maktab nomi, sana va vaqt, yig'ilish vaqtlari, manzil, telefon va xarita havolasi chiqadi.</p>
+        </div>
         <div class="eg-g" data-for="win res hol"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="eg_qr" checked> QR kod qo'shish (skanerlansa maktab saytidagi yangiliklarga o'tadi)</label></div>
         <div class="eg-g" data-for="letter">
           <div class="eg-form">
@@ -1411,7 +1429,8 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
           <label class="fl" for="eg_ht">Sarlavha</label><input class="inp" id="eg_ht" maxlength="70">
           <label class="fl" for="eg_hm">Tabrik matni</label><textarea class="inp" id="eg_hm" rows="4"></textarea>
         </div>
-        <div class="eg-btns"><button class="btn" id="eg_print" type="button">Chop etish</button><button class="btn line" id="eg_pdf" type="button">PDF yuklab olish</button></div>
+        <div class="eg-btns"><button class="btn" id="eg_print" type="button">Chop etish</button><button class="btn line" id="eg_pdf" type="button">PDF yuklab olish</button><button class="btn line" id="eg_clear" type="button" title="Shu oynadagi yozilganlarni tozalash">🗑 Tozalash</button></div>
+        <p class="hint">Yozganlaringiz shu qurilmada avtomatik saqlanadi: sahifani yopib qayta ochsangiz ham turadi.</p>
         <div class="eg-g eg-site" data-for="win res hol">
           <label class="fl" for="eg_cat">Saytda e'lon qilish</label>
           <div class="eg-form">
@@ -1424,7 +1443,7 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
         <div class="msg" id="eg_msg"></div>
       </div>
       <div class="eg-stage" id="eg_stage"></div>
-      <div class="card eg-g" data-for="win" id="eg_histc"><h2 style="font-size:17px">G'oliblar tarixi</h2><p class="hint">Saytda e'lon qilingan g'oliblar.</p><div id="eg_hist"></div><button type="button" class="btn line sm" id="eg_album" style="margin-top:10px">📖 Yil albomi (PDF)</button></div>
+      <div class="card eg-g" data-for="win" id="eg_histc"><h2 style="font-size:17px">G'oliblar tarixi</h2><p class="hint">Saytda e'lon qilingan g'oliblar. «Formaga yuklash» bosilsa, ular forma ichiga qaytadi.</p><div id="eg_hist"></div><button type="button" class="btn line sm" id="eg_histr" style="margin-top:10px">↻ Yangilash</button> <button type="button" class="btn line sm" id="eg_album" style="margin-top:10px">📖 Yil albomi (PDF)</button></div>
     </section>
     <section id="tab-stats" class="hidden">
       <div class="card">
@@ -3622,6 +3641,19 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
 .egp .cols{display:flex;gap:30px}.egp .cols>div{flex:1}.egp .li{padding:3px 0}
 .egp .qr{position:absolute;right:26px;bottom:22px;width:84px;text-align:center;font-size:10px;color:#8A6414;line-height:1.2}.egp .qr svg{width:84px;height:84px;display:block;margin-bottom:2px}.egp .hm{font-size:24px;line-height:1.55;margin:6px 0}
 .egp .dt{display:inline-block;background:#F2B632;color:#143A7B;font-weight:800;font-size:26px;padding:8px 26px;border-radius:30px;margin:16px 0}
+.egs{background:#fff!important;padding:18px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(4,1fr);gap:10px}
+.egs .ic{position:relative;border:2px solid #F2B632;border-radius:12px;overflow:hidden;background:#fff;color:#143A7B;min-height:0}
+.egs .wm{position:absolute;left:calc(50% - 120px);top:calc(50% - 120px);width:240px;height:240px;opacity:.09}
+.egs .ib{position:relative;display:flex;gap:8px;height:100%;padding:11px 11px 9px;text-align:left}
+.egs .tx{flex:1;min-width:0;display:flex;flex-direction:column}
+.egs .ih{display:flex;align-items:center;gap:7px;margin-bottom:6px}.egs .ih img{width:30px;height:30px;flex:none}.egs .ih b{display:block;font-size:12px;line-height:1.1}.egs .ih small{display:block;font-size:7.5px;letter-spacing:.4px;color:#8A6414}
+.egs .it{font-weight:800;font-size:13.5px;line-height:1.15;border-top:2px solid #F2B632;padding-top:6px}
+.egs .id{display:inline-block;align-self:flex-start;background:#F2B632;color:#143A7B;font-weight:800;font-size:13px;padding:3px 11px;border-radius:20px;margin:6px 0 5px}
+.egs .ln{font-size:10.5px;line-height:1.35;margin-top:2px}.egs .ln b{color:#8A6414}
+.egs .nt{font-size:10px;line-height:1.3;margin-top:5px;font-style:italic}
+.egs .sg2{margin-top:auto;font-size:9.5px;color:#8A6414;font-weight:700;padding-top:4px}
+.egs .qc{width:112px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:8.5px;line-height:1.2;color:#8A6414}
+.egs .qc svg{width:108px;height:108px;display:block;margin-bottom:3px;border:3px solid #fff}
 `;
   var EG={m:'win',w:[{r:'s',n:'',c:'',ph:''}],lTouched:false};
   var EG_HOL={
@@ -3663,13 +3695,14 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
   function egHol(){ var t=$('#eg_ht').value.trim(), d=$('#eg_hd').value.trim(), fs=t.length>40?36:t.length>26?44:52;
     return egShell(egHead()+'<div class="gl"></div><div class="t1" style="font-size:'+fs+'px;margin:0;line-height:1.15">'+esc(t)+'</div>'+(d?'<div class="dt">'+esc(d)+'</div>':'')+'<img class="sh" style="width:200px;margin:20px 0" src="icons/eng/shield.jpg" alt=""><div class="hm">'+egBr($('#eg_hm').value)+'</div><div class="pr">'+egAd()+'</div>'); }
   function egPages(pub){ var m=EG.m, w=EG.w.filter(function(x){return !pub||x.n.trim()});
+    if(m==='inv') return {h:egInvPages(),land:false};
     if(m==='win') return {h:w.map(egWin),land:false};
     if(m==='cert') return {h:w.map(egCert),land:true};
     if(m==='letter') return {h:[egLetter()],land:false};
     if(m==='res') return {h:[egRes()],land:false};
     return {h:[egHol()],land:false}; }
   function egMsg(t){ var e=$('#eg_msg'); if(e) e.textContent=t||''; }
-  function egDraw(){ var P=egPages(false); $('#eg_stage').innerHTML=P.h.map(function(h){return '<div class="eg-w'+(P.land?' eg-wl':'')+'">'+h+'</div>'}).join(''); try{lset('m28_egyr',$('#eg_yr').value)}catch(e){} }
+  function egDraw(){ var P=egPages(false); $('#eg_stage').innerHTML=P.h.map(function(h){return '<div class="eg-w'+(P.land?' eg-wl':'')+'">'+h+'</div>'}).join(''); try{lset('m28_egyr',$('#eg_yr').value)}catch(e){} egSaveLater(); }
   function egRows(){ $('#eg_rows').innerHTML=EG.w.map(function(w,i){ var a='data-i="'+i+'"';
     return '<div class="eg-row"><select class="inp" data-k="r" '+a+'><option value="s"'+(w.r==='s'?' selected':'')+'>O‘quvchi</option><option value="t"'+(w.r==='t'?' selected':'')+'>O‘qituvchi</option></select>'+
       '<input class="inp" data-k="n" '+a+' list="eg_nl" autocomplete="off" placeholder="Ism familiya" value="'+esc(w.n)+'">'+
@@ -3683,6 +3716,8 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
     egMsg(''); egDraw(); if(m==='win') egHist(); }
   function egHolFill(){ var h=EG_HOL[$('#eg_hs').value]; $('#eg_ht').value=h.t; $('#eg_hd').value=h.d; $('#eg_hm').value=h.m; egDraw(); }
   function egInit(){
+    if(!EG.restored){ EG.restored=true; egLoadDraft(); }
+    if(!$('#eg_in').value) $('#eg_in').value='Hurmatli ota-onalar! Sizni farzandlaringiz ta’lim-tarbiyasiga bag‘ishlangan yig‘ilishda ishtirok etishga taklif qilamiz.';
     if(!$('#eg_yr').value) $('#eg_yr').value=(lget('m28_egyr')||egYearDefault());
     if(!$('#eg_ld').value) $('#eg_ld').value=dateISO(new Date());
     if(!$('#eg_lt').value) $('#eg_lt').value=EG_LT.p;
@@ -3691,11 +3726,76 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
     var ok=newsPostAllowed(); $$('#tab-eng .eg-site').forEach(function(g){ g.setAttribute('data-ok',ok?'1':'0') });
     var cs={}; roster.students.forEach(function(x){ if(x.cls) cs[x.cls]=1; }); $('#eg_bcls').innerHTML='<option value="">Sinf…</option>'+Object.keys(cs).sort(function(a,b){ return a.localeCompare(b,'uz',{numeric:true}); }).map(function(c){ return '<option>'+esc(c)+'</option>'; }).join('');
     if(!$('#eg_sf').value) egRangeSet();
+    egSchoolLoad(); egHistLoad(false);
     egRows(); egSetMode(EG.m); if(!ok) $$('#tab-eng .eg-site').forEach(function(g){ g.classList.add('hidden') });
   }
-  function egHist(){ var el=$('#eg_hist'); if(!el) return;
-    var a=(typeof newsDocs!=='undefined'?newsDocs:[]).filter(function(x){return x.eng}).sort(function(x,y){return String(y.date||'').localeCompare(String(x.date||''))}).slice(0,30);
-    el.innerHTML=a.length?a.map(function(x){ var e=x.eng||{}; return '<div class="li" style="padding:6px 0;border-bottom:1px solid var(--line)"><b>'+esc((e.per||'')+' · '+(e.yr||''))+'</b> — '+(e.w||[]).map(function(w){return esc(w.n)+(w.c?' ('+esc(w.c)+')':'')}).join(', ')+' <small style="color:var(--muted)">'+esc(x.date||'')+'</small></div>'}).join(''):'<div class="hint">Hali saytda e’lon qilingan g‘oliblar yo‘q.</div>'; }
+
+  /* ---------- Ota-onalar yig'ilishi taklifnomasi (A4 da 8 ta, QR bilan) ---------- */
+  function egFmtD(v){ var a=String(v||'').split('-'); return a.length===3?a[2]+'.'+a[1]+'.'+a[0]:String(v||''); }
+  function egU8(t){ try{ return unescape(encodeURIComponent(t)); }catch(e){ return t; } }
+  /* QR matni: maktab, sana/vaqt, yig'ilish vaqtlari, manzil, telefon, xarita. Sig'masa, avval telefon, keyin vaqtlar qatorlari qisqartiriladi */
+  function egInvPayloadOf(o){
+    var tt=String(o.ttl||''), nm=/yig.ilish/i.test(tt)?'Ota-onalar yig‘ilishi':(tt?tt.charAt(0).toUpperCase()+tt.slice(1).toLowerCase().slice(0,40):'Ota-onalar yig‘ilishi');
+    var L=[{t:'28-maktab: '+nm,rm:0}];
+    var dt=[o.d,o.t].filter(Boolean).join(', '); if(dt) L.push({t:'Sana: '+dt,rm:0});
+    (o.times||[]).forEach(function(x){ L.push({t:x,rm:3}); });
+    if(o.pl) L.push({t:'Joy: '+o.pl,rm:o.map?2:0,pl:1});
+    if(o.phone) L.push({t:'Tel: '+o.phone,rm:1});
+    if(o.map) L.push({t:'Xarita: '+o.map,rm:0});
+    var build=function(){ return L.map(function(x){return x.t}).join('\n'); }, MAX=205;
+    /* sig'masa: avval telefon, keyin (xarita bo'lsa) manzil, oxirida vaqtlar qatorlari pastdan yuqoriga olib tashlanadi */
+    while(egU8(build()).length>MAX){ var idx=-1,mn=99; for(var i=0;i<L.length;i++){ if(L[i].rm>0&&L[i].rm<=mn){ mn=L[i].rm; idx=i; } } if(idx<0) break; L.splice(idx,1); }
+    var out=build(); if(egU8(out).length>MAX){ for(var j=0;j<L.length;j++){ if(L[j].pl&&L[j].t.length>40){ L[j].t=L[j].t.slice(0,38)+'…'; } } out=build(); }
+    return out;
+  }
+  function egQrSvgL(text){ try{ var qr=qrcode(0,'L'); qr.addData(egU8(text)); qr.make(); var n=qr.getModuleCount(), q=2, path='';
+      for(var r=0;r<n;r++) for(var c=0;c<n;c++) if(qr.isDark(r,c)) path+='M'+(c+q)+' '+(r+q)+'h1v1h-1z';
+      var z=n+q*2; return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+z+' '+z+'" shape-rendering="crispEdges"><rect width="'+z+'" height="'+z+'" fill="#fff"/><path d="'+path+'" fill="#000"/></svg>'; }catch(e){ return ''; } }
+  function egInvVals(){ var S=EG.school||{}, map=/^https:\/\//i.test(S.mapUrl||'')?String(S.mapUrl).trim():'';
+    return {ttl:($('#eg_ih').value.trim()||'OTA-ONALAR YIG‘ILISHIGA TAKLIFNOMA'), d:egFmtD($('#eg_id').value), t:$('#eg_it').value.trim(), pl:($('#eg_ip').value.trim()||S.address||''),
+      times:egLines('#eg_iv'), phone:String(S.phone||'').trim(), map:map, note:$('#eg_in').value.trim(), sg:$('#eg_is').value.trim()}; }
+  function egInvCard(v,qr){
+    var dt=(v.d||v.t)?esc([v.d,v.t].filter(Boolean).join(' · ')):'Sana: ________  Vaqt: ______';
+    return '<div class="ic"><img class="wm" src="logo-28.svg" alt=""><div class="ib"><div class="tx">'+
+      '<div class="ih"><img src="logo-28.svg" alt=""><div><b>28-MAKTAB</b><small>TARBIYA · BILIM · KELAJAK</small></div></div>'+
+      '<div class="it">'+esc(v.ttl)+'</div><div class="id">'+dt+'</div>'+
+      v.times.slice(0,4).map(function(x){ return '<div class="ln">• '+esc(x)+'</div>'; }).join('')+
+      (v.pl?'<div class="ln"><b>Joy:</b> '+esc(v.pl)+'</div>':'')+
+      (v.note?'<div class="nt">'+esc(v.note)+'</div>':'')+
+      '<div class="sg2">'+(v.sg?esc(v.sg)+' · ':'')+'Maktab ma’muriyati</div></div>'+
+      '<div class="qc">'+(qr?qr+'<div>Skanerlang: sana, vaqt,<br>manzil va xarita</div>':'')+'</div></div></div>'; }
+  function egInvPages(){ var v=egInvVals(), qr=egQrSvgL(egInvPayloadOf(v)), n=Math.max(1,Math.min(12,parseInt($('#eg_ipg').value,10)||1)), one='', pages=[];
+    for(var i=0;i<8;i++) one+=egInvCard(v,qr);
+    for(var k=0;k<n;k++) pages.push('<div class="egp egs">'+one+'</div>');
+    var h=$('#eg_ihint'); if(h) h.textContent='QR kodni skanerlasa: maktab nomi, sana va vaqt, yig‘ilish vaqtlari, manzil, telefon va xarita havolasi chiqadi.'+(v.map?'':' ⚠️ Xarita havolasi kiritilmagan: Boshqaruv → Aloqa ma’lumotlarida «Xarita havolasi» ni yozing, shunda joylashuv ham QR ga qo‘shiladi.')+(v.phone?'':' Telefon raqami ham kiritilmagan.');
+    return pages; }
+  function egSchoolLoad(){ if(EG.school||EG.schoolBusy||!db) return; EG.schoolBusy=true;
+    db.collection('publicinfo').doc('maktab').get().then(function(d){ EG.school=d.exists?d.data():{}; }).catch(function(){ EG.school={}; })
+      .then(function(){ EG.schoolBusy=false; var ip=$('#eg_ip'); if(ip&&!ip.value&&EG.school.address&&EG.m==='inv') ip.value=EG.school.address; egDraw(); }); }
+
+  /* ---------- Studiya qoralamasi: yozganlar shu qurilmada saqlanadi ---------- */
+  var EG_DK='m28_egdraft', EG_FIELDS=['eg_per','eg_yr','eg_ct','eg_cr','eg_ln','eg_ld','eg_ls','eg_lt','eg_lk','eg_ra','eg_rr','eg_hs','eg_hd','eg_ht','eg_hm','eg_ih','eg_id','eg_it','eg_ip','eg_iv','eg_in','eg_is','eg_ipg','eg_sf','eg_st'];
+  function egSaveDraft(){ try{ var o={m:EG.m,f:{},lt:!!EG.lTouched}; EG_FIELDS.forEach(function(id){ var e=$('#'+id); if(e) o.f[id]=e.value; }); o.qr=$('#eg_qr').checked;
+      var w=EG.w.map(function(x){ return {r:x.r,n:x.n,c:x.c,ph:x.ph||''}; }); if(JSON.stringify(w).length>400000) w=w.map(function(x){ return {r:x.r,n:x.n,c:x.c,ph:''}; }); o.w=w; localStorage.setItem(EG_DK,JSON.stringify(o)); }catch(e){} }
+  function egSaveLater(){ clearTimeout(EG._dt); EG._dt=setTimeout(egSaveDraft,400); }
+  function egLoadDraft(){ var o=null; try{ o=JSON.parse(localStorage.getItem(EG_DK)||'null'); }catch(e){} if(!o||typeof o!=='object') return;
+    EG_FIELDS.forEach(function(id){ var e=$('#'+id); if(e&&o.f&&typeof o.f[id]==='string') e.value=o.f[id]; });
+    if(typeof o.qr==='boolean') $('#eg_qr').checked=o.qr; EG.lTouched=!!o.lt;
+    if(Array.isArray(o.w)&&o.w.length) EG.w=o.w.map(function(x){ return {r:x.r==='t'?'t':'s',n:String(x.n||''),c:String(x.c||''),ph:String(x.ph||'')}; });
+    if(({win:1,cert:1,letter:1,res:1,hol:1,inv:1})[o.m]) EG.m=o.m; }
+  function egClear(){ if(!confirm('Studiyadagi yozilganlar (g‘oliblar, matnlar) tozalansinmi?')) return;
+    EG.w=[{r:'s',n:'',c:'',ph:''}]; ['eg_ra','eg_rr','eg_ln','eg_iv','eg_cr','eg_bulk'].forEach(function(id){ var e=$('#'+id); if(e) e.value=''; });
+    try{ localStorage.removeItem(EG_DK); }catch(e){} egRows(); egDraw(); egMsg('Tozalandi'); }
+
+  /* ---------- G'oliblar tarixi: yangiliklar bo'limini ochmasdan ham yuklanadi ---------- */
+  function egHistDocs(){ var m={}; (EG.hist||[]).concat(typeof newsDocs!=='undefined'?newsDocs:[]).forEach(function(x){ if(x&&x.eng&&x.id) m[x.id]=x; });
+    return Object.keys(m).map(function(k){ return m[k]; }).sort(function(x,y){ return String(y.date||'').localeCompare(String(x.date||'')); }); }
+  function egHistLoad(force){ if(!db||!curUser||!newsPostAllowed()) return; if(EG.histBusy||(EG.histOk&&!force)) return; EG.histBusy=true; EG.histErr=''; egHist();
+    db.collection('news').where('cat','in',['yutuq','elon','yangilik']).get().then(function(s){ EG.hist=s.docs.map(function(d){ var o=d.data(); o.id=d.id; delete o.imgs; return o; }); EG.histOk=true; })
+      .catch(function(e){ EG.histErr=(e&&e.message)||'xato'; }).then(function(){ EG.histBusy=false; egHist(); }); }
+  function egHist(){ var el=$('#eg_hist'); if(!el) return; var a=egHistDocs().slice(0,40);
+    if(!a.length){ el.innerHTML='<div class="hint">'+(EG.histBusy?'Yuklanmoqda…':(EG.histErr?'Yuklab bo‘lmadi: '+esc(EG.histErr):'Hali saytda e’lon qilingan g‘oliblar yo‘q.'))+'</div>'; return; }
+    el.innerHTML=a.map(function(x){ var e=x.eng||{}; return '<div class="li" style="padding:6px 0;border-bottom:1px solid var(--line)"><b>'+esc((e.per||'')+' · '+(e.yr||''))+'</b> — '+(e.w||[]).map(function(w){return (w.r==='t'?'👩‍🏫 ':'🎓 ')+esc(w.n)+(w.c?' ('+esc(w.c)+')':'')}).join(', ')+' <small style="color:var(--muted)">'+esc(x.date||'')+'</small> <a href="#" data-hl="'+esc(x.id)+'" style="margin-left:8px;font-weight:700">Formaga yuklash</a></div>'; }).join(''); }
 
   function egRangeDef(){ var per=$('#eg_per').value, y1=parseInt($('#eg_yr').value,10)||new Date().getFullYear(), y2=y1+1;
     var m={'1-chorak':[y1+'-09-01',y1+'-10-31'],'2-chorak':[y1+'-11-01',y1+'-12-31'],'3-chorak':[y2+'-01-01',y2+'-03-15'],'4-chorak':[y2+'-03-16',y2+'-05-31'],'1-yarim yillik':[y1+'-09-01',y1+'-12-31'],'2-yarim yillik':[y2+'-01-01',y2+'-05-31']};
@@ -3722,8 +3822,8 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
   function egBulk(){ var a=egLines('#eg_bulk').map(function(l){ var p=l.split(/[,;\t]/), n=p[0].trim(), c=(p[1]||'').trim(); if(!c) roster.students.some(function(x){ if(x.name===n){ c=x.cls||''; return true; } }); return {n:n,c:c}; }).filter(function(x){ return x.n; });
     if(!a.length) return egMsg('Ro‘yxat bo‘sh'); egAddRows(a); $('#eg_bulk').value=''; egMsg(a.length+' ta qo‘shildi'); }
   function egClassAdd(){ var c=$('#eg_bcls').value; if(!c) return egMsg('Sinfni tanlang'); var a=roster.students.filter(function(x){ return (x.cls||'')===c; }).map(function(x){ return {n:x.name,c:x.cls||''}; }); egAddRows(a); egMsg(a.length+' ta o‘quvchi qo‘shildi'); }
-  function egAlbum(){ var yr=$('#eg_yr').value.trim(), docs=(typeof newsDocs!=='undefined'?newsDocs:[]).filter(function(x){ return x.eng&&x.eng.yr===yr; });
-    if(!docs.length) return egMsg('«'+yr+'» o‘quv yili uchun saytda e’lon qilingan g‘oliblar yo‘q');
+  function egAlbum(){ var yr=$('#eg_yr').value.trim(), docs=egHistDocs().filter(function(x){ return x.eng&&x.eng.yr===yr; });
+    if(!docs.length){ if(!EG.histOk){ egHistLoad(true); return egMsg('Tarix yuklanmoqda, bir ozdan keyin qayta bosing'); } return egMsg('«'+yr+'» o‘quv yili uchun saytda e’lon qilingan g‘oliblar yo‘q'); }
     var ord=['1-chorak','2-chorak','1-yarim yillik','3-chorak','4-chorak','2-yarim yillik','Butun'], by={};
     docs.forEach(function(d){ var k=d.eng.per||''; (by[k]=by[k]||[]).push.apply(by[k],d.eng.w||[]); });
     var keys=Object.keys(by).sort(function(a,b){ function ix(x){ for(var i=0;i<ord.length;i++) if(x.indexOf(ord[i])===0) return i; return 99; } return ix(a)-ix(b); });
@@ -3765,14 +3865,14 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
       return egShots(ch.h,false,1).then(function(cvs){ var qs=[.8,.65,.5], imgs; for(var j=0;j<qs.length;j++){ imgs=cvs.map(function(cv){return cv.toDataURL('image/jpeg',qs[j])}); if(imgs.reduce(function(a,x){return a+x.length},0)<=850000) break; }
         var doc={title:t,body:lines.join('\n\n'),cat:cat,date:dateISO(new Date()),status:'published',pinned:false,imgs:imgs,ni:imgs.length,videos:[],by:(curUser.email||'').toLowerCase(),updated:firebase.firestore.FieldValue.serverTimestamp()};
         var withEng=m==='win'?Object.assign({eng:{per:P.per,yr:P.yr,w:ch.w.map(function(w){return {r:w.r,n:w.n,c:w.c}})}},doc):doc;
-        return db.collection('news').add(withEng).catch(function(e){ if(withEng!==doc) return db.collection('news').add(doc); throw e; }); })
+        return db.collection('news').add(withEng).catch(function(e){ if(withEng!==doc){ info.push('Diqqat: g‘oliblar tarixiga yozib bo‘lmadi'+(e&&e.code?' ('+e.code+')':'')+', Firestore qoidalarida «eng» maydoniga ruxsat yo‘q'); return db.collection('news').add(doc); } throw e; }); })
       .then(function(ref){ links.push(newsLink(ref.id)); try{ logAudit('news_publish',t) }catch(e){}
         var q=Promise.resolve();
         if(tg) q=newsTelegram(ref.id,'post').catch(function(e){ info.push('Telegram kanalga yuborilmadi: '+(e.message||'xato')); });
         if(par) q=q.then(function(){ return egNotify(ref.id); }).then(function(j){ info.push(j&&j.ok?'Ota-onalarga: '+j.sent+' ta tabrik yuborildi'+(j.noLink?', '+j.noLink+' tasi Telegramga ulanmagan':'')+(j.noPhone?', '+j.noPhone+' tasida raqam yo‘q':''):'Ota-onalarga yuborilmadi: '+((j&&j.error)||'xato')); }).catch(function(){ info.push('Ota-onalarga yuborilmadi'); });
         return q; })
       .then(function(){ if(k+1<chunks.length) return one(k+1); }); }
-    one(0).then(function(){ egMsg('✅ Saytda e’lon qilindi. Havola: '+links[0]+(links.length>1?' (+'+(links.length-1)+' ta)':'')+(tg?' · Telegram kanal so‘rovi yuborildi':'')+(info.length?' · '+info.join(' · '):'')); toast('E’lon qilindi'); try{ copyText(links[0],'Havola nusxalandi') }catch(e){} setTimeout(egHist,1500); })
+    one(0).then(function(){ egMsg('✅ Saytda e’lon qilindi. Havola: '+links[0]+(links.length>1?' (+'+(links.length-1)+' ta)':'')+(tg?' · Telegram kanal so‘rovi yuborildi':'')+(info.length?' · '+info.join(' · '):'')); toast('E’lon qilindi'); try{ copyText(links[0],'Havola nusxalandi') }catch(e){} setTimeout(function(){ egHistLoad(true) },1500); })
     .catch(function(e){ egMsg('E’lon qilib bo‘lmadi: '+(e&&e.message||'xato')); }).then(function(){ $('#eg_site').disabled=false; }); }
   $('#eg_modes').addEventListener('click',function(e){ var b=e.target.closest('[data-m]'); if(b) egSetMode(b.getAttribute('data-m')); });
   $('#eg_add').addEventListener('click',function(){ EG.w.push({r:'s',n:'',c:'',ph:''}); egRows(); egDraw(); });
@@ -3785,9 +3885,16 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
     else if(a==='ph'){ if(EG.w[i].ph){ EG.w[i].ph=''; egRows(); egDraw(); } else { var f=b.parentNode.querySelector('input[type=file]'); if(f) f.click(); } } });
   $('#eg_rows').addEventListener('change',function(e){ var t=e.target; if(t.type==='file'&&t.files&&t.files[0]) egPhoto(t.files[0],+t.getAttribute('data-i')); });
   ['eg_per','eg_yr','eg_ln','eg_ld','eg_ls','eg_ra','eg_rr','eg_ht','eg_hd','eg_hm'].forEach(function(id){ $('#'+id).addEventListener('input',egDraw); });
+  ['eg_ih','eg_id','eg_it','eg_ip','eg_iv','eg_in','eg_is','eg_ipg'].forEach(function(id){ $('#'+id).addEventListener('input',egDraw); });
+  $('#eg_clear').addEventListener('click',egClear); $('#eg_histr').addEventListener('click',function(){ egHistLoad(true) });
+  $('#eg_hist').addEventListener('click',function(e){ var a=e.target.closest('[data-hl]'); if(!a) return; e.preventDefault();
+    var d=egHistDocs().filter(function(x){ return x.id===a.getAttribute('data-hl'); })[0]; if(!d||!d.eng) return;
+    EG.w=(d.eng.w||[]).map(function(x){ return {r:x.r==='t'?'t':'s',n:x.n||'',c:x.c||'',ph:''}; }); if(!EG.w.length) EG.w=[{r:'s',n:'',c:'',ph:''}];
+    if(d.eng.per) $('#eg_per').value=d.eng.per; if(d.eng.yr) $('#eg_yr').value=d.eng.yr; egRows(); egDraw(); egMsg('Formaga yuklandi (suratlar saqlanmaydi, kerak bo‘lsa qayta qo‘shing)'); });
   $('#eg_lt').addEventListener('input',function(){ EG.lTouched=true; egDraw(); });
   $('#eg_lk').addEventListener('change',function(){ if(!EG.lTouched||confirm('Matn almashtirilsinmi?')){ $('#eg_lt').value=EG_LT[$('#eg_lk').value]; EG.lTouched=false; } egDraw(); });
   $('#eg_hs').addEventListener('change',egHolFill);
+  $('#eg_lk').addEventListener('change',egSaveLater);
   ['eg_per','eg_yr'].forEach(function(id){ $('#'+id).addEventListener('input',egRangeSet); });
   ['eg_ct','eg_cr','eg_qr'].forEach(function(id){ $('#'+id).addEventListener('input',egDraw); $('#eg_qr').addEventListener('change',egDraw); });
   $('#eg_sugb').addEventListener('click',egSuggest); $('#eg_bulkb').addEventListener('click',egBulk); $('#eg_bclsb').addEventListener('click',egClassAdd); $('#eg_album').addEventListener('click',egAlbum);
