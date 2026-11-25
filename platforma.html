@@ -1287,8 +1287,9 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
             </div>
             <div id="attPrev"></div>
             <div class="actions">
-              <button class="btn ghost" id="attRosterBtn" type="button">Xatlar bazasidan olish</button>
+              <button class="btn ghost" id="attCmpBtn" type="button">Xatlar bazasi bilan solishtirish</button>
             </div>
+            <div id="attCmp"></div>
             <h3 style="margin:16px 0 6px">Qo'lda qo'shish</h3>
             <div class="row2">
               <input class="inp" id="attMn" placeholder="Familiya Ism">
@@ -5289,16 +5290,94 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
   }
   function attAddStudents(list){
     var cur=attStu(), have={};
-    cur.forEach(function(s){have[s.name.toLowerCase()+'|'+(s.cls||'—')]=1});
+    cur.forEach(function(s){have[nameKey(s.name)+'|'+(s.cls||'—')]=1});
     var n=0;
     list.forEach(function(p){
-      var cls=p.cls||'—', k=p.name.toLowerCase()+'|'+cls;
+      var cls=p.cls||'—', k=nameKey(p.name)+'|'+cls;
       if(have[k]) return; have[k]=1; n++;
       cur.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),name:p.name,cls:cls});
     });
     if(n){ attSaveStu(cur); logAudit('att_students_added',{count:n}); }
     return n;
   }
+
+  /* ----- davomat ro'yxati va xatlar bazasini solishtirish (hech narsa o'zi qo'shilmaydi/o'chmaydi) ----- */
+  var attCmpData=null;
+  function attLoose(n){
+    var t=nameKey(n).replace(/[^\p{L} ]/gu,'').split(' ').filter(Boolean);
+    return t.slice(0,2).join(' ').replace(/h/g,'x');   /* familiya+ism, otasining ismi va h/x imlosi farqsiz */
+  }
+  function attCmpCls(c){ return normClass(c||'')||'—' }
+  function attCompare(){
+    var A=attStu().filter(function(s){return s&&s.name}).map(function(s){return {id:s.id,name:s.name,cls:attCmpCls(s.cls)}});
+    var R=(roster.students||[]).filter(function(s){return s&&s.name}).map(function(s){return {name:s.name,cls:attCmpCls(s.cls)}});
+    var ek=function(x){return nameKey(x.name)+'|'+x.cls}, lk=function(x){return attLoose(x.name)+'|'+x.cls};
+    var rUsed=R.map(function(){return false}), aUsed=A.map(function(){return false}), same=0;
+    A.forEach(function(a,i){ for(var j=0;j<R.length;j++){ if(!rUsed[j]&&ek(R[j])===ek(a)){ rUsed[j]=true; aUsed[i]=true; same++; return } } });
+    var similar=[];
+    A.forEach(function(a,i){ if(aUsed[i]) return;
+      for(var j=0;j<R.length;j++){ if(!rUsed[j]&&lk(R[j])===lk(a)){ rUsed[j]=true; aUsed[i]=true; similar.push({a:a,r:R[j]}); return } } });
+    var onlyA=A.filter(function(a,i){return !aUsed[i]}), onlyR=R.filter(function(r,j){return !rUsed[j]});
+    var g={}; A.forEach(function(a){ (g[lk(a)]=g[lk(a)]||[]).push(a) });
+    var dups=Object.keys(g).filter(function(k){return g[k].length>1}).map(function(k){return g[k]});
+    return {nA:A.length,nR:R.length,same:same,similar:similar,onlyA:onlyA,onlyR:onlyR,dups:dups};
+  }
+  function attCmpRender(){
+    var d=attCmpData=attCompare(), box=$('#attCmp');
+    var row=function(txt,btns){ return '<div class="it"><span>'+txt+'</span><span>'+btns+'</span></div>' };
+    var b=function(act,i,t){ return '<a href="#" class="att-x" data-cmp="'+act+'" data-i="'+i+'" style="margin-left:12px;font-weight:600">'+t+'</a>' };
+    var nm=function(x){ return esc(x.name)+' <small>'+esc(x.cls)+'</small>' };
+    var h='<div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Solishtirish natijasi</h3>'+
+      '<p class="hint">Davomatda: <b>'+d.nA+'</b> · Xatlar bazasida: <b>'+d.nR+'</b> · to\'liq mos: <b>'+d.same+'</b>. Hech narsa o\'zi o\'zgarmaydi, har birini o\'zingiz tanlaysiz.</p>';
+    if(d.similar.length){
+      h+='<h4 style="margin:12px 0 4px">Imlosi farq qiladi, ehtimol bitta o\'quvchi ('+d.similar.length+')</h4>';
+      h+=d.similar.slice(0,200).map(function(p,i){ return row('Davomat: '+nm(p.a)+' ⇄ Baza: '+nm(p.r), b('fixR',i,'Bazani davomatga moslash')+b('fixA',i,'Davomatni bazaga moslash')) }).join('');
+    }
+    if(d.onlyA.length){
+      h+='<h4 style="margin:12px 0 4px">Davomatda bor, bazada yo\'q ('+d.onlyA.length+')</h4>';
+      h+=d.onlyA.slice(0,200).map(function(a,i){ return row(nm(a), b('addR',i,'Bazaga qo\'shish')+b('rmA',i,'Davomatdan o\'chirish')) }).join('');
+      h+='<div class="actions"><button class="btn line" type="button" data-cmp="addRall">Hammasini bazaga qo\'shish</button></div>';
+    }
+    if(d.onlyR.length){
+      h+='<h4 style="margin:12px 0 4px">Bazada bor, davomatda yo\'q ('+d.onlyR.length+')</h4>';
+      h+=d.onlyR.slice(0,200).map(function(r,i){ return row(nm(r), b('addA',i,'Davomatga qo\'shish')+b('rmR',i,'Bazadan o\'chirish')) }).join('');
+      h+='<div class="actions"><button class="btn line" type="button" data-cmp="addAall">Hammasini davomatga qo\'shish</button><button class="btn line" type="button" data-cmp="rmRall">Hammasini bazadan o\'chirish</button></div>';
+    }
+    if(d.dups.length){
+      h+='<h4 style="margin:12px 0 4px">Davomatda takrorlar ('+d.dups.length+' guruh)</h4>';
+      h+=d.dups.slice(0,100).map(function(gr,gi){ return gr.map(function(a,k){ return row(nm(a), b('rmD',gi+'.'+k,'O\'chirish')) }).join('')+'<hr style="border:0;border-top:1px dashed #ccc;margin:4px 0">' }).join('');
+    }
+    if(!d.similar.length&&!d.onlyA.length&&!d.onlyR.length&&!d.dups.length) h+='<p>✅ Ikkala ro\'yxat bir xil.</p>';
+    box.innerHTML=h+'</div>';
+  }
+  function attCmpSaveRoster(){ fillDatalists(); try{ renderRosterTextareas() }catch(e){} if(db&&curUser) return cloudSaveRoster().catch(function(){ toast("Bazani saqlab bo'lmadi") }); }
+  function attRosterFind(x){ return (roster.students||[]).filter(function(s){return s&&nameKey(s.name)===nameKey(x.name)&&attCmpCls(s.cls)===x.cls})[0] }
+  $('#attCmpBtn').addEventListener('click',function(){ if(!attCanManage()) return; attCmpRender() });
+  $('#attCmp').addEventListener('click',function(e){
+    var t=e.target.closest('[data-cmp]'); if(!t||!attCanManage()) return; e.preventDefault();
+    var act=t.getAttribute('data-cmp'), d=attCmpData; if(!d) return;
+    var i=t.getAttribute('data-i'), done='';
+    if(act==='addR'||act==='addRall'){
+      (act==='addR'?[d.onlyA[+i]]:d.onlyA).forEach(function(a){ if(a&&!attRosterFind(a)) roster.students.push({name:a.name,cls:a.cls==='—'?'':a.cls,phone:'',parent:''}) });
+      attCmpSaveRoster(); done='Bazaga qo\'shildi';
+    } else if(act==='rmR'||act==='rmRall'){
+      var rm=act==='rmR'?[d.onlyR[+i]]:d.onlyR;
+      if(act==='rmRall'&&!confirm(rm.length+" ta o'quvchi xatlar bazasidan o'chiriladi (telefon va ota-ona ma'lumoti ham). Davom etasizmi?")) return;
+      roster.students=roster.students.filter(function(s){ return !rm.some(function(x){return x&&s&&nameKey(s.name)===nameKey(x.name)&&attCmpCls(s.cls)===x.cls}) });
+      attCmpSaveRoster(); done='Bazadan o\'chirildi';
+    } else if(act==='addA'||act==='addAall'){
+      attAddStudents((act==='addA'?[d.onlyR[+i]]:d.onlyR).filter(Boolean).map(function(r){return {name:r.name,cls:r.cls==='—'?'':r.cls}})); done='Davomatga qo\'shildi';
+    } else if(act==='rmA'){
+      var a=d.onlyA[+i]; if(!a) return; attSaveStu(attStu().filter(function(s){return s.id!==a.id})); logAudit('att_students_removed',{count:1}); done='Davomatdan o\'chirildi';
+    } else if(act==='rmD'){
+      var p=i.split('.'), a2=d.dups[+p[0]]&&d.dups[+p[0]][+p[1]]; if(!a2) return; attSaveStu(attStu().filter(function(s){return s.id!==a2.id})); logAudit('att_students_removed',{count:1}); done='Takror o\'chirildi';
+    } else if(act==='fixR'){
+      var pr=d.similar[+i], rr=pr&&attRosterFind(pr.r); if(rr){ rr.name=pr.a.name; attCmpSaveRoster(); } done='Baza davomatga moslandi';
+    } else if(act==='fixA'){
+      var pa=d.similar[+i]; if(!pa) return; var all=attStu(); all.forEach(function(s){ if(s.id===pa.a.id) s.name=pa.r.name }); attSaveStu(all); done='Davomat bazaga moslandi';
+    }
+    attCmpRender(); attRender(); setMsg('#attMsg',done,'ok');
+  });
 
   /* ----- jadval ----- */
   function attMonth(){return $('#attMon').value||''}
@@ -6326,11 +6405,6 @@ table.les-t .inp.cf{border-color:var(--danger);background:#fff1f1}
     var n=$('#attMn').value.trim().replace(/\s+/g,' '); if(!n) return;
     var c=$('#attMc').value.trim(); attAddStudents([{name:n,cls:attParseCls(c)||normClass(c)}]);
     $('#attMn').value=''; attRender();
-  });
-  $('#attRosterBtn').addEventListener('click',function(){
-    if(!roster.students.length) return setMsg('#attMsg',"Xatlar bazasi bo'sh (Sozlamalar bo'limida)",'err');
-    var n=attAddStudents(roster.students.map(function(s){return {name:s.name,cls:normClass(s.cls||'')}}));
-    setMsg('#attMsg',n+" ta yangi o'quvchi bazadan qo'shildi",'ok'); attRender();
   });
   $('#attList').addEventListener('click',function(e){
     var a=e.target.closest('a[data-dels],a[data-delc]'); if(!a) return; e.preventDefault();
